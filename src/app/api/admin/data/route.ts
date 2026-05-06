@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { db } from '@/lib/db';
+import { createServerSupabaseClient, mapArticleWithNames } from '@/lib/supabase/client';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'goalzone-admin-secret-2025';
 
@@ -25,24 +25,52 @@ export async function GET(request: NextRequest) {
   if (!auth.valid) return auth.response;
 
   try {
-    const [totalArticles, totalComments, viewsAgg, featuredArticles, categories] = await Promise.all([
-      db.article.count(),
-      db.comment.count(),
-      db.article.aggregate({ _sum: { viewCount: true } }),
-      db.article.count({ where: { isFeatured: true } }),
-      db.category.findMany({ include: { _count: { select: { articles: true } } }, orderBy: { name: 'asc' } }),
+    const supabase = createServerSupabaseClient();
+
+    // Run independent queries in parallel
+    const [articlesRes, commentsRes, featuredRes, categoriesRes, viewsRes] = await Promise.all([
+      supabase
+        .from('articles')
+        .select('*, categories(name, slug, color), profiles(username, full_name, avatar_url)')
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('comments')
+        .select('*', { count: 'exact', head: true }),
+      supabase
+        .from('articles')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_featured', true),
+      supabase
+        .from('categories')
+        .select('*')
+        .order('name', { ascending: true }),
+      supabase
+        .from('articles')
+        .select('view_count'),
     ]);
 
-    const articles = await db.article.findMany({
-      include: { category: { select: { name: true } }, author: { select: { username: true } } },
-      orderBy: { createdAt: 'desc' },
+    const totalArticles = articlesRes.count ?? articlesRes.data?.length ?? 0;
+    const totalComments = commentsRes.count ?? 0;
+    const featuredArticles = featuredRes.count ?? 0;
+    const categories = categoriesRes.data ?? [];
+
+    // Sum view counts in JS
+    const totalViews = (viewsRes.data ?? []).reduce((sum, a) => sum + (a.view_count || 0), 0);
+
+    // Build category article count map
+    const categoryCountMap: Record<string, number> = {};
+    (articlesRes.data ?? []).forEach((a: any) => {
+      if (a.category_id) {
+        categoryCountMap[a.category_id] = (categoryCountMap[a.category_id] || 0) + 1;
+      }
     });
 
-    const recentComments = await db.comment.findMany({
-      take: 10,
-      orderBy: { createdAt: 'desc' },
-      include: { user: { select: { username: true } }, article: { select: { title: true } } },
-    });
+    // Fetch recent 10 comments with user and article info
+    const { data: recentCommentsRaw } = await supabase
+      .from('comments')
+      .select('*, profiles(username, avatar_url), articles(title)')
+      .order('created_at', { ascending: false })
+      .limit(10);
 
     return NextResponse.json({
       success: true,
@@ -50,24 +78,26 @@ export async function GET(request: NextRequest) {
         stats: {
           totalArticles,
           totalComments,
-          totalViews: viewsAgg._sum.viewCount || 0,
+          totalViews,
           featuredArticles,
           totalCategories: categories.length,
         },
-        articles: articles.map((a) => ({
-          ...a,
-          categoryName: a.category?.name || null,
-          authorName: a.author?.username || null,
-          category: undefined,
-          author: undefined,
-        })),
-        categories: categories.map((c) => ({ ...c, articleCount: c._count.articles })),
-        recentComments: recentComments.map((c) => ({
+        articles: (articlesRes.data ?? []).map((a: any) => mapArticleWithNames(a)),
+        categories: categories.map((c: any) => ({
           id: c.id,
-          text: c.text,
-          createdAt: c.createdAt,
-          authorName: c.user?.username || 'Anonymous',
-          articleTitle: c.article?.title || null,
+          name: c.name,
+          slug: c.slug,
+          description: c.description,
+          color: c.color,
+          icon: c.icon,
+          articleCount: categoryCountMap[c.id] || 0,
+        })),
+        recentComments: (recentCommentsRaw ?? []).map((c: any) => ({
+          id: c.id,
+          text: c.content,
+          createdAt: c.created_at,
+          authorName: c.profiles?.username || 'Anonymous',
+          articleTitle: c.articles?.title || null,
         })),
       },
     });

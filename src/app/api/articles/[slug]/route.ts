@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { createServerSupabaseClient, mapArticleToAPI, mapCommentToAPI } from '@/lib/supabase/client'
 import { verifyAdmin } from '@/lib/admin-auth'
 
 export async function GET(
@@ -8,48 +8,48 @@ export async function GET(
 ) {
   try {
     const { slug } = await params
+    const supabase = createServerSupabaseClient()
 
-    const article = await db.article.findUnique({
-      where: { slug },
-      include: {
-        category: true,
-        author: {
-          select: {
-            id: true,
-            username: true,
-            avatarUrl: true,
-            role: true,
-          },
-        },
-        comments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                username: true,
-                avatarUrl: true,
-              },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    })
+    // Fetch article with category and author joins
+    const { data: articleRow, error: articleError } = await supabase
+      .from('articles')
+      .select('*, categories(name, slug, color), profiles(username, full_name, avatar_url)')
+      .eq('slug', slug)
+      .eq('status', 'published')
+      .single()
 
-    if (!article) {
+    if (articleError || !articleRow) {
       return NextResponse.json(
         { error: 'Article not found' },
         { status: 404 }
       )
     }
 
-    // Increment view count
-    await db.article.update({
-      where: { slug },
-      data: { viewCount: { increment: 1 } },
-    })
+    // Fetch comments with profile joins
+    const { data: commentRows } = await supabase
+      .from('comments')
+      .select('*, profiles(username, avatar_url)')
+      .eq('article_id', articleRow.id)
+      .order('created_at', { ascending: false })
 
-    return NextResponse.json({ ...article, viewCount: article.viewCount + 1 })
+    // Increment view count
+    const { error: updateError } = await supabase
+      .from('articles')
+      .update({ view_count: articleRow.view_count + 1 })
+      .eq('slug', slug)
+
+    if (updateError) {
+      console.error('Failed to increment view count:', updateError)
+    }
+
+    const article = mapArticleToAPI(articleRow)
+    const comments = (commentRows || []).map(mapCommentToAPI)
+
+    return NextResponse.json({
+      ...article,
+      viewCount: articleRow.view_count + 1,
+      comments,
+    })
   } catch (error) {
     console.error('Error fetching article:', error)
     return NextResponse.json(
@@ -70,42 +70,50 @@ export async function PUT(
 
     const { slug } = await params
     const body = await request.json()
-
     const { title, content, summary, imageUrl, categoryId, isFeatured, readTime } = body
 
+    const supabase = createServerSupabaseClient()
+
     // Check if article exists
-    const existing = await db.article.findUnique({ where: { slug } })
-    if (!existing) {
+    const { data: existing, error: findError } = await supabase
+      .from('articles')
+      .select('id')
+      .eq('slug', slug)
+      .single()
+
+    if (findError || !existing) {
       return NextResponse.json(
         { error: 'Article not found' },
         { status: 404 }
       )
     }
 
-    const article = await db.article.update({
-      where: { slug },
-      data: {
-        ...(title !== undefined && { title }),
-        ...(content !== undefined && { content }),
-        ...(summary !== undefined && { summary }),
-        ...(imageUrl !== undefined && { imageUrl }),
-        ...(categoryId !== undefined && { categoryId }),
-        ...(isFeatured !== undefined && { isFeatured }),
-        ...(readTime !== undefined && { readTime }),
-      },
-      include: {
-        category: true,
-        author: {
-          select: {
-            id: true,
-            username: true,
-            avatarUrl: true,
-            role: true,
-          },
-        },
-      },
-    })
+    // Build update payload with snake_case mapping
+    const updateData: Record<string, unknown> = {}
+    if (title !== undefined) updateData.title = title
+    if (content !== undefined) updateData.content = content
+    if (summary !== undefined) updateData.summary = summary
+    if (imageUrl !== undefined) updateData.cover_image = imageUrl
+    if (categoryId !== undefined) updateData.category_id = categoryId
+    if (isFeatured !== undefined) updateData.is_featured = isFeatured
+    if (readTime !== undefined) updateData.read_time = readTime
 
+    const { data: row, error } = await supabase
+      .from('articles')
+      .update(updateData)
+      .eq('slug', slug)
+      .select('*, categories(name, slug, color), profiles(username, full_name, avatar_url)')
+      .single()
+
+    if (error) {
+      console.error('Supabase error updating article:', error)
+      return NextResponse.json(
+        { error: 'Failed to update article' },
+        { status: 500 }
+      )
+    }
+
+    const article = mapArticleToAPI(row)
     return NextResponse.json(article)
   } catch (error) {
     console.error('Error updating article:', error)
@@ -126,16 +134,34 @@ export async function DELETE(
     if (!auth.valid) return auth.response
 
     const { slug } = await params
+    const supabase = createServerSupabaseClient()
 
-    const existing = await db.article.findUnique({ where: { slug } })
-    if (!existing) {
+    // Check if article exists
+    const { data: existing, error: findError } = await supabase
+      .from('articles')
+      .select('id')
+      .eq('slug', slug)
+      .single()
+
+    if (findError || !existing) {
       return NextResponse.json(
         { error: 'Article not found' },
         { status: 404 }
       )
     }
 
-    await db.article.delete({ where: { slug } })
+    const { error } = await supabase
+      .from('articles')
+      .delete()
+      .eq('slug', slug)
+
+    if (error) {
+      console.error('Supabase error deleting article:', error)
+      return NextResponse.json(
+        { error: 'Failed to delete article' },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

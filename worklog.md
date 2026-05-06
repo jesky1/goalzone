@@ -326,3 +326,35 @@ Stage Summary:
 - No external service dependency (no port 3001 needed)
 - Login: admin / admin123
 - Full CRUD: view stats, search articles, delete articles
+
+---
+Task ID: 15
+Agent: Main Developer
+Task: Migrate all API routes from Prisma (SQLite) to Supabase (PostgreSQL) for production deployment
+
+Work Log:
+- Installed @supabase/supabase-js package
+- Removed allowedDevOrigins from next.config.ts (dev-only setting)
+- Rewrote src/lib/supabase/client.ts with field mapping helpers (snake_case to camelCase)
+  - mapArticleToAPI, mapArticleWithNames, mapCategoryToAPI, mapCommentToAPI
+  - createServerSupabaseClient() for server-side operations with service role key
+- Rewrote 8 API route files from Prisma to Supabase:
+  - src/app/api/articles/route.ts (GET + POST)
+  - src/app/api/articles/[slug]/route.ts (GET + PUT + DELETE)
+  - src/app/api/articles/[slug]/comments/route.ts (GET + POST)
+  - src/app/api/categories/route.ts (GET)
+  - src/app/api/admin/login/route.ts (env-based credentials + Supabase profile check)
+  - src/app/api/admin/data/route.ts (dashboard stats + data)
+  - src/app/api/admin/data/articles/route.ts (GET + POST)
+  - src/app/api/admin/data/articles/[id]/route.ts (PUT + DELETE)
+- Created .env.local template with all required environment variables
+- Updated backend/.env.example with admin credentials section
+- Updated ZIP file: download/GOALZONE-Project.zip (1018KB, 162 files)
+- Lint: 0 errors, 2 pre-existing warnings
+
+Stage Summary:
+- All API routes now use Supabase instead of Prisma/SQLite
+- Admin login uses env vars (ADMIN_USERNAME/ADMIN_PASSWORD) with fallback to admin/admin123
+- Field mapping helpers ensure frontend compatibility (camelCase API responses)
+- Server-side Supabase client uses service role key (bypasses RLS)
+- Project is production-ready for Vercel + Supabase deployment

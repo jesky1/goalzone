@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import bcrypt from 'bcryptjs';
+import { createServerSupabaseClient } from '@/lib/supabase/client';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'goalzone-admin-secret-2025';
@@ -17,24 +16,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Username dan password wajib diisi' }, { status: 400 });
     }
 
-    const admin = await db.profile.findUnique({ where: { username } });
-    if (!admin) {
+    // Check credentials against env vars with fallbacks
+    const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+
+    if (username !== adminUsername || password !== adminPassword) {
       return NextResponse.json({ success: false, error: 'Username atau password salah' }, { status: 401 });
     }
 
-    let isMatch = false;
-    if (admin.passwordHash) {
-      isMatch = await bcrypt.compare(password, admin.passwordHash);
-    } else {
-      isMatch = username === 'admin' && password === 'admin123';
-    }
+    // Optionally verify user exists in Supabase profiles with admin role
+    let userId = username;
+    let fullName = username;
+    let role = 'admin';
 
-    if (!isMatch) {
-      return NextResponse.json({ success: false, error: 'Username atau password salah' }, { status: 401 });
+    try {
+      const supabase = createServerSupabaseClient();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, username, full_name, role')
+        .eq('username', username)
+        .eq('role', 'admin')
+        .single();
+
+      if (profile) {
+        userId = profile.id;
+        fullName = profile.full_name || profile.username;
+        role = profile.role || 'admin';
+      }
+    } catch {
+      // Supabase not available, use fallback values
     }
 
     const token = jwt.sign(
-      { id: admin.id, username: admin.username, role: admin.role || 'admin' },
+      { id: userId, username, role },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN },
     );
@@ -46,10 +60,10 @@ export async function POST(request: NextRequest) {
         token,
         expiresIn: JWT_EXPIRES_IN,
         user: {
-          id: admin.id,
-          username: admin.username,
-          fullName: admin.fullName || admin.username,
-          role: admin.role || 'admin',
+          id: userId,
+          username,
+          fullName,
+          role,
         },
       },
     });

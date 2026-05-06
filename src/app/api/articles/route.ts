@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { createServerSupabaseClient, mapArticleToAPI } from '@/lib/supabase/client'
 import { verifyAdmin } from '@/lib/admin-auth'
 
 export async function GET(request: NextRequest) {
@@ -11,46 +11,59 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10', 10)
     const offset = parseInt(searchParams.get('offset') || '0', 10)
 
-    const where: Record<string, unknown> = {}
+    const supabase = createServerSupabaseClient()
+
+    // Build the count query with the same filters
+    let countQuery = supabase
+      .from('articles')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'published')
 
     if (category) {
-      where.category = { slug: category }
+      countQuery = countQuery.eq('categories.slug', category)
     }
-
     if (search) {
-      where.OR = [
-        { title: { contains: search } },
-        { summary: { contains: search } },
-      ]
+      countQuery = countQuery.or(`title.ilike.%${search}%,summary.ilike.%${search}%`)
     }
-
     if (featured === 'true') {
-      where.isFeatured = true
+      countQuery = countQuery.eq('is_featured', true)
     }
 
-    const articles = await db.article.findMany({
-      where,
-      include: {
-        category: true,
-        author: {
-          select: {
-            id: true,
-            username: true,
-            avatarUrl: true,
-            role: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-      skip: offset,
-    })
+    const { count: total } = await countQuery
 
-    const total = await db.article.count({ where })
+    // Build the data query with the same filters
+    let dataQuery = supabase
+      .from('articles')
+      .select('*, categories(name, slug, color), profiles(username, full_name, avatar_url)')
+      .eq('status', 'published')
+
+    if (category) {
+      dataQuery = dataQuery.eq('categories.slug', category)
+    }
+    if (search) {
+      dataQuery = dataQuery.or(`title.ilike.%${search}%,summary.ilike.%${search}%`)
+    }
+    if (featured === 'true') {
+      dataQuery = dataQuery.eq('is_featured', true)
+    }
+
+    const { data: rows, error } = await dataQuery
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+
+    if (error) {
+      console.error('Supabase error fetching articles:', error)
+      return NextResponse.json(
+        { error: 'Failed to fetch articles' },
+        { status: 500 }
+      )
+    }
+
+    const articles = (rows || []).map(mapArticleToAPI)
 
     return NextResponse.json({
       articles,
-      total,
+      total: total || 0,
       limit,
       offset,
     })
@@ -70,7 +83,6 @@ export async function POST(request: NextRequest) {
     if (!auth.valid) return auth.response
 
     const body = await request.json()
-
     const { title, slug, content, summary, imageUrl, categoryId, authorId, isFeatured, readTime } = body
 
     if (!title || !slug || !content || !categoryId || !authorId) {
@@ -80,31 +92,34 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const article = await db.article.create({
-      data: {
+    const supabase = createServerSupabaseClient()
+
+    const { data: row, error } = await supabase
+      .from('articles')
+      .insert({
         title,
         slug,
         content,
         summary: summary || null,
-        imageUrl: imageUrl || null,
-        categoryId,
-        authorId,
-        isFeatured: isFeatured || false,
-        readTime: readTime || 5,
-      },
-      include: {
-        category: true,
-        author: {
-          select: {
-            id: true,
-            username: true,
-            avatarUrl: true,
-            role: true,
-          },
-        },
-      },
-    })
+        cover_image: imageUrl || null,
+        category_id: categoryId,
+        author_id: authorId,
+        status: 'published',
+        is_featured: isFeatured || false,
+        read_time: readTime || 5,
+      })
+      .select('*, categories(name, slug, color), profiles(username, full_name, avatar_url)')
+      .single()
 
+    if (error) {
+      console.error('Supabase error creating article:', error)
+      return NextResponse.json(
+        { error: 'Failed to create article' },
+        { status: 500 }
+      )
+    }
+
+    const article = mapArticleToAPI(row)
     return NextResponse.json(article, { status: 201 })
   } catch (error) {
     console.error('Error creating article:', error)

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { db } from '@/lib/db';
+import { createServerSupabaseClient, mapArticleWithNames } from '@/lib/supabase/client';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'goalzone-admin-secret-2025';
 
@@ -30,33 +30,25 @@ export async function GET(request: NextRequest) {
     const limit = Number(searchParams.get('limit') || '50');
     const offset = Number(searchParams.get('offset') || '0');
 
-    const where: any = {};
+    const supabase = createServerSupabaseClient();
+
+    let query = supabase
+      .from('articles')
+      .select('*, categories(name, slug, color), profiles(username, full_name, avatar_url)', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
     if (search) {
-      where.OR = [{ title: { contains: String(search) } }, { summary: { contains: String(search) } }];
+      query = query.or(`title.ilike.%${search}%,summary.ilike.%${search}%`);
     }
 
-    const [articles, total] = await Promise.all([
-      db.article.findMany({
-        where,
-        include: { category: { select: { name: true } }, author: { select: { username: true } } },
-        orderBy: { createdAt: 'desc' },
-        take: limit,
-        skip: offset,
-      }),
-      db.article.count({ where }),
-    ]);
+    const { data: articles, count: total } = await query;
 
     return NextResponse.json({
       success: true,
       data: {
-        articles: articles.map((a) => ({
-          ...a,
-          categoryName: a.category?.name || null,
-          authorName: a.author?.username || null,
-          category: undefined,
-          author: undefined,
-        })),
-        total,
+        articles: (articles ?? []).map((a: any) => mapArticleWithNames(a)),
+        total: total ?? 0,
         limit,
         offset,
       },
@@ -81,22 +73,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'title, slug, content, categoryId wajib diisi' }, { status: 400 });
     }
 
-    const article = await db.article.create({
-      data: {
+    const supabase = createServerSupabaseClient();
+
+    const { data: article, error } = await supabase
+      .from('articles')
+      .insert({
         title,
         slug,
         content,
         summary: summary || null,
-        imageUrl: imageUrl || null,
-        categoryId,
-        authorId: authorId || null,
-        isFeatured: isFeatured || false,
-        readTime: readTime || 5,
-      },
-      include: { category: { select: { name: true } }, author: { select: { username: true } } },
-    });
+        cover_image: imageUrl || null,
+        category_id: categoryId,
+        author_id: authorId || null,
+        is_featured: isFeatured || false,
+        read_time: readTime || 5,
+      })
+      .select('*, categories(name, slug, color), profiles(username, full_name, avatar_url)')
+      .single();
 
-    return NextResponse.json({ success: true, message: 'Artikel berhasil dibuat', data: article }, { status: 201 });
+    if (error) {
+      console.error('[Admin Articles POST Error]', error.message);
+      return NextResponse.json({ success: false, error: 'Gagal membuat artikel' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, message: 'Artikel berhasil dibuat', data: mapArticleWithNames(article) }, { status: 201 });
   } catch (error: any) {
     console.error('[Admin Articles POST Error]', error.message);
     return NextResponse.json({ success: false, error: 'Gagal membuat artikel' }, { status: 500 });

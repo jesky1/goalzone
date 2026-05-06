@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { db } from '@/lib/db';
+import { createServerSupabaseClient, mapArticleWithNames } from '@/lib/supabase/client';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'goalzone-admin-secret-2025';
 
@@ -31,28 +31,45 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
-    const existing = await db.article.findUnique({ where: { id } });
+    const supabase = createServerSupabaseClient();
+
+    // Check article exists
+    const { data: existing } = await supabase
+      .from('articles')
+      .select('id, title')
+      .eq('id', id)
+      .single();
+
     if (!existing) {
       return NextResponse.json({ success: false, error: 'Artikel tidak ditemukan' }, { status: 404 });
     }
 
+    // Build update object with snake_case fields, only including defined values
     const { title, slug, content, summary, imageUrl, categoryId, isFeatured, readTime } = body;
-    const article = await db.article.update({
-      where: { id },
-      data: {
-        ...(title !== undefined && { title }),
-        ...(slug !== undefined && { slug }),
-        ...(content !== undefined && { content }),
-        ...(summary !== undefined && { summary }),
-        ...(imageUrl !== undefined && { imageUrl }),
-        ...(categoryId !== undefined && { categoryId }),
-        ...(isFeatured !== undefined && { isFeatured }),
-        ...(readTime !== undefined && { readTime }),
-      },
-      include: { category: { select: { name: true } }, author: { select: { username: true } } },
-    });
 
-    return NextResponse.json({ success: true, message: 'Artikel berhasil diupdate', data: article });
+    const updateData: Record<string, any> = {};
+    if (title !== undefined) updateData.title = title;
+    if (slug !== undefined) updateData.slug = slug;
+    if (content !== undefined) updateData.content = content;
+    if (summary !== undefined) updateData.summary = summary;
+    if (imageUrl !== undefined) updateData.cover_image = imageUrl;
+    if (categoryId !== undefined) updateData.category_id = categoryId;
+    if (isFeatured !== undefined) updateData.is_featured = isFeatured;
+    if (readTime !== undefined) updateData.read_time = readTime;
+
+    const { data: article, error } = await supabase
+      .from('articles')
+      .update(updateData)
+      .eq('id', id)
+      .select('*, categories(name, slug, color), profiles(username, full_name, avatar_url)')
+      .single();
+
+    if (error) {
+      console.error('[Admin Article PUT Error]', error.message);
+      return NextResponse.json({ success: false, error: 'Gagal mengupdate artikel' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, message: 'Artikel berhasil diupdate', data: mapArticleWithNames(article) });
   } catch (error: any) {
     console.error('[Admin Article PUT Error]', error.message);
     return NextResponse.json({ success: false, error: 'Gagal mengupdate artikel' }, { status: 500 });
@@ -72,13 +89,22 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    const existing = await db.article.findUnique({ where: { id }, select: { id: true, title: true } });
+    const supabase = createServerSupabaseClient();
+
+    // Check article exists
+    const { data: existing } = await supabase
+      .from('articles')
+      .select('id, title')
+      .eq('id', id)
+      .single();
+
     if (!existing) {
       return NextResponse.json({ success: false, error: 'Artikel tidak ditemukan' }, { status: 404 });
     }
 
-    await db.comment.deleteMany({ where: { articleId: id } });
-    await db.article.delete({ where: { id } });
+    // Delete associated comments first, then the article
+    await supabase.from('comments').delete().eq('article_id', id);
+    await supabase.from('articles').delete().eq('id', id);
 
     return NextResponse.json({ success: true, message: `Artikel "${existing.title}" berhasil dihapus` });
   } catch (error: any) {

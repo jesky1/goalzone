@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { createServerSupabaseClient, mapCommentToAPI } from '@/lib/supabase/client'
 
 export async function GET(
   request: NextRequest,
@@ -7,30 +7,38 @@ export async function GET(
 ) {
   try {
     const { slug } = await params
+    const supabase = createServerSupabaseClient()
 
     // Verify article exists
-    const article = await db.article.findUnique({ where: { slug } })
-    if (!article) {
+    const { data: article, error: articleError } = await supabase
+      .from('articles')
+      .select('id')
+      .eq('slug', slug)
+      .single()
+
+    if (articleError || !article) {
       return NextResponse.json(
         { error: 'Article not found' },
         { status: 404 }
       )
     }
 
-    const comments = await db.comment.findMany({
-      where: { articleId: article.id },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            avatarUrl: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    // Fetch comments with profile joins
+    const { data: rows, error } = await supabase
+      .from('comments')
+      .select('*, profiles(username, avatar_url)')
+      .eq('article_id', article.id)
+      .order('created_at', { ascending: false })
 
+    if (error) {
+      console.error('Supabase error fetching comments:', error)
+      return NextResponse.json(
+        { error: 'Failed to fetch comments' },
+        { status: 500 }
+      )
+    }
+
+    const comments = (rows || []).map(mapCommentToAPI)
     return NextResponse.json({ comments })
   } catch (error) {
     console.error('Error fetching comments:', error)
@@ -48,7 +56,6 @@ export async function POST(
   try {
     const { slug } = await params
     const body = await request.json()
-
     const { userId, text } = body
 
     if (!userId || !text) {
@@ -58,9 +65,16 @@ export async function POST(
       )
     }
 
+    const supabase = createServerSupabaseClient()
+
     // Verify article exists
-    const article = await db.article.findUnique({ where: { slug } })
-    if (!article) {
+    const { data: article, error: articleError } = await supabase
+      .from('articles')
+      .select('id')
+      .eq('slug', slug)
+      .single()
+
+    if (articleError || !article) {
       return NextResponse.json(
         { error: 'Article not found' },
         { status: 404 }
@@ -68,31 +82,39 @@ export async function POST(
     }
 
     // Verify user exists
-    const user = await db.profile.findUnique({ where: { id: userId } })
-    if (!user) {
+    const { data: user, error: userError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .single()
+
+    if (userError || !user) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       )
     }
 
-    const comment = await db.comment.create({
-      data: {
-        articleId: article.id,
-        userId,
-        text,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            avatarUrl: true,
-          },
-        },
-      },
-    })
+    // Insert comment — DB column is 'content', API field is 'text'
+    const { data: row, error } = await supabase
+      .from('comments')
+      .insert({
+        article_id: article.id,
+        user_id: userId,
+        content: text,
+      })
+      .select('*, profiles(username, avatar_url)')
+      .single()
 
+    if (error) {
+      console.error('Supabase error creating comment:', error)
+      return NextResponse.json(
+        { error: 'Failed to create comment' },
+        { status: 500 }
+      )
+    }
+
+    const comment = mapCommentToAPI(row)
     return NextResponse.json(comment, { status: 201 })
   } catch (error) {
     console.error('Error creating comment:', error)

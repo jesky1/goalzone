@@ -9,7 +9,7 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-// Client-side Supabase (menggunakan anon key, RLS aktif)
+// Client-side Supabase (anon key, RLS aktif)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
@@ -18,138 +18,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 })
 
-// Type helper
-export type Tables<Schema extends string = 'public'> = {
-  articles: {
-    id: string
-    title: string
-    slug: string
-    content: string
-    summary: string | null
-    excerpt: string | null
-    cover_image: string | null
-    category_id: string
-    author_id: string
-    status: 'draft' | 'published' | 'archived'
-    is_featured: boolean
-    is_trending: boolean
-    view_count: number
-    like_count: number
-    comment_count: number
-    read_time: number
-    seo_title: string | null
-    seo_description: string | null
-    seo_keywords: string[] | null
-    published_at: string | null
-    created_at: string
-    updated_at: string
-  }
-  categories: {
-    id: string
-    name: string
-    slug: string
-    description: string | null
-    color: string
-    icon: string | null
-    sort_order: number
-    is_active: boolean
-    created_at: string
-    updated_at: string
-  }
-  comments: {
-    id: string
-    article_id: string
-    user_id: string
-    content: string
-    is_edited: boolean
-    likes: number
-    parent_id: string | null
-    status: 'published' | 'hidden' | 'flagged'
-    created_at: string
-    updated_at: string
-  }
-  profiles: {
-    id: string
-    username: string
-    full_name: string | null
-    avatar_url: string | null
-    bio: string | null
-    role: 'user' | 'editor' | 'admin'
-    is_verified: boolean
-    preferences: Record<string, unknown>
-    created_at: string
-    updated_at: string
-  }
-  live_scores: {
-    id: string
-    external_id: number
-    league_name: string
-    league_logo: string | null
-    league_country: string | null
-    season: number
-    home_team: string
-    home_team_logo: string | null
-    away_team: string
-    away_team_logo: string | null
-    home_score: number
-    away_score: number
-    status: string
-    minute: number | null
-    elapsed: number | null
-    match_date: string | null
-    venue: string | null
-    home_events: Array<{ type: string; minute: number; player: string; detail?: string }>
-    away_events: Array<{ type: string; minute: number; player: string; detail?: string }>
-    statistics: Record<string, unknown>
-    last_updated: string
-    created_at: string
-  }
-  standings: {
-    id: string
-    league_name: string
-    season: number
-    team_name: string
-    team_logo: string | null
-    position: number
-    played: number
-    won: number
-    draw: number
-    lost: number
-    goals_for: number
-    goals_against: number
-    goal_difference: number
-    points: number
-    form: string
-    last_updated: string
-  }
-  top_scorers: {
-    id: string
-    league_name: string
-    season: number
-    player_name: string
-    player_photo: string | null
-    team_name: string | null
-    team_logo: string | null
-    goals: number
-    assists: number
-    appearances: number
-    minutes_played: number
-    last_updated: string
-  }
-  bookmarked_matches: {
-    id: string
-    user_id: string
-    match_id: number
-    home_team: string | null
-    away_team: string | null
-    match_date: string | null
-    league_name: string | null
-    notified: boolean
-    created_at: string
-  }
-}
-
-// Server-side Supabase admin client (menggunakan service role key, bypass RLS)
+// Server-side Supabase admin client (service role key, bypass RLS)
 export function createServerSupabaseClient() {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!serviceRoleKey) {
@@ -161,4 +30,191 @@ export function createServerSupabaseClient() {
       autoRefreshToken: false,
     },
   })
+}
+
+// ============================================================
+// Field Mapping Helpers (snake_case DB ↔ camelCase API)
+// ============================================================
+
+export interface ArticleRow {
+  id: string
+  title: string
+  slug: string
+  content: string
+  summary: string | null
+  excerpt: string | null
+  cover_image: string | null
+  category_id: string
+  author_id: string
+  status: string
+  is_featured: boolean
+  is_trending: boolean
+  view_count: number
+  like_count: number
+  comment_count: number
+  read_time: number
+  seo_title: string | null
+  seo_description: string | null
+  published_at: string | null
+  created_at: string
+  updated_at: string
+  // Joined fields
+  categories?: { name: string; slug: string; color: string } | null
+  profiles?: { username: string; full_name: string | null; avatar_url: string | null } | null
+}
+
+export interface ArticleAPI {
+  id: string
+  title: string
+  slug: string
+  content: string
+  summary: string | null
+  imageUrl: string | null
+  categoryId: string
+  authorId: string
+  status: string
+  isFeatured: boolean
+  isTrending: boolean
+  viewCount: number
+  likeCount: number
+  commentCount: number
+  readTime: number
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
+  category?: { name: string; slug: string; color: string } | null
+  author?: { username: string; fullName: string | null; avatarUrl: string | null } | null
+}
+
+export function mapArticleToAPI(row: ArticleRow): ArticleAPI {
+  return {
+    id: row.id,
+    title: row.title,
+    slug: row.slug,
+    content: row.content,
+    summary: row.summary,
+    imageUrl: row.cover_image,
+    categoryId: row.category_id,
+    authorId: row.author_id,
+    status: row.status,
+    isFeatured: row.is_featured,
+    isTrending: row.is_trending,
+    viewCount: row.view_count,
+    likeCount: row.like_count,
+    commentCount: row.comment_count,
+    readTime: row.read_time,
+    publishedAt: row.published_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    category: row.categories ? {
+      name: row.categories.name,
+      slug: row.categories.slug,
+      color: row.categories.color,
+    } : null,
+    author: row.profiles ? {
+      username: row.profiles.username,
+      fullName: row.profiles.full_name,
+      avatarUrl: row.profiles.avatar_url,
+    } : null,
+  }
+}
+
+export interface ArticleRowWithCount extends ArticleRow {
+  category_name?: string | null
+  author_name?: string | null
+}
+
+export function mapArticleWithNames(row: ArticleRowWithCount): any {
+  return {
+    id: row.id,
+    title: row.title,
+    slug: row.slug,
+    content: row.content,
+    summary: row.summary,
+    imageUrl: row.cover_image,
+    categoryId: row.category_id,
+    authorId: row.author_id,
+    status: row.status,
+    isFeatured: row.is_featured,
+    viewCount: row.view_count,
+    readTime: row.read_time,
+    publishedAt: row.published_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    categoryName: row.categories?.name || row.category_name || null,
+    authorName: row.profiles?.username || row.author_name || null,
+  }
+}
+
+export interface CategoryRow {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  color: string
+  icon: string | null
+  sort_order: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  article_count?: number
+}
+
+export interface CategoryAPI {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  color: string
+  icon: string | null
+  articleCount: number
+}
+
+export function mapCategoryToAPI(row: CategoryRow): CategoryAPI {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    description: row.description,
+    color: row.color,
+    icon: row.icon,
+    articleCount: row.article_count || 0,
+  }
+}
+
+export interface CommentRow {
+  id: string
+  article_id: string
+  user_id: string
+  content: string
+  is_edited: boolean
+  likes: number
+  parent_id: string | null
+  status: string
+  created_at: string
+  updated_at: string
+  profiles?: { username: string; avatar_url: string | null } | null
+}
+
+export interface CommentAPI {
+  id: string
+  articleId: string
+  userId: string
+  text: string
+  createdAt: string
+  user?: { username: string; avatarUrl: string | null } | null
+}
+
+export function mapCommentToAPI(row: CommentRow): CommentAPI {
+  return {
+    id: row.id,
+    articleId: row.article_id,
+    userId: row.user_id,
+    text: row.content,
+    createdAt: row.created_at,
+    user: row.profiles ? {
+      username: row.profiles.username,
+      avatarUrl: row.profiles.avatar_url,
+    } : null,
+  }
 }
