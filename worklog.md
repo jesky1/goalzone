@@ -293,3 +293,36 @@ Stage Summary:
 - No Ctrl+Shift+A, no Footer button, no client-side admin trigger
 - Login: admin / admin123
 - Lint: 0 errors, 2 warnings (pre-existing)
+
+---
+Task ID: 14
+Agent: Main Developer
+Task: Make admin page accessible via Preview Panel (Next.js route)
+
+Work Log:
+- Created src/app/admin/page.tsx — Full admin dashboard as Next.js page at /admin
+  - Login form with GOALZONE branding, username/password, show/hide toggle
+  - JWT auth via localStorage persistence + auto-restore
+  - Dashboard with 3 tabs: Overview, Articles, Comments
+  - Overview: stat cards (articles, comments, views, featured) + top 5 articles + categories
+  - Articles: searchable table with delete action
+  - Comments: recent comments list
+  - Back to GOALZONE button in header
+  - Responsive design, loading skeletons, error states
+- Rewrote all /api/admin/* routes to use Prisma directly (no proxy to port 3001)
+  - /api/admin/login — JWT auth via Prisma + bcrypt
+  - /api/admin/verify — JWT token verification
+  - /api/admin/data — Dashboard data (stats, articles, categories, comments)
+  - /api/admin/data/articles — List + create articles
+  - /api/admin/data/articles/[id] — Update + delete articles
+- Installed jsonwebtoken + bcryptjs packages
+- Removed dependency on admin-api mini-service (port 3001)
+- Tested end-to-end: login returns JWT, data returns real stats (6 articles, 6 comments, 143790 views)
+- Lint: 0 errors, 2 warnings (pre-existing)
+
+Stage Summary:
+- Admin page accessible at /admin in the Preview Panel
+- All admin operations run through Next.js API routes using Prisma directly
+- No external service dependency (no port 3001 needed)
+- Login: admin / admin123
+- Full CRUD: view stats, search articles, delete articles
