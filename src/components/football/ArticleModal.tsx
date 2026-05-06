@@ -219,18 +219,12 @@ export default function ArticleModal({
 
                 {/* Article Content */}
                 {(fullArticle?.content || displayArticle.content) && (
-                  <div className="prose prose-invert prose-sm max-w-none mb-6">
-                    {(fullArticle?.content || displayArticle.content || '')
-                      .split('\n\n')
-                      .map((paragraph, idx) => (
-                        <p
-                          key={idx}
-                          className="text-sm sm:text-base text-gray-300 leading-relaxed mb-4"
-                        >
-                          {paragraph}
-                        </p>
-                      ))}
-                  </div>
+                  <div
+                    className="prose prose-invert prose-sm max-w-none mb-6 text-sm sm:text-base text-gray-300 leading-relaxed [&_p]:mb-4"
+                    dangerouslySetInnerHTML={{
+                      __html: fullArticle?.content || displayArticle.content || '',
+                    }}
+                  />
                 )}
 
                 {/* No Content Fallback */}
