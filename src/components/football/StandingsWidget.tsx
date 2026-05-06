@@ -35,7 +35,10 @@ export default function StandingsWidget() {
         const res = await fetch('/api/standings');
         if (res.ok && !cancelled) {
           const data = await res.json();
-          setStandings(data.standings || data || []);
+          const list = data.standings || [];
+          if (Array.isArray(list)) {
+            setStandings(list);
+          }
         }
       } catch {
         // silently fail

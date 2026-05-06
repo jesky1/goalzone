@@ -87,7 +87,10 @@ export default function ArticleModal({
           const res = await fetch(`/api/articles/${article.slug}/comments`);
           if (res.ok && !cancelled) {
             const data = await res.json();
-            setComments(data.comments || data || []);
+            const list = data.comments || [];
+            if (Array.isArray(list)) {
+              setComments(list);
+            }
           }
         } catch {
           // silently fail

@@ -55,7 +55,10 @@ export default function LiveScoreTicker() {
         const res = await fetch('/api/live-scores');
         if (res.ok && !cancelled) {
           const data = await res.json();
-          setMatches(data.matches || data || []);
+          const list = data.matches || [];
+          if (Array.isArray(list)) {
+            setMatches(list);
+          }
         }
       } catch {
         // silently fail, keep previous data

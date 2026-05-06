@@ -81,7 +81,10 @@ export default function NewsGrid({
         const res = await fetch('/api/categories');
         if (res.ok && !cancelled) {
           const data = await res.json();
-          setCategories(data.categories || data || []);
+          const list = data.categories || [];
+          if (Array.isArray(list)) {
+            setCategories(list);
+          }
         }
       } catch {
         // silently fail
@@ -107,7 +110,10 @@ export default function NewsGrid({
         const res = await fetch(url);
         if (res.ok && !cancelled) {
           const data = await res.json();
-          setArticles(data.articles || data || []);
+          const list = data.articles || [];
+          if (Array.isArray(list)) {
+            setArticles(list);
+          }
         }
       } catch {
         // silently fail

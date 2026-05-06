@@ -6,7 +6,7 @@ import { Trophy } from 'lucide-react';
 
 interface Scorer {
   rank: number;
-  player: string;
+  name: string;
   team: string;
   goals: number;
   assists: number;
@@ -23,7 +23,10 @@ export default function TopScorersWidget() {
         const res = await fetch('/api/top-scorers');
         if (res.ok && !cancelled) {
           const data = await res.json();
-          setScorers(data.scorers || data || []);
+          const list = data.topScorers || data.scorers || data || [];
+          if (Array.isArray(list)) {
+            setScorers(list);
+          }
         }
       } catch {
         // silently fail
@@ -104,7 +107,7 @@ export default function TopScorersWidget() {
               {/* Player Info */}
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold text-white truncate group-hover:text-neon transition-colors">
-                  {scorer.player}
+                  {scorer.name}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   {scorer.team}

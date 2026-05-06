@@ -60,9 +60,11 @@ export default function Home() {
         if (res.ok && !cancelled) {
           const data = await res.json();
           const all = data.matches || [];
-          const live = all.filter((m: Match) => m.status === 'LIVE');
-          const other = all.filter((m: Match) => m.status !== 'LIVE').slice(0, 3);
-          setLiveMatches([...live, ...other]);
+          if (Array.isArray(all)) {
+            const live = all.filter((m: Match) => m.status === 'LIVE');
+            const other = all.filter((m: Match) => m.status !== 'LIVE').slice(0, 3);
+            setLiveMatches([...live, ...other]);
+          }
         }
       } catch {
         // silently fail

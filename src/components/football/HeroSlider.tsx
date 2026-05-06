@@ -27,7 +27,10 @@ export default function HeroSlider() {
         const res = await fetch('/api/articles?featured=true&limit=5');
         if (res.ok && !cancelled) {
           const data = await res.json();
-          setArticles(data.articles || data || []);
+          const list = data.articles || [];
+          if (Array.isArray(list)) {
+            setArticles(list);
+          }
         }
       } catch {
         // silently fail
