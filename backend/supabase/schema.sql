@@ -223,21 +223,27 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS set_updated_at ON public.categories;
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.categories
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+DROP TRIGGER IF EXISTS set_updated_at ON public.profiles;
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.profiles
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+DROP TRIGGER IF EXISTS set_updated_at ON public.articles;
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.articles
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+DROP TRIGGER IF EXISTS set_updated_at ON public.comments;
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.comments
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+DROP TRIGGER IF EXISTS set_updated_at ON public.standings;
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.standings
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+DROP TRIGGER IF EXISTS set_updated_at ON public.top_scorers;
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.top_scorers
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
@@ -512,6 +518,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS trigger_update_comment_count ON public.comments;
 CREATE TRIGGER trigger_update_comment_count
   AFTER INSERT OR DELETE ON public.comments
   FOR EACH ROW EXECUTE FUNCTION public.update_comment_count();
