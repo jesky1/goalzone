@@ -226,3 +226,40 @@ Stage Summary:
 - Protected endpoints: POST/PUT/DELETE articles, POST/DELETE upload
 - Public endpoints: GET articles, GET comments, GET standings, GET live-scores, etc.
 - Lint: 0 errors, 2 warnings (pre-existing)
+
+---
+Task ID: 12
+Agent: Main Developer
+Task: Build Backend API (Express + JWT) and Admin Dashboard Frontend
+
+Work Log:
+- Created mini-services/admin-api/ (Express + Prisma + JWT, port 3001)
+  - POST /login — authenticate admin, return JWT token (24h expiry)
+  - GET /verify — check if token is valid
+  - GET /data — protected: all data + stats (articles, categories, comments)
+  - GET /data/articles — protected: paginated article list with search
+  - GET /data/stats — protected: dashboard statistics (top viewed, per-day)
+  - POST /data/articles — protected: create article
+  - PUT /data/articles/:id — protected: update article
+  - DELETE /data/articles/:id — protected: delete article + comments
+  - JWT auth middleware protecting all /data/* routes
+- Created Next.js API proxy routes (forwards requests to admin-api):
+  - /api/admin/login (POST)
+  - /api/admin/verify (GET)
+  - /api/admin/data (GET)
+  - /api/admin/data/articles (GET, POST)
+  - /api/admin/data/articles/[id] (PUT, DELETE)
+- Created AdminPortal component (src/components/admin/AdminPortal.tsx):
+  - Login form with username/password
+  - Token stored in localStorage with auto-restore on page open
+  - Dashboard with 3 tabs: Overview (stats + top articles + categories), Articles (table with search), Comments
+  - Full CRUD: view, search, edit, delete articles
+- Connected AdminPortal to main page via CustomEvent from Footer "Admin" button
+- Demo login: admin / admin123
+- Tested all endpoints: login returns JWT, /data returns real stats, unauthorized returns 401
+
+Stage Summary:
+- Backend: Express API on port 3001 with JWT auth and Prisma ORM
+- Frontend: Admin Portal with login → dashboard flow
+- All data fetched from real SQLite database via Prisma
+- Lint: 0 errors, 2 warnings (pre-existing)

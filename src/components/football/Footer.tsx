@@ -107,6 +107,17 @@ export default function Footer() {
               <a href="#" className="hover:text-neon transition-colors">
                 Kontak
               </a>
+              <button
+                type="button"
+                id="goalzone-admin-btn"
+                onClick={() => {
+                  const event = new CustomEvent('goalzone:open-admin');
+                  window.dispatchEvent(event);
+                }}
+                className="hover:text-neon transition-colors cursor-pointer"
+              >
+                Admin
+              </button>
             </div>
           </div>
         </div>

@@ -1,14 +1,13 @@
 // ============================================================
 // GOALZONE - Admin Components Package
 // ============================================================
-// Admin-only components: Dashboard, Panel, Deployment Guide
+// Admin-only components: Portal (Login + Dashboard), Deployment Guide
 // ============================================================
 //
 // Usage:
-//   import AdminPanel from '@/components/admin'
+//   import AdminPortal from '@/components/admin/AdminPortal'
 //   import { DeploymentGuideInner } from '@/components/admin/DeploymentGuide'
 // ============================================================
 
-export { default as AdminPanel } from './AdminPanel'
-export { default as AdminDashboard } from './AdminDashboard'
+export { default as AdminPortal } from './AdminPortal'
 export { DeploymentGuideInner } from './DeploymentGuide'
