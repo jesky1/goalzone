@@ -171,3 +171,33 @@ Stage Summary:
 - Password: goalzone2025 (for demo)
 - Session persists via sessionStorage until logout or tab close
 - Lint: 0 errors, 2 warnings (pre-existing)
+
+---
+Task ID: 10
+Agent: Main Developer
+Task: Separate all backend files into organized backend/ directory structure
+
+Work Log:
+- Created backend/ directory at project root for all production backend files
+- Moved supabase/ → backend/supabase/ (schema.sql, storage-setup.sql, triggers/, functions/)
+- Moved .env.example → backend/.env.example (updated with full variable list)
+- Copied backend API routes to backend/api-routes/ (upload-route.ts, revalidate-route.ts)
+- Created backend/api-routes/auth-context.example.tsx (Auth Provider template)
+- Moved src/lib/supabase.ts → src/lib/supabase/client.ts
+- Moved src/lib/supabase-upload.ts → src/lib/supabase/upload.ts
+- Created src/lib/supabase/index.ts (barrel export for client + upload)
+- Moved admin components: src/components/football/{AdminPanel,AdminDashboard,DeploymentGuide}.tsx → src/components/admin/
+- Created src/components/admin/index.ts (barrel export)
+- Updated all import paths in page.tsx, AdminPanel.tsx, DeploymentGuide.tsx code examples
+- Updated DeploymentGuide file path references: supabase/ → backend/supabase/
+- Lint: 0 errors, 2 warnings (pre-existing)
+
+Stage Summary:
+- Clean separation: frontend vs backend files
+- backend/ folder structure:
+  ├── supabase/ (SQL schema, triggers, edge functions, storage setup)
+  ├── api-routes/ (upload, revalidate, auth-context example)
+  └── .env.example
+- src/lib/supabase/ (client.ts, upload.ts, index.ts)
+- src/components/admin/ (AdminPanel, AdminDashboard, DeploymentGuide, index.ts)
+- All import paths verified and updated

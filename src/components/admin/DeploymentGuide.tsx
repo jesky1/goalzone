@@ -178,7 +178,7 @@ function DatabaseTab() {
           <CodeBlock
             label="backend/supabase/schema.sql"
             language="sql"
-            code={`-- File: supabase/schema.sql
+            code={`-- File: backend/supabase/schema.sql
 -- Jalankan seluruh isi file ini di Supabase SQL Editor
 -- Mencakup: 9 tabel, 15+ indexes, 25+ RLS policies
 
@@ -203,18 +203,18 @@ function DatabaseTab() {
 -- - v_articles_published
 -- - v_articles_trending
 
--- Jalankan file: supabase/schema.sql`}
+-- Jalankan file: backend/supabase/schema.sql`}
           />
         </Step>
 
         <Step number={3} title="Jalankan Storage Setup" icon={<ImageIcon className="w-4 h-4 text-neon" />}>
-          <CodeBlock label="backend/supabase/storage-setup.sql" language="sql" code={`-- File: supabase/storage-setup.sql
+          <CodeBlock label="backend/supabase/storage-setup.sql" language="sql" code={`-- File: backend/supabase/storage-setup.sql
 -- Membuat bucket: news-images, avatars
 -- Plus storage policies (RLS untuk file)`} />
         </Step>
 
         <Step number={4} title="Jalankan Auth Trigger" icon={<Shield className="w-4 h-4 text-neon" />}>
-          <CodeBlock label="backend/supabase/triggers/handle-new-user.sql" language="sql" code={`-- File: supabase/triggers/handle-new-user.sql
+          <CodeBlock label="backend/supabase/triggers/handle-new-user.sql" language="sql" code={`-- File: backend/supabase/triggers/handle-new-user.sql
 -- Auto-create profile saat user baru signup
 -- Auto-update profile saat user update metadata`} />
         </Step>
