@@ -20,6 +20,11 @@ import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const prisma = new PrismaClient();
 
@@ -381,6 +386,13 @@ app.get('/verify', authenticate, (req: express.Request, res: express.Response) =
 });
 
 // ============================================================
+// Serve Admin Dashboard HTML Page
+// ============================================================
+app.get('/', (req: express.Request, res: express.Response) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// ============================================================
 // 404 Handler
 // ============================================================
 app.use((req: express.Request, res: express.Response) => {
@@ -393,9 +405,10 @@ app.use((req: express.Request, res: express.Response) => {
 app.listen(PORT, () => {
   console.log(`
   ╔══════════════════════════════════════════════════╗
-  ║   GOALZONE Admin API                            ║
+  ║   GOALZONE Admin API + Dashboard                ║
   ║   Port: ${PORT}                                    ║
   ║                                                  ║
+  ║   GET  /                     - Admin Dashboard    ║
   ║   POST /login               - Autentikasi admin   ║
   ║   GET  /verify               - Cek token           ║
   ║   GET  /data                 - Semua data + stats  ║
@@ -405,6 +418,7 @@ app.listen(PORT, () => {
   ║   PUT  /data/articles/:id    - Update artikel      ║
   ║   DELETE /data/articles/:id  - Hapus artikel      ║
   ║                                                  ║
+  ║   Admin Dashboard: http://localhost:${PORT}        ║
   ║   Demo login: admin / admin123                   ║
   ╚══════════════════════════════════════════════════╝
   `);

@@ -263,3 +263,33 @@ Stage Summary:
 - Frontend: Admin Portal with login → dashboard flow
 - All data fetched from real SQLite database via Prisma
 - Lint: 0 errors, 2 warnings (pre-existing)
+
+---
+Task ID: 13
+Agent: Main Developer
+Task: Separate admin webpage from main frontend - admin only accessible via backend
+
+Work Log:
+- Created standalone admin HTML dashboard (mini-services/admin-api/public/admin.html)
+  - Self-contained single-page application with login + dashboard
+  - Cyber-modern theme matching GOALZONE design system
+  - 3 tabs: Overview (stats + top articles + categories), Articles (table + search + delete), Comments
+  - JWT-based auth with localStorage persistence
+  - All API calls use relative URLs (same port 3001)
+  - Responsive design (mobile-friendly)
+  - Delete confirmation modal
+  - Error handling and loading skeletons
+- Updated admin-api/index.ts to serve admin HTML at GET /
+- Removed "Admin" button from Footer.tsx (no more client-side admin access)
+- Removed AdminPortal import from page.tsx
+- Removed adminPortalOpen state and goalzone:open-admin event listener from page.tsx
+- Main frontend is now 100% public — zero admin components or access points
+- Admin Dashboard is completely separate at port 3001
+
+Stage Summary:
+- Main site (port 3000): Pure public GOALZONE website, no admin access
+- Admin Dashboard (port 3001): Standalone HTML page served by admin-api Express server
+- Admin access: ONLY via http://localhost:3001 (backend)
+- No Ctrl+Shift+A, no Footer button, no client-side admin trigger
+- Login: admin / admin123
+- Lint: 0 errors, 2 warnings (pre-existing)

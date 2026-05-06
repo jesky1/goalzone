@@ -22,7 +22,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Send, Loader2, Sparkles, User } from 'lucide-react';
-import AdminPortal from '@/components/admin/AdminPortal';
+
 
 // --- Error Boundary ---
 class ErrorBoundary extends Component<{ children: ReactNode; fallback?: ReactNode }, { hasError: boolean }> {
@@ -343,7 +343,7 @@ export default function Home() {
   const [liveMatches, setLiveMatches] = useState<Match[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(true);
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
-  const [adminPortalOpen, setAdminPortalOpen] = useState(false);
+
 
   useEffect(() => {
     let cancelled = false;
@@ -375,14 +375,9 @@ export default function Home() {
     loadMatches(); loadFeatured();
     const interval = setInterval(loadMatches, 60000);
 
-    // Listen for admin open event from Footer
-    const handleAdminOpen = () => setAdminPortalOpen(true);
-    window.addEventListener('goalzone:open-admin', handleAdminOpen);
-
     return () => {
       cancelled = true;
       clearInterval(interval);
-      window.removeEventListener('goalzone:open-admin', handleAdminOpen);
     };
   }, []);
 
@@ -461,7 +456,7 @@ export default function Home() {
       <Footer />
 
       <ArticleModalView article={selectedArticle} open={modalOpen} onClose={handleCloseModal} />
-      <AdminPortal open={adminPortalOpen} onClose={() => setAdminPortalOpen(false)} />
+
     </div>
   );
 }
