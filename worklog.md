@@ -147,3 +147,27 @@ Stage Summary:
 - All SQL files ready to run in Supabase SQL Editor
 - Edge Function ready to deploy via Supabase CLI
 - ISR strategy documented with code examples
+
+---
+Task ID: 9
+Agent: Main Developer
+Task: Separate Admin Dashboard and Deployment Guide into admin-only panel
+
+Work Log:
+- Removed Admin button and Deployment Guide button from Navbar (clean public navbar)
+- Created AdminPanel component (src/components/football/AdminPanel.tsx) with:
+  - Password auth gate (demo: goalzone2025)
+  - Session storage persistence (stay logged in during session)
+  - Lockout after 5 failed attempts (60s cooldown)
+  - 2 tabs: Dashboard + Deployment Guide
+- Extracted DeploymentGuideInner from DeploymentGuide (no Dialog wrapper)
+- Updated page.tsx: removed onAdminClick prop, added Ctrl+Shift+A keyboard shortcut
+- Admin Panel is hidden from public - accessible only via keyboard shortcut
+
+Stage Summary:
+- Clean navbar with only public navigation (Beranda, Live Score, Klasemen, Transfer)
+- Admin Panel: full-screen overlay with auth gate
+- Access: Ctrl+Shift+A keyboard shortcut
+- Password: goalzone2025 (for demo)
+- Session persists via sessionStorage until logout or tab close
+- Lint: 0 errors, 2 warnings (pre-existing)

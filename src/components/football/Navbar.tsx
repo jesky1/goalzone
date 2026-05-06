@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Menu, Zap, Shield, Rocket } from 'lucide-react';
-import DeploymentGuidePage from './DeploymentGuide';
+import { Menu, Zap } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -12,7 +11,6 @@ import {
   SheetClose,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
 
 const navLinks = [
   { label: 'Beranda', href: '#home' },
@@ -21,13 +19,8 @@ const navLinks = [
   { label: 'Transfer', href: '#transfer' },
 ];
 
-interface NavbarProps {
-  onAdminClick: () => void;
-}
-
-export default function Navbar({ onAdminClick }: NavbarProps) {
+export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [showDeployGuide, setShowDeployGuide] = useState(false);
 
   return (
     <motion.nav
@@ -57,27 +50,10 @@ export default function Navbar({ onAdminClick }: NavbarProps) {
                 {link.label}
               </a>
             ))}
-            <Button
-              onClick={onAdminClick}
-              variant="ghost"
-              size="sm"
-              className="ml-2 px-3 py-2 text-muted-foreground hover:text-neon hover:bg-white/5 gap-2"
-            >
-              <Shield className="w-4 h-4" />
-              <span className="text-xs">Admin</span>
-            </Button>
-            <DeploymentGuidePage />
           </div>
 
           {/* Mobile Menu */}
-          <div className="md:hidden flex items-center gap-2">
-            <button
-              onClick={onAdminClick}
-              className="p-2 rounded-lg hover:bg-white/5 transition-colors"
-            >
-              <Shield className="w-5 h-5 text-muted-foreground hover:text-neon" />
-            </button>
-            <DeploymentGuidePage />
+          <div className="md:hidden">
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <button className="p-2 rounded-lg hover:bg-white/5 transition-colors">

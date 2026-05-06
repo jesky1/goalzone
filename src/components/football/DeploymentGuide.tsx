@@ -2,25 +2,12 @@
 
 import { useState } from 'react';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import {
   Database,
   Shield,
@@ -32,8 +19,6 @@ import {
   Globe,
   Copy,
   Check,
-  ChevronDown,
-  ChevronRight,
   FileCode,
   Terminal,
   Settings,
@@ -116,73 +101,54 @@ function EnvVar({ name, description, example, required = true }: { name: string;
 }
 
 // ============================================================
-// MAIN DEPLOYMENT GUIDE PAGE
+// Inner Deployment Guide (no Dialog wrapper)
+// Used inside AdminPanel
 // ============================================================
-export default function DeploymentGuidePage() {
+export function DeploymentGuideInner() {
   const [activeTab, setActiveTab] = useState('database');
-  const [isAdminGuideOpen, setIsAdminGuideOpen] = useState(false);
 
   return (
-    <Dialog open={isAdminGuideOpen} onOpenChange={setIsAdminGuideOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-neon gap-1.5">
-          <Rocket className="w-4 h-4" />
-          <span className="hidden sm:inline">Deployment Guide</span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[92vh] overflow-hidden bg-deep-800 border-white/10 p-0">
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="shrink-0 p-5 pb-0">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
-                <Rocket className="w-5 h-5 text-neon" />
-                GOALZONE - Production Deployment Guide
-              </DialogTitle>
-            </DialogHeader>
-            <p className="text-sm text-muted-foreground mt-2">Panduan lengkap untuk menyiapkan backend production dan deployment ke Vercel</p>
-          </div>
+    <div className="space-y-6">
+      <div className="mb-2">
+        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <Rocket className="w-5 h-5 text-neon" />
+          Production Deployment Guide
+        </h2>
+        <p className="text-xs text-muted-foreground mt-1">Panduan lengkap menyiapkan backend production dan deployment ke Vercel</p>
+      </div>
 
-          {/* Tabs */}
-          <div className="shrink-0 px-5 pt-4">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="w-full justify-start bg-white/5 h-auto p-1 gap-1 flex-wrap">
-                <TabsTrigger value="database" className="text-xs gap-1.5 data-[state=active]:bg-neon/10 data-[state=active]:text-neon">
-                  <Database className="w-3.5 h-3.5" /> Database
-                </TabsTrigger>
-                <TabsTrigger value="edge-functions" className="text-xs gap-1.5 data-[state=active]:bg-neon/10 data-[state=active]:text-neon">
-                  <Clock className="w-3.5 h-3.5" /> Edge Functions
-                </TabsTrigger>
-                <TabsTrigger value="auth" className="text-xs gap-1.5 data-[state=active]:bg-neon/10 data-[state=active]:text-neon">
-                  <Shield className="w-3.5 h-3.5" /> Auth & OAuth
-                </TabsTrigger>
-                <TabsTrigger value="storage" className="text-xs gap-1.5 data-[state=active]:bg-neon/10 data-[state=active]:text-neon">
-                  <ImageIcon className="w-3.5 h-3.5" /> Storage
-                </TabsTrigger>
-                <TabsTrigger value="deployment" className="text-xs gap-1.5 data-[state=active]:bg-neon/10 data-[state=active]:text-neon">
-                  <Globe className="w-3.5 h-3.5" /> Vercel Deploy
-                </TabsTrigger>
-                <TabsTrigger value="env" className="text-xs gap-1.5 data-[state=active]:bg-neon/10 data-[state=active]:text-neon">
-                  <Key className="w-3.5 h-3.5" /> Env Variables
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="w-full justify-start bg-white/5 h-auto p-1 gap-1 flex-wrap">
+          <TabsTrigger value="database" className="text-xs gap-1.5 data-[state=active]:bg-neon/10 data-[state=active]:text-neon">
+            <Database className="w-3.5 h-3.5" /> Database
+          </TabsTrigger>
+          <TabsTrigger value="edge-functions" className="text-xs gap-1.5 data-[state=active]:bg-neon/10 data-[state=active]:text-neon">
+            <Clock className="w-3.5 h-3.5" /> Edge Functions
+          </TabsTrigger>
+          <TabsTrigger value="auth" className="text-xs gap-1.5 data-[state=active]:bg-neon/10 data-[state=active]:text-neon">
+            <Shield className="w-3.5 h-3.5" /> Auth & OAuth
+          </TabsTrigger>
+          <TabsTrigger value="storage" className="text-xs gap-1.5 data-[state=active]:bg-neon/10 data-[state=active]:text-neon">
+            <ImageIcon className="w-3.5 h-3.5" /> Storage
+          </TabsTrigger>
+          <TabsTrigger value="deployment" className="text-xs gap-1.5 data-[state=active]:bg-neon/10 data-[state=active]:text-neon">
+            <Globe className="w-3.5 h-3.5" /> Vercel Deploy
+          </TabsTrigger>
+          <TabsTrigger value="env" className="text-xs gap-1.5 data-[state=active]:bg-neon/10 data-[state=active]:text-neon">
+            <Key className="w-3.5 h-3.5" /> Env Variables
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
-          {/* Content */}
-          <ScrollArea className="flex-1 p-5">
-            <div className="pb-6">
-              {activeTab === 'database' && <DatabaseTab />}
-              {activeTab === 'edge-functions' && <EdgeFunctionsTab />}
-              {activeTab === 'auth' && <AuthTab />}
-              {activeTab === 'storage' && <StorageTab />}
-              {activeTab === 'deployment' && <DeploymentTab />}
-              {activeTab === 'env' && <EnvVarsTab />}
-            </div>
-          </ScrollArea>
-        </div>
-      </DialogContent>
-    </Dialog>
+      <div>
+        {activeTab === 'database' && <DatabaseTab />}
+        {activeTab === 'edge-functions' && <EdgeFunctionsTab />}
+        {activeTab === 'auth' && <AuthTab />}
+        {activeTab === 'storage' && <StorageTab />}
+        {activeTab === 'deployment' && <DeploymentTab />}
+        {activeTab === 'env' && <EnvVarsTab />}
+      </div>
+    </div>
   );
 }
 
