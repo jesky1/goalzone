@@ -5,7 +5,7 @@
 // ke Supabase Storage bucket "news-images"
 // ============================================================
 
-import { supabase } from './supabase'
+import { supabase } from './client'
 
 /**
  * Upload gambar berita ke Supabase Storage

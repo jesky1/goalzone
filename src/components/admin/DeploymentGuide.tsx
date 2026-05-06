@@ -176,7 +176,7 @@ function DatabaseTab() {
         <Step number={2} title="Jalankan Schema SQL" icon={<FileCode className="w-4 h-4 text-neon" />}>
           <p className="text-sm text-muted-foreground">Buka <span className="text-neon">SQL Editor</span> di Supabase Dashboard, lalu paste dan jalankan file berikut:</p>
           <CodeBlock
-            label="supabase/schema.sql"
+            label="backend/supabase/schema.sql"
             language="sql"
             code={`-- File: supabase/schema.sql
 -- Jalankan seluruh isi file ini di Supabase SQL Editor
@@ -208,13 +208,13 @@ function DatabaseTab() {
         </Step>
 
         <Step number={3} title="Jalankan Storage Setup" icon={<ImageIcon className="w-4 h-4 text-neon" />}>
-          <CodeBlock label="supabase/storage-setup.sql" language="sql" code={`-- File: supabase/storage-setup.sql
+          <CodeBlock label="backend/supabase/storage-setup.sql" language="sql" code={`-- File: supabase/storage-setup.sql
 -- Membuat bucket: news-images, avatars
 -- Plus storage policies (RLS untuk file)`} />
         </Step>
 
         <Step number={4} title="Jalankan Auth Trigger" icon={<Shield className="w-4 h-4 text-neon" />}>
-          <CodeBlock label="supabase/triggers/handle-new-user.sql" language="sql" code={`-- File: supabase/triggers/handle-new-user.sql
+          <CodeBlock label="backend/supabase/triggers/handle-new-user.sql" language="sql" code={`-- File: supabase/triggers/handle-new-user.sql
 -- Auto-create profile saat user baru signup
 -- Auto-update profile saat user update metadata`} />
         </Step>
@@ -348,7 +348,7 @@ curl -X POST 'https://xxxxx.supabase.co/functions/v1/fetch-live-scores' \\
       </SectionCard>
 
       <SectionCard title="Konfigurasi Liga yang Dimonitor" description="Liga yang di-fetch oleh Edge Function">
-        <CodeBlock language="typescript" code={`// File: supabase/functions/fetch-live-scores/index.ts
+        <CodeBlock language="typescript" code={`// File: backend/supabase/functions/fetch-live-scores/index.ts
 // Konfigurasi liga (line ~80-90):
 
 const leaguesToMonitor = [
@@ -419,7 +419,7 @@ function AuthTab() {
         <Step number={4} title="Implement Auth di Next.js" icon={<FileCode className="w-4 h-4 text-neon" />}>
           <p className="text-sm text-muted-foreground mb-2">Buat halaman auth callback dan auth provider:</p>
           <CodeBlock language="typescript" code={`// src/app/auth/callback/route.ts
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
@@ -435,7 +435,7 @@ export async function GET(request: Request) {
           <CodeBlock language="typescript" code={`// src/lib/auth-context.tsx (Client Component)
 'use client'
 import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import type { User, Session } from '@supabase/supabase-js'
 
 type AuthContext = {
@@ -524,7 +524,7 @@ function StorageTab() {
     <div className="space-y-6">
       <SectionCard title="Supabase Storage Setup" description="Konfigurasi bucket untuk menyimpan gambar berita dan avatar">
         <Step number={1} title="Jalankan Storage SQL" icon={<Database className="w-4 h-4 text-neon" />}>
-          <p className="text-sm text-muted-foreground mb-2">File <span className="font-mono text-neon">supabase/storage-setup.sql</span> membuat:</p>
+          <p className="text-sm text-muted-foreground mb-2">File <span className="font-mono text-neon">backend/supabase/storage-setup.sql</span> membuat:</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div className="p-3 rounded-lg bg-white/3 border border-white/5">
               <div className="flex items-center gap-2 mb-1"><ImageIcon className="w-3.5 h-3.5 text-neon" /><span className="text-xs font-bold">news-images</span></div>
@@ -540,7 +540,7 @@ function StorageTab() {
         <Step number={2} title="Upload Helper API Route" icon={<Server className="w-4 h-4 text-neon" />}>
           <p className="text-sm text-muted-foreground mb-2">API route untuk upload gambar dari admin dashboard:</p>
           <CodeBlock label="src/app/api/upload/route.ts" language="typescript" code={`import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient } from '@/lib/supabase/client'
 
 export async function POST(request: NextRequest) {
   try {
@@ -595,7 +595,7 @@ export async function POST(request: NextRequest) {
         </Step>
 
         <Step number={3} title="Client-Side Upload Helper" icon={<FileCode className="w-4 h-4 text-neon" />}>
-          <p className="text-sm text-muted-foreground mb-2">File <span className="font-mono text-neon">src/lib/supabase-upload.ts</span> menyediakan:</p>
+          <p className="text-sm text-muted-foreground mb-2">File <span className="font-mono text-neon">src/lib/supabase/upload.ts</span> menyediakan:</p>
           <div className="grid grid-cols-1 gap-2">
             {[
               { fn: 'uploadNewsImage(file, slug, folder)', desc: 'Upload gambar berita' },
@@ -615,7 +615,7 @@ export async function POST(request: NextRequest) {
 
       <SectionCard title="Contoh Penggunaan di Admin Dashboard" description="Upload gambar saat membuat/mengedit artikel">
         <CodeBlock language="typescript" code={`'use client'
-import { uploadNewsImage, optimizeImage } from '@/lib/supabase-upload'
+import { uploadNewsImage, optimizeImage } from '@/lib/supabase/upload'
 import { useState } from 'react'
 
 function ImageUploader({ onUpload }: { onUpload: (url: string) => void }) {
@@ -737,7 +737,7 @@ const nextConfig = {
 export default nextConfig`} />
 
         <CodeBlock label="Contoh: Halaman artikel dengan ISR" language="typescript" code={`// src/app/articles/[slug]/page.tsx
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 
 // ISR: Regenerate setiap 60 detik
 export const revalidate = 60

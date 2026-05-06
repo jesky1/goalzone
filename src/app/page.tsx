@@ -8,7 +8,7 @@ import StandingsWidget from '@/components/football/StandingsWidget';
 import TopScorersWidget from '@/components/football/TopScorersWidget';
 import FanTokenWidget from '@/components/football/FanTokenWidget';
 import Footer from '@/components/football/Footer';
-import AdminPanel from '@/components/football/AdminPanel';
+import AdminPanel from '@/components/admin/AdminPanel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Eye, Calendar, ChevronRight } from 'lucide-react';
