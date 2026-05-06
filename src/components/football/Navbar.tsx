@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Menu, Zap, Shield } from 'lucide-react';
+import { Menu, Zap, Shield, Rocket } from 'lucide-react';
+import DeploymentGuidePage from './DeploymentGuide';
 import {
   Sheet,
   SheetContent,
@@ -26,6 +27,7 @@ interface NavbarProps {
 
 export default function Navbar({ onAdminClick }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [showDeployGuide, setShowDeployGuide] = useState(false);
 
   return (
     <motion.nav
@@ -64,6 +66,7 @@ export default function Navbar({ onAdminClick }: NavbarProps) {
               <Shield className="w-4 h-4" />
               <span className="text-xs">Admin</span>
             </Button>
+            <DeploymentGuidePage />
           </div>
 
           {/* Mobile Menu */}
@@ -74,6 +77,7 @@ export default function Navbar({ onAdminClick }: NavbarProps) {
             >
               <Shield className="w-5 h-5 text-muted-foreground hover:text-neon" />
             </button>
+            <DeploymentGuidePage />
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <button className="p-2 rounded-lg hover:bg-white/5 transition-colors">

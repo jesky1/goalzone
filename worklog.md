@@ -119,3 +119,31 @@ Stage Summary:
 - 5 article images generated via z-ai CLI
 - Database seeded with realistic football news content
 - All endpoints verified working
+
+---
+Task ID: 8
+Agent: Main Developer
+Task: Setup Backend Production - Database, Auth, Storage, Edge Functions, Deployment
+
+Work Log:
+- Created comprehensive Supabase SQL schema (supabase/schema.sql) with 9 tables, 25+ indexes, 25+ RLS policies
+- Created PostgreSQL trigger for auto-profile creation on user signup (supabase/triggers/handle-new-user.sql)
+- Created Supabase Storage bucket setup with policies (supabase/storage-setup.sql)
+- Created Supabase Edge Function for live scores cron job (supabase/functions/fetch-live-scores/index.ts)
+- Created Supabase client configuration (src/lib/supabase.ts)
+- Created image upload helper with optimization (src/lib/supabase-upload.ts)
+- Created upload API route (src/app/api/upload/route.ts) - POST/DELETE
+- Created ISR revalidation API route (src/app/api/revalidate/route.ts)
+- Created interactive Deployment Guide page (src/components/football/DeploymentGuide.tsx)
+- Updated Navbar to include Deployment Guide button
+- Created .env.example with all required environment variables
+- Verified dev server running correctly, all routes return 200
+- Lint passes with 0 errors, 2 minor warnings
+
+Stage Summary:
+- Complete backend production setup ready for deployment
+- Interactive Deployment Guide accessible via Rocket icon in navbar
+- 6 tabs: Database, Edge Functions, Auth & OAuth, Storage, Vercel Deploy, Env Variables
+- All SQL files ready to run in Supabase SQL Editor
+- Edge Function ready to deploy via Supabase CLI
+- ISR strategy documented with code examples
