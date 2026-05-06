@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Component, ReactNode } from 'react';
+import { useState, useEffect, Component, ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/football/Navbar';
 import LiveScoreTicker from '@/components/football/LiveScoreTicker';
@@ -8,7 +8,6 @@ import StandingsWidget from '@/components/football/StandingsWidget';
 import TopScorersWidget from '@/components/football/TopScorersWidget';
 import FanTokenWidget from '@/components/football/FanTokenWidget';
 import Footer from '@/components/football/Footer';
-import AdminPanel from '@/components/admin/AdminPanel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Eye, Calendar, ChevronRight } from 'lucide-react';
@@ -343,19 +342,6 @@ export default function Home() {
   const [liveMatches, setLiveMatches] = useState<Match[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(true);
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
-  const [adminPanelOpen, setAdminPanelOpen] = useState(false);
-
-  // Keyboard shortcut: Ctrl+Shift+A to open Admin Panel
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-        e.preventDefault();
-        setAdminPanelOpen(true);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -464,7 +450,6 @@ export default function Home() {
       <Footer />
 
       <ArticleModalView article={selectedArticle} open={modalOpen} onClose={handleCloseModal} />
-      <AdminPanel open={adminPanelOpen} onClose={() => setAdminPanelOpen(false)} />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { verifyAdmin } from '@/lib/admin-auth'
 
 export async function GET(
   request: NextRequest,
@@ -63,6 +64,10 @@ export async function PUT(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    // Admin auth check
+    const auth = verifyAdmin(request)
+    if (!auth.valid) return auth.response
+
     const { slug } = await params
     const body = await request.json()
 
@@ -116,6 +121,10 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    // Admin auth check
+    const auth = verifyAdmin(request)
+    if (!auth.valid) return auth.response
+
     const { slug } = await params
 
     const existing = await db.article.findUnique({ where: { slug } })

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { verifyAdmin } from '@/lib/admin-auth'
 
 export async function GET(request: NextRequest) {
   try {
@@ -64,6 +65,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Admin auth check
+    const auth = verifyAdmin(request)
+    if (!auth.valid) return auth.response
+
     const body = await request.json()
 
     const { title, slug, content, summary, imageUrl, categoryId, authorId, isFeatured, readTime } = body
