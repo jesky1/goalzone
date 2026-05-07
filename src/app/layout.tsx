@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -81,6 +82,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  googleSiteVerification: process.env.GOOGLE_SITE_VERIFICATION || '',
   verification: {
     google: process.env.GOOGLE_SITE_VERIFICATION || '',
   },
@@ -99,6 +101,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" suppressHydrationWarning>
+      <head>
+        {/* Google AdSense — loaded asynchronously in head */}
+        {process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && (
+          <Script
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID}`}
+            async
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+        )}
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-deep-900 text-foreground`}
       >
