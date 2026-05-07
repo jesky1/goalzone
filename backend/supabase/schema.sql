@@ -162,7 +162,25 @@ CREATE TABLE IF NOT EXISTS public.top_scorers (
   UNIQUE(league_name, season, player_name)
 );
 
--- 2i. Audit log (opsional, untuk tracking admin actions)
+-- 2i. Hasil pertandingan (manual input admin)
+CREATE TABLE IF NOT EXISTS public.match_results (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  home_team VARCHAR(200) NOT NULL,
+  away_team VARCHAR(200) NOT NULL,
+  home_score INT NOT NULL DEFAULT 0 CHECK (home_score >= 0),
+  away_score INT NOT NULL DEFAULT 0 CHECK (away_score >= 0),
+  match_date DATE NOT NULL,
+  league VARCHAR(200),
+  season INT,
+  venue VARCHAR(300),
+  match_week INT,
+  status VARCHAR(20) DEFAULT 'finished' CHECK (status IN ('finished', 'postponed', 'cancelled', 'abandoned')),
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 2j. Audit log (opsional, untuk tracking admin actions)
 CREATE TABLE IF NOT EXISTS public.audit_logs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES public.profiles(id),
@@ -207,6 +225,10 @@ CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON public.bookmarked_matches(user_
 CREATE INDEX IF NOT EXISTS idx_profiles_role ON public.profiles(role);
 CREATE INDEX IF NOT EXISTS idx_profiles_username ON public.profiles(username);
 
+CREATE INDEX IF NOT EXISTS idx_match_results_date ON public.match_results(match_date DESC);
+CREATE INDEX IF NOT EXISTS idx_match_results_league ON public.match_results(league);
+CREATE INDEX IF NOT EXISTS idx_match_results_week ON public.match_results(match_week);
+
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user ON public.audit_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON public.audit_logs(action);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON public.audit_logs(created_at DESC);
@@ -247,6 +269,10 @@ DROP TRIGGER IF EXISTS set_updated_at ON public.top_scorers;
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.top_scorers
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+DROP TRIGGER IF EXISTS set_updated_at ON public.match_results;
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON public.match_results
+  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
 -- ============================================
 -- 5. ROW LEVEL SECURITY (RLS) POLICIES
 -- ============================================
@@ -261,6 +287,7 @@ ALTER TABLE public.bookmarked_matches ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.standings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.top_scorers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.match_results ENABLE ROW LEVEL SECURITY;
 
 -- ------ CATEGORIES ------
 -- Semua orang bisa baca kategori
@@ -440,6 +467,21 @@ CREATE POLICY "audit_logs_insert" ON public.audit_logs
     auth.role() = 'service_role'
     OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
   );
+
+-- ------ MATCH RESULTS ------
+-- Semua orang bisa baca hasil pertandingan
+CREATE POLICY "match_results_select_all" ON public.match_results
+  FOR SELECT USING (true);
+
+-- Service role dan admin bisa CRUD match results
+CREATE POLICY "match_results_insert_service" ON public.match_results
+  FOR INSERT WITH CHECK (auth.role() = 'service_role');
+
+CREATE POLICY "match_results_update_service" ON public.match_results
+  FOR UPDATE USING (auth.role() = 'service_role');
+
+CREATE POLICY "match_results_delete_service" ON public.match_results
+  FOR DELETE USING (auth.role() = 'service_role');
 
 -- ============================================
 -- 6. SEED DATA (Kategori default)

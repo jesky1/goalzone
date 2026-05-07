@@ -16,6 +16,7 @@ import {
   Loader2,
   Zap,
   Clock,
+  Swords,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -414,7 +415,21 @@ export default function AdminDashboard() {
             </div>
 
             {/* Right */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/admin/matches')}
+                className="text-muted-foreground hover:text-emerald-400"
+                title="Hasil Pertandingan"
+              >
+                <Swords className="w-4 h-4 sm:mr-1.5" />
+                <span className="hidden sm:inline text-xs">Pertandingan</span>
+              </Button>
+              <Separator
+                orientation="vertical"
+                className="h-6 bg-gray-200 dark:bg-white/10"
+              />
               <span className="hidden sm:inline text-xs text-muted-foreground">
                 {user.username}
               </span>
