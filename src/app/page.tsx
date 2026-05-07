@@ -779,6 +779,10 @@ export default function Home() {
   const [liveMatches, setLiveMatches] = useState<Match[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(true);
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure content is only rendered after client-side mount
+  useEffect(() => { setMounted(true); }, []);
 
 
   useEffect(() => {
@@ -853,6 +857,20 @@ export default function Home() {
     } catch { /* silent */ }
   };
   const handleCloseRefereeModal = () => { setRefereeModalOpen(false); setTimeout(() => setRefereeData(null), 300); };
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex flex-col bg-deep-900 cyber-grid">
+        <div className="h-16" />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-10 h-10 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-sm text-gray-400">Memuat GOALZONE...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-deep-900 cyber-grid">
