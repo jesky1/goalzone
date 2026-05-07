@@ -56,9 +56,8 @@ const POSITION_LABELS: Record<PositionCategory, string> = {
   F: 'FWD',
 }
 
-// Team colors for visual distinction
-const HOME_COLOR = '#ef4444'   // Red tint for home
-const AWAY_COLOR = '#3b82f6'   // Blue tint for away
+const HOME_COLOR = '#ef4444'
+const AWAY_COLOR = '#3b82f6'
 
 function categorizePosition(pos: string): PositionCategory {
   const upper = pos.toUpperCase()
@@ -76,10 +75,9 @@ interface ComputedPosition {
 /**
  * Parse the API-Football grid string ("line:positionWithinLine")
  * and map it to pitch coordinates with CLEAR team separation.
- * 
- * Away team: top 40% of pitch (y: 5% to 42%)
- * Home team: bottom 40% of pitch (y: 58% to 95%)
- * Center area (42%-58%) is the neutral gap
+ *
+ * Away team: top 42% of pitch (y: 6% to 44%)
+ * Home team: bottom 42% of pitch (y: 56% to 94%)
  */
 function computePlayerPosition(
   player: PitchPlayer,
@@ -103,23 +101,23 @@ function computePlayerPosition(
 
     // AWAY team (top half) - GK at top, forwards near center
     const yMapAway: Record<number, number> = {
-      1: 8,   // GK - at the very top
-      2: 22,  // DEF - upper area
-      3: 34,  // MID - middle-upper
-      4: 42,  // FWD - just below center line
-      5: 42,
+      1: 7,   // GK - at the very top
+      2: 20,  // DEF - upper area
+      3: 33,  // MID - middle-upper
+      4: 43,  // FWD - just below center line
+      5: 43,
     }
     // HOME team (bottom half) - GK at bottom, forwards near center
     const yMapHome: Record<number, number> = {
-      1: 92,  // GK - at the very bottom
-      2: 78,  // DEF - lower area
-      3: 66,  // MID - middle-lower
-      4: 58,  // FWD - just above center line
-      5: 58,
+      1: 93,  // GK - at the very bottom
+      2: 80,  // DEF - lower area
+      3: 67,  // MID - middle-lower
+      4: 57,  // FWD - just above center line
+      5: 57,
     }
 
     const yMap = side === 'home' ? yMapHome : yMapAway
-    const y = yMap[line] ?? (side === 'home' ? 66 : 34)
+    const y = yMap[line] ?? (side === 'home' ? 67 : 33)
 
     return { x, y }
   }
@@ -134,10 +132,10 @@ function computePlayerPosition(
   const indexInLine = sameCat.findIndex((p) => p.id === player.id)
   const x = countInLine > 0 ? ((indexInLine + 1) / (countInLine + 1)) * 100 : 50
 
-  const yMapHome: Record<number, number> = { 1: 92, 2: 78, 3: 66, 4: 58 }
-  const yMapAway: Record<number, number> = { 1: 8, 2: 22, 3: 34, 4: 42 }
+  const yMapHome: Record<number, number> = { 1: 93, 2: 80, 3: 67, 4: 57 }
+  const yMapAway: Record<number, number> = { 1: 7, 2: 20, 3: 33, 4: 43 }
   const yMap = side === 'home' ? yMapHome : yMapAway
-  const y = yMap[line] ?? (side === 'home' ? 66 : 34)
+  const y = yMap[line] ?? (side === 'home' ? 67 : 33)
 
   return { x, y }
 }
@@ -151,10 +149,12 @@ interface PlayerNodeProps {
   pos: ComputedPosition
   index: number
   isHome: boolean
+  teamLogo: string
 }
 
-function PlayerNode({ player, pos, index, isHome }: PlayerNodeProps) {
+function PlayerNode({ player, pos, index, isHome, teamLogo }: PlayerNodeProps) {
   const [isHovered, setIsHovered] = useState(false)
+  const [imgError, setImgError] = useState(false)
   const cat = categorizePosition(player.position)
   const teamColor = isHome ? HOME_COLOR : AWAY_COLOR
   const lastName = player.name.split(' ').pop() || player.name
@@ -176,7 +176,8 @@ function PlayerNode({ player, pos, index, isHome }: PlayerNodeProps) {
       e.detail.toLowerCase() === 'own goal',
   )
 
-  const hasPhoto = player.photo && player.photo.length > 10
+  const hasPhoto = player.photo && player.photo.length > 10 && !imgError
+  const hasTeamLogo = teamLogo && teamLogo.length > 10
 
   const initials = player.name
     .split(' ')
@@ -263,35 +264,48 @@ function PlayerNode({ player, pos, index, isHome }: PlayerNodeProps) {
             boxShadow: `0 0 12px ${teamColor}30, 0 2px 8px rgba(0,0,0,0.3)`,
           }}
         >
-          {hasPhoto ? (
+          {/* Layer 1: Player photo */}
+          {hasPhoto && (
             <img
               src={player.photo}
               alt={player.name}
-              className="w-full h-full object-cover bg-gray-800"
+              className="absolute inset-0 w-full h-full object-cover bg-gray-800"
               loading="lazy"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement
-                target.style.display = 'none'
-                if (target.nextElementSibling) {
-                  (target.nextElementSibling as HTMLElement).classList.remove('hidden')
-                }
-              }}
+              onError={() => setImgError(true)}
             />
-          ) : null}
-          {/* Fallback: Initials on team-colored background */}
-          <div
-            className={`absolute inset-0 flex items-center justify-center ${hasPhoto ? 'hidden' : ''}`}
-            style={{
-              backgroundColor: `${teamColor}25`,
-            }}
-          >
-            <span
-              className="text-xs sm:text-sm font-bold drop-shadow-lg"
-              style={{ color: teamColor }}
+          )}
+
+          {/* Layer 2: Team logo fallback (shown when no player photo) */}
+          {!hasPhoto && hasTeamLogo && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-sm">
+              <img
+                src={teamLogo}
+                alt={isHome ? 'Home' : 'Away'}
+                className="w-[70%] h-[70%] object-contain"
+                loading="lazy"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none'
+                }}
+              />
+            </div>
+          )}
+
+          {/* Layer 3: Initials fallback (shown when neither photo nor logo) */}
+          {!hasPhoto && !hasTeamLogo && (
+            <div
+              className="absolute inset-0 flex items-center justify-center"
+              style={{
+                backgroundColor: `${teamColor}25`,
+              }}
             >
-              {initials || '?'}
-            </span>
-          </div>
+              <span
+                className="text-xs sm:text-sm font-bold drop-shadow-lg"
+                style={{ color: teamColor }}
+              >
+                {initials || '?'}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Number badge */}
@@ -342,6 +356,10 @@ function PlayerNode({ player, pos, index, isHome }: PlayerNodeProps) {
               >
                 {hasPhoto ? (
                   <img src={player.photo} alt={player.name} className="w-full h-full object-cover bg-gray-800" />
+                ) : hasTeamLogo ? (
+                  <div className="w-full h-full flex items-center justify-center bg-white/10">
+                    <img src={teamLogo} alt="" className="w-[70%] h-[70%] object-contain" />
+                  </div>
                 ) : (
                   <div
                     className="w-full h-full flex items-center justify-center"
@@ -457,6 +475,35 @@ function PitchLines() {
 }
 
 // ──────────────────────────────────────────────
+// Team Logo Watermark
+// ──────────────────────────────────────────────
+
+function TeamWatermark({ logo, side }: { logo: string; side: 'home' | 'away' }) {
+  if (!logo) return null
+  return (
+    <div
+      className="absolute pointer-events-none"
+      style={{
+        left: '50%',
+        top: side === 'away' ? '25%' : '75%',
+        transform: 'translate(-50%, -50%)',
+        opacity: 0.08,
+      }}
+    >
+      <img
+        src={logo}
+        alt=""
+        className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 object-contain"
+        loading="lazy"
+        onError={(e) => {
+          (e.target as HTMLImageElement).style.display = 'none'
+        }}
+      />
+    </div>
+  )
+}
+
+// ──────────────────────────────────────────────
 // Main Component
 // ──────────────────────────────────────────────
 
@@ -488,6 +535,10 @@ export default function PitchView({
     [awayLineup.startXI],
   )
 
+  // Use team logos from lineup data (more reliable) or fall back to props
+  const effectiveHomeLogo = homeLineup?.team?.logo || homeLogo || ''
+  const effectiveAwayLogo = awayLineup?.team?.logo || awayLogo || ''
+
   return (
     <AnimatePresence>
       <motion.div
@@ -500,12 +551,17 @@ export default function PitchView({
         <div className="flex items-center justify-between px-1 sm:px-4 mb-3">
           {/* Away team (top) */}
           <div className="flex items-center gap-2 sm:gap-3 flex-1">
-            <img
-              src={awayLogo}
-              alt={awayTeam}
-              className="w-7 h-7 sm:w-9 sm:h-9 flex-shrink-0 object-contain"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-            />
+            <div className="w-7 h-7 sm:w-9 sm:h-9 flex-shrink-0 rounded-full overflow-hidden bg-white/10">
+              {effectiveAwayLogo && (
+                <img
+                  src={effectiveAwayLogo}
+                  alt={awayTeam}
+                  className="w-full h-full object-contain"
+                  loading="lazy"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                />
+              )}
+            </div>
             <div>
               <p className="text-white text-xs sm:text-sm font-bold leading-tight truncate max-w-[90px] sm:max-w-[160px]">
                 {awayTeam}
@@ -529,12 +585,17 @@ export default function PitchView({
               </p>
               <span className="text-red-400 text-xs sm:text-sm font-mono font-semibold">{homeLineup.formation}</span>
             </div>
-            <img
-              src={homeLogo}
-              alt={homeTeam}
-              className="w-7 h-7 sm:w-9 sm:h-9 flex-shrink-0 object-contain"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-            />
+            <div className="w-7 h-7 sm:w-9 sm:h-9 flex-shrink-0 rounded-full overflow-hidden bg-white/10">
+              {effectiveHomeLogo && (
+                <img
+                  src={effectiveHomeLogo}
+                  alt={homeTeam}
+                  className="w-full h-full object-contain"
+                  loading="lazy"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                />
+              )}
+            </div>
           </div>
         </div>
 
@@ -545,34 +606,39 @@ export default function PitchView({
             boxShadow: '0 0 40px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.3)',
           }}
         >
-          {/* Away team half (top) - slightly darker */}
-          <div className="absolute top-0 left-0 right-0 h-[50%]" style={{ background: 'linear-gradient(180deg, #14532d 0%, #166534 100%)' }} />
-          {/* Home team half (bottom) - slightly lighter */}
-          <div className="absolute bottom-0 left-0 right-0 h-[50%]" style={{ background: 'linear-gradient(180deg, #166534 0%, #14532d 100%)' }} />
-
-          {/* Subtle team tint overlays */}
-          <div className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none" style={{ backgroundColor: 'rgba(59, 130, 246, 0.04)' }} />
-          <div className="absolute bottom-0 left-0 right-0 h-[50%] pointer-events-none" style={{ backgroundColor: 'rgba(239, 68, 68, 0.04)' }} />
-
-          {/* Grass stripes */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              backgroundImage: `repeating-linear-gradient(180deg, transparent, transparent 8.33%, rgba(255,255,255,0.03) 8.33%, rgba(255,255,255,0.03) 16.66%)`,
-            }}
-          />
-
-          {/* Center divider accent */}
-          <div className="absolute top-1/2 left-0 right-0 h-px pointer-events-none" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }} />
-
-          {/* Pitch lines */}
-          <PitchLines />
-
-          {/* Aspect ratio wrapper */}
+          {/* Aspect ratio wrapper - establishes the pitch dimensions */}
           <div className="relative w-full" style={{ paddingBottom: '66.67%' }} />
 
-          {/* Player overlay */}
+          {/* All content absolutely positioned within the pitch container */}
           <div className="absolute inset-0">
+            {/* Away team half (top) - slightly darker */}
+            <div className="absolute top-0 left-0 right-0 h-[50%]" style={{ background: 'linear-gradient(180deg, #14532d 0%, #166534 100%)' }} />
+            {/* Home team half (bottom) - slightly lighter */}
+            <div className="absolute bottom-0 left-0 right-0 h-[50%]" style={{ background: 'linear-gradient(180deg, #166534 0%, #14532d 100%)' }} />
+
+            {/* Subtle team tint overlays */}
+            <div className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none" style={{ backgroundColor: 'rgba(59, 130, 246, 0.04)' }} />
+            <div className="absolute bottom-0 left-0 right-0 h-[50%] pointer-events-none" style={{ backgroundColor: 'rgba(239, 68, 68, 0.04)' }} />
+
+            {/* Grass stripes */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage: `repeating-linear-gradient(180deg, transparent, transparent 8.33%, rgba(255,255,255,0.03) 8.33%, rgba(255,255,255,0.03) 16.66%)`,
+              }}
+            />
+
+            {/* Center divider accent */}
+            <div className="absolute top-1/2 left-0 right-0 h-px pointer-events-none" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }} />
+
+            {/* Team logo watermarks */}
+            <TeamWatermark logo={effectiveAwayLogo} side="away" />
+            <TeamWatermark logo={effectiveHomeLogo} side="home" />
+
+            {/* Pitch lines */}
+            <PitchLines />
+
+            {/* Player overlay */}
             {/* Away players (top half) */}
             {awayPlayers.map(({ player, pos }, idx) => (
               <PlayerNode
@@ -581,6 +647,7 @@ export default function PitchView({
                 pos={pos}
                 index={idx}
                 isHome={false}
+                teamLogo={effectiveAwayLogo}
               />
             ))}
 
@@ -592,15 +659,16 @@ export default function PitchView({
                 pos={pos}
                 index={awayPlayers.length + idx}
                 isHome={true}
+                teamLogo={effectiveHomeLogo}
               />
             ))}
-          </div>
 
-          {/* Vignette */}
-          <div
-            className="absolute inset-0 pointer-events-none rounded-xl sm:rounded-2xl"
-            style={{ boxShadow: 'inset 0 0 80px rgba(0,0,0,0.35)' }}
-          />
+            {/* Vignette */}
+            <div
+              className="absolute inset-0 pointer-events-none rounded-xl sm:rounded-2xl"
+              style={{ boxShadow: 'inset 0 0 80px rgba(0,0,0,0.35)' }}
+            />
+          </div>
         </div>
 
         {/* ── Footer: Coaches ── */}

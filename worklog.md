@@ -98,3 +98,33 @@ Stage Summary:
 - Clear visual separation: away team (top/blue) vs home team (bottom/red)
 - Formation mapping compressed to each half with no center overlap
 - Team colors used for borders, badges, hover effects, and pitch tint
+
+---
+Task ID: 10
+Agent: main
+Task: Show club logos everywhere - as player avatar fallbacks and pitch watermarks
+
+Work Log:
+- Updated PlayerNode to accept teamLogo prop for club logo display
+- Implemented 3-layer avatar system:
+  - Layer 1: Player photo (priority, shown when available from API-Football)
+  - Layer 2: Club/team logo (fallback when player photo missing or fails to load)
+  - Layer 3: Initials (final fallback when neither photo nor logo available)
+- Added TeamWatermark component for large semi-transparent team logos on each pitch half
+  - Away team logo watermark centered at 25% height (top half)
+  - Home team logo watermark centered at 75% height (bottom half)
+  - 8% opacity for subtle watermark effect
+- Improved logo reliability:
+  - Uses effectiveHomeLogo = homeLineup?.team?.logo || homeLogo (prioritizes lineup data)
+  - Team logo containers in header now have bg-white/10 background for visibility
+  - Both header logos and player fallbacks use same effective logo source
+- Added imgError state management with useState for proper error handling on player photos
+- Fixed pitch structure: moved all content under single absolute container with aspect ratio
+- Separation verified: away y: 7-43%, home y: 57-93% (14% gap at center)
+- Lint passes with 0 errors
+
+Stage Summary:
+- All club logos now visible: in header, as player avatar fallbacks, and as pitch watermarks
+- Players show club logo when their individual photo is unavailable
+- Large team logo watermarks add visual identity to each pitch half
+- Teams clearly separated with no overlap (14% center gap)
