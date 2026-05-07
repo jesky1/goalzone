@@ -16,7 +16,7 @@ import TransferFeed from '@/components/football/TransferFeed';
 import SearchDialog from '@/components/football/SearchDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Eye, Calendar, ChevronRight, ChevronDown, ChevronUp, MapPin, User, X, Loader2, Sparkles, Send } from 'lucide-react';
+import { Clock, Eye, Calendar, ChevronRight, ChevronDown, ChevronUp, MapPin, User, X, Loader2, Sparkles, Send, FileText, Trophy } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import {
@@ -917,25 +917,38 @@ export default function Home() {
           })()}
         </section>
 
-        {/* News + Sidebar */}
-        <section id="standings" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-            <div className="lg:col-span-2">
-              <NewsSection onArticleClick={handleArticleClick} />
-            </div>
-            <div className="lg:col-span-1 space-y-6">
-              {/* Fan Token Widget - Real-Time from CoinGecko */}
-              <ErrorBoundary>
-                <FanTokenWidget />
-              </ErrorBoundary>
-              <ErrorBoundary>
-                <StandingsWidget />
-              </ErrorBoundary>
-              <ErrorBoundary>
-                <TopScorersWidget />
-              </ErrorBoundary>
-            </div>
+        {/* Klasemen Section */}
+        <section id="standings" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-neon" />
+              Klasemen &amp; Statistik
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">Klasemen liga, top skor, dan fan token terkini</p>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <ErrorBoundary>
+              <StandingsWidget />
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <TopScorersWidget />
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <FanTokenWidget />
+            </ErrorBoundary>
           </div>
+        </section>
+
+        {/* Berita Section */}
+        <section id="berita" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <FileText className="w-6 h-6 text-neon" />
+              Berita Terkini
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">Berita bola terbaru dari GOALZONE</p>
+          </motion.div>
+          <NewsSection onArticleClick={handleArticleClick} />
         </section>
 
         {/* Transfer Feed */}

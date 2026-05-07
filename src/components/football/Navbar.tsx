@@ -17,6 +17,7 @@ const navLinks = [
   { label: 'Beranda', href: '#home' },
   { label: 'Live Score', href: '#live' },
   { label: 'Klasemen', href: '#standings' },
+  { label: 'Berita', href: '#berita' },
   { label: 'Transfer', href: '#transfer' },
 ];
 
