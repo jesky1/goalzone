@@ -34,3 +34,38 @@ Stage Summary:
 - Standard Tailwind colors use dark: prefix pattern
 - Lint passes with 0 errors
 - Dev server compiles successfully
+
+---
+Task ID: 8
+Agent: main
+Task: Create enhanced Match Tactics (PitchView) component with PlayerNode
+
+Work Log:
+- Completely rewrote `src/components/football/PitchView.tsx` with enhanced visuals
+- Created `PlayerNode` component replacing simple colored dots with:
+  - Circular player photo with position-colored border and glow
+  - Jersey number badge in bottom-right corner of photo
+  - Player last name displayed below in white with drop shadow
+  - Fallback initials when no photo available
+  - Event indicators (goals, yellow/red cards) above player
+- Enhanced hover interaction:
+  - Player scales up on hover with spring animation
+  - Detailed stats card appears with: photo, full name, position label, number, rating badge (color-coded), and event summary tags
+  - Home players show tooltip below, away players show above
+- Improved pitch surface:
+  - Richer green gradient (darker greens: #14532d → #15803d)
+  - Horizontal grass stripe pattern overlay
+  - Subtle SVG noise texture
+  - Stadium light effect at top edge
+  - Enhanced SVG pitch lines with proper goal posts
+- Pitch lines use CSS variables `--pitch-line-color` and `--pitch-line-accent` for theme-awareness
+- Updated `MatchDetailModal` in page.tsx to default to 'pitch' tab (was 'lineups')
+- Removed Tooltip dependency (replaced with custom hover card)
+- Lint passes with 0 errors, dev server compiles successfully
+
+Stage Summary:
+- Enhanced PitchView component with photo-based player nodes, number badges, and interactive hover stats
+- Players now display real photos from API-Football with graceful fallback to initials
+- Formation mapping (4-3-3, 4-4-2, etc.) accurately positioned on grid using API-Football grid data
+- Dark/light theme aware via CSS variables for pitch lines
+- Default match detail tab changed to show tactics/pitch first

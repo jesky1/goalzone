@@ -293,7 +293,7 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
       finally { setLoading(false); }
     };
     loadDetail();
-    setActiveTab('lineups');
+    setActiveTab('pitch');
     setShowSubs({ home: false, away: false });
   }, [open, match]);
 
