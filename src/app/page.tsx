@@ -15,6 +15,7 @@ import RefereeModal from '@/components/football/RefereeModal';
 import type { RefereeData } from '@/components/football/RefereeModal';
 import StadiumName from '@/components/football/StadiumName';
 import TransferFeed from '@/components/football/TransferFeed';
+import GoogleTrendsWidget from '@/components/football/GoogleTrendsWidget';
 import SearchDialog from '@/components/football/SearchDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -986,7 +987,8 @@ export default function Home() {
               <NewsSection onArticleClick={handleArticleClick} />
             </div>
             <div className="lg:col-span-1">
-              <div className="sticky top-24">
+              <div className="sticky top-24 space-y-6">
+                <GoogleTrendsWidget keyword="Sepak Bola" geo="ID" />
                 <PopularArticles onArticleClick={(a) => { setSelectedArticle(a as any); setModalOpen(true); }} />
               </div>
             </div>
