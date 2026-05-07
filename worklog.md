@@ -128,3 +128,48 @@ Stage Summary:
 - Players show club logo when their individual photo is unavailable
 - Large team logo watermarks add visual identity to each pitch half
 - Teams clearly separated with no overlap (14% center gap)
+
+---
+Task ID: 11
+Agent: main
+Task: Create FIFA/EA FC-style Referee Profile Modal
+
+Work Log:
+- Created `src/components/football/RefereeModal.tsx` — a cinematic referee profile modal
+  - Digital ID Card design (not a boring popup) with glassmorphism
+  - HexPattern SVG overlay: geometric football pentagon pattern as background
+  - Scanline effect overlay for CRT/FIFA aesthetic
+  - Neon glow border using conic-gradient and CSS variable `--c-neon`
+  - 3D tilt-on-hover using Framer Motion useMotionValue + useSpring (±3deg)
+- Framer Motion animations:
+  - Backdrop: opacity fade-in with blur(16px), saturate(0.3), brightness(0.2)
+  - Modal: scale(0.6→1) + rotateX(15deg→0) + rotateY(-5deg→0) — card placement feel
+  - Custom cubic-bezier [0.22, 1, 0.36, 1] for fast start, smooth settle
+  - Staggered animations for each section (header, avatar, stats, bars, tags)
+- StatRing component: SVG circular progress for Matches/Yellows/Reds/Penalties
+- StatBar component: Horizontal progress bars with icon, label, animated fill
+- SpecialtyTag component: Neon-styled pill badges for referee specialties
+- Profile section: Avatar with spinning glow ring, name, nationality, residence, federation
+- Trophy section: Biggest match highlight
+- FIFA chip decoration at bottom for authenticity
+- ESC key support for closing
+- Props: `RefereeData` interface with 18 data fields (name, photo, age, nationality, etc.)
+- Created `src/app/api/referees/[name]/route.ts` — referee data API
+  - 8 known referees with realistic stats (Oliver, Taylor, Turpin, Orsato, Brych, Marciniak, Mateu Lahoz)
+  - API-Football /referees search integration (when FOOTBALL_API_KEY is set)
+  - Deterministic default generation from name hash for unknown referees
+- Integrated into `page.tsx`:
+  - MatchDetailModal now accepts `onRefereeClick` prop
+  - Referee name shown as clickable button with underline, hover glow, and chevron indicator
+  - `handleRefereeClick` fetches referee data then opens RefereeModal
+  - RefereeModal rendered at root level (z-100) for proper layering
+- Lint passes with 0 errors, dev server compiles successfully
+- Confirmed working: `GET /api/referees/Michael%20Oliver 200` in dev logs
+
+Stage Summary:
+- Professional FIFA/EA FC-style referee profile modal implemented
+- Cinematic transitions: blur backdrop, 3D card placement animation, staggered reveals
+- 8 pre-built referee profiles with realistic stats; supports any referee name
+- Glassmorphism card with hexagonal pattern, neon glow border, scanline overlay
+- Interactive 3D tilt-on-hover effect for immersion
+- Triggered by clicking referee name in match detail modal

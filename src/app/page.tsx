@@ -9,6 +9,8 @@ import TopScorersWidget from '@/components/football/TopScorersWidget';
 import FanTokenWidget from '@/components/football/FanTokenWidget';
 import Footer from '@/components/football/Footer';
 import PitchView from '@/components/football/PitchView';
+import RefereeModal from '@/components/football/RefereeModal';
+import type { RefereeData } from '@/components/football/RefereeModal';
 import TransferFeed from '@/components/football/TransferFeed';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -273,7 +275,7 @@ function MatchRow({ match, onClick }: { match: Match; onClick?: () => void }) {
 // ============================================
 // MATCH DETAIL MODAL (Lineups + Stats)
 // ============================================
-function MatchDetailModal({ match, open, onClose }: { match: Match | null; open: boolean; onClose: () => void }) {
+function MatchDetailModal({ match, open, onClose, onRefereeClick }: { match: Match | null; open: boolean; onClose: () => void; onRefereeClick?: (name: string) => void }) {
   const [detail, setDetail] = useState<MatchDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'pitch' | 'lineups' | 'stats' | 'events'>('pitch');
@@ -548,7 +550,15 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
                   <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{f.venue}</span>
                 )}
                 {f?.referee && (
-                  <span className="flex items-center gap-1"><User className="w-3 h-3" />{f.referee}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onRefereeClick?.(f.referee!); }}
+                    className="flex items-center gap-1 hover:text-neon transition-colors cursor-pointer group"
+                  >
+                    <User className="w-3 h-3 group-hover:scale-110 transition-transform" style={{ color: 'var(--c-neon)' }} />
+                    <span className="underline underline-offset-2 decoration-dotted decoration-gray-500 dark:decoration-gray-500 group-hover:decoration-neon transition-colors">{f.referee}</span>
+                    <ChevronRight className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--c-neon)' }} />
+                  </button>
                 )}
               </div>
             </div>
@@ -729,6 +739,8 @@ export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [matchModalOpen, setMatchModalOpen] = useState(false);
+  const [refereeData, setRefereeData] = useState<RefereeData | null>(null);
+  const [refereeModalOpen, setRefereeModalOpen] = useState(false);
   const [liveMatches, setLiveMatches] = useState<Match[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(true);
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
@@ -774,6 +786,18 @@ export default function Home() {
   const handleCloseModal = () => { setModalOpen(false); setTimeout(() => setSelectedArticle(null), 300); };
   const handleMatchClick = (match: Match) => { setSelectedMatch(match); setMatchModalOpen(true); };
   const handleCloseMatchModal = () => { setMatchModalOpen(false); setTimeout(() => setSelectedMatch(null), 300); };
+
+  const handleRefereeClick = async (name: string) => {
+    try {
+      const res = await fetch(`/api/referees/${encodeURIComponent(name)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setRefereeData(data.referee);
+        setRefereeModalOpen(true);
+      }
+    } catch { /* silent */ }
+  };
+  const handleCloseRefereeModal = () => { setRefereeModalOpen(false); setTimeout(() => setRefereeData(null), 300); };
 
   return (
     <div className="min-h-screen flex flex-col bg-deep-900 cyber-grid">
@@ -878,7 +902,8 @@ export default function Home() {
       <Footer />
 
       <ArticleModalView article={selectedArticle} open={modalOpen} onClose={handleCloseModal} />
-      <MatchDetailModal match={selectedMatch} open={matchModalOpen} onClose={handleCloseMatchModal} />
+      <MatchDetailModal match={selectedMatch} open={matchModalOpen} onClose={handleCloseMatchModal} onRefereeClick={handleRefereeClick} />
+      <RefereeModal referee={refereeData} open={refereeModalOpen} onClose={handleCloseRefereeModal} />
 
     </div>
   );
