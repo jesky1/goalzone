@@ -8,6 +8,8 @@ import StandingsWidget from '@/components/football/StandingsWidget';
 import TopScorersWidget from '@/components/football/TopScorersWidget';
 import FanTokenWidget from '@/components/football/FanTokenWidget';
 import Footer from '@/components/football/Footer';
+import PitchView from '@/components/football/PitchView';
+import TransferFeed from '@/components/football/TransferFeed';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Eye, Calendar, ChevronRight, ChevronDown, ChevronUp, MapPin, User, X, Loader2, Sparkles, Send } from 'lucide-react';
@@ -274,7 +276,7 @@ function MatchRow({ match, onClick }: { match: Match; onClick?: () => void }) {
 function MatchDetailModal({ match, open, onClose }: { match: Match | null; open: boolean; onClose: () => void }) {
   const [detail, setDetail] = useState<MatchDetail | null>(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'lineups' | 'stats' | 'events'>('lineups');
+  const [activeTab, setActiveTab] = useState<'pitch' | 'lineups' | 'stats' | 'events'>('pitch');
   const [showSubs, setShowSubs] = useState({ home: false, away: false });
 
   useEffect(() => {
@@ -552,7 +554,7 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
 
             {/* Tabs */}
             <div className="flex border-b border-white/5 px-2">
-              {(['lineups', 'stats', 'events'] as const).map(tab => (
+              {(['pitch', 'lineups', 'stats', 'events'] as const).map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -560,7 +562,7 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
                     activeTab === tab ? 'text-neon' : 'text-gray-500 hover:text-gray-300'
                   }`}
                 >
-                  {tab === 'lineups' ? 'Lineup' : tab === 'stats' ? 'Statistik' : 'Events'}
+                  {tab === 'pitch' ? 'Taktik' : tab === 'lineups' ? 'Lineup' : tab === 'stats' ? 'Statistik' : 'Events'}
                   {activeTab === tab && (
                     <motion.div layoutId="match-tab" className="absolute bottom-0 left-2 right-2 h-0.5 bg-neon rounded-full" />
                   )}
@@ -570,6 +572,21 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
 
             {/* Tab Content */}
             <div className="p-4 sm:p-5">
+              {activeTab === 'pitch' && hl && al && hl.startXI.length > 0 && al.startXI.length > 0 && (
+                <PitchView
+                  homeLineup={hl}
+                  awayLineup={al}
+                  homeScore={f?.homeScore ?? match.homeScore}
+                  awayScore={f?.awayScore ?? match.awayScore}
+                  homeTeam={f?.homeTeam || match.homeTeam}
+                  awayTeam={f?.awayTeam || match.awayTeam}
+                  homeLogo={f?.homeLogo || match.homeLogo}
+                  awayLogo={f?.awayLogo || match.awayLogo}
+                />
+              )}
+              {activeTab === 'pitch' && (!hl?.startXI?.length || !al?.startXI?.length) && (
+                <div className="text-center py-8 text-sm text-muted-foreground">Data taktik belum tersedia</div>
+              )}
               {activeTab === 'lineups' && hl && al && (
                 <div className="flex gap-4 sm:gap-6">
                   {renderTeamLineup(hl, 'home')}
@@ -842,15 +859,18 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Transfer CTA */}
+        {/* Transfer Feed */}
         <section id="transfer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="glass-card p-6 sm:p-8 text-center">
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Berita <span className="neon-text">Transfer</span></h2>
-            <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">Dapatkan update terbaru seputar transfer pemain dari seluruh liga top Eropa</p>
-            <button className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-neon bg-neon/10 border border-neon/20 hover:bg-neon/20 hover:neon-glow transition-all duration-300">
-              Lihat Semua Transfer <ChevronRight className="w-4 h-4" />
-            </button>
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-6">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-2 h-2 rounded-full bg-neon" />
+              <h2 className="text-xl sm:text-2xl font-bold text-white">Berita <span className="neon-text">Transfer</span></h2>
+            </div>
+            <p className="text-xs text-muted-foreground">Update transfer terbaru dari klub-club top Eropa musim 2025/26</p>
           </motion.div>
+          <ErrorBoundary>
+            <TransferFeed />
+          </ErrorBoundary>
         </section>
       </main>
 
