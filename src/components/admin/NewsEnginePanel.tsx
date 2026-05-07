@@ -468,6 +468,7 @@ export default function NewsEnginePanel({ authToken }: NewsEnginePanelProps = {}
   const [lookbackHours, setLookbackHours] = useState('24')
   const [maxArticles, setMaxArticles] = useState('5')
   const [dryRun, setDryRun] = useState(false)
+  const [aiModel, setAiModel] = useState('glm-4-flash')
 
   // Load service status
   const loadStatus = useCallback(async () => {
@@ -486,7 +487,7 @@ export default function NewsEnginePanel({ authToken }: NewsEnginePanelProps = {}
     setResponse(null)
 
     try {
-      const body: any = { mode, lookbackHours: parseInt(lookbackHours), maxArticles: parseInt(maxArticles), dryRun }
+      const body: any = { mode, lookbackHours: parseInt(lookbackHours), maxArticles: parseInt(maxArticles), dryRun, aiModel }
       if (mode === 'manual' && fixtureIds.trim()) {
         body.fixtureIds = fixtureIds.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n))
       }
@@ -560,7 +561,7 @@ export default function NewsEnginePanel({ authToken }: NewsEnginePanelProps = {}
           Pipeline Controls
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {/* Mode */}
           <div className="space-y-1.5">
             <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Mode</label>
@@ -571,6 +572,23 @@ export default function NewsEnginePanel({ authToken }: NewsEnginePanelProps = {}
               <SelectContent>
                 <SelectItem value="auto">Auto (API-Football)</SelectItem>
                 <SelectItem value="manual">Manual (Fixture IDs)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* AI Model */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">AI Model</label>
+            <Select value={aiModel} onValueChange={setAiModel}>
+              <SelectTrigger className="text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="glm-4-flash">GLM-4 Flash (Cepat)</SelectItem>
+                <SelectItem value="glm-4-air">GLM-4 Air (Seimbang)</SelectItem>
+                <SelectItem value="glm-4-plus">GLM-4 Plus (Berkualitas)</SelectItem>
+                <SelectItem value="glm-4-long">GLM-4 Long (Panjang)</SelectItem>
+                <SelectItem value="glm-4">GLM-4 (Standard)</SelectItem>
               </SelectContent>
             </Select>
           </div>

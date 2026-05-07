@@ -371,7 +371,7 @@ Efektivitas Tembakan ${match.awayTeam}: ${match.awayStats.shots > 0 ? Math.round
 Dominasi Penguasaan Bola: ${match.homeStats.possession > match.awayStats.possession ? match.homeTeam : match.awayStats.possession > match.homeStats.possession ? match.awayTeam : 'Seimbang'} (${Math.abs(match.homeStats.possession - match.awayStats.possession)}% selisih)`.trim()
 }
 
-async function generateArticle(match: MatchData): Promise<GeneratedArticle> {
+async function generateArticle(match: MatchData, model: string = 'glm-4-flash'): Promise<GeneratedArticle> {
   const zai = await ZAI.create()
   const matchContext = buildMatchContext(match)
 
@@ -388,6 +388,7 @@ INGAT:
 - Output HANYA JSON.`
 
   const completion = await zai.chat.completions.create({
+    model: model,
     messages: [
       { role: 'assistant', content: ARTICLE_SYSTEM_PROMPT },
       { role: 'user', content: userPrompt },
@@ -769,7 +770,7 @@ async function triggerRevalidation(path?: string, tag?: string): Promise<void> {
 
 // ─── PIPELINE ORCHESTRATOR ──────────────────────────────────
 
-async function processMatch(match: MatchData, supabase: any): Promise<PipelineResult> {
+async function processMatch(match: MatchData, supabase: any, model: string = 'glm-4-flash'): Promise<PipelineResult> {
   const startTime = Date.now()
   const matchLabel = `${match.homeTeam} vs ${match.awayTeam}`
 
@@ -782,7 +783,7 @@ async function processMatch(match: MatchData, supabase: any): Promise<PipelineRe
     }
 
     // Step 2: Generate article content
-    const article = await generateArticle(match)
+    const article = await generateArticle(match, model)
 
     // Step 3: Generate image
     const imageBuffer = await generateImage(article.imagePrompt)
@@ -913,6 +914,7 @@ export async function POST(request: NextRequest) {
       lookbackHours = 24,   // How many hours to look back
       maxArticles = 5,      // Max articles to generate per run
       dryRun = false,       // If true, only fetch + generate, don't publish
+      aiModel = 'glm-4-flash', // AI model for content generation
     } = body
 
     // Initialize Supabase
@@ -966,13 +968,22 @@ export async function POST(request: NextRequest) {
     matches = matches.slice(0, maxArticles)
 
     if (matches.length === 0) {
+      const noMatchMsg = !FOOTBALL_API_KEY
+        ? 'FOOTBALL_API_KEY belum dikonfigurasi. Set di Environment Variables (Vercel/Dotenv).'
+        : 'Tidak ada pertandingan yang selesai dalam rentang waktu yang dipilih. Coba ubah Lookback Hours ke 48 atau 72 jam.'
       return NextResponse.json({
         success: true,
-        message: 'No finished matches found in the specified time range',
+        message: noMatchMsg,
         pipeline_duration_ms: Date.now() - pipelineStart,
         matches_found: 0,
         articles_generated: 0,
         results: [],
+        config: {
+          footballApi: !!FOOTBALL_API_KEY,
+          aiModel: aiModel,
+          mode,
+          lookbackHours,
+        },
       })
     }
 
@@ -982,7 +993,7 @@ export async function POST(request: NextRequest) {
       if (dryRun) {
         // Dry run: only generate, don't publish
         try {
-          const article = await generateArticle(match)
+          const article = await generateArticle(match, aiModel)
           results.push({
             success: true,
             match: `${match.homeTeam} vs ${match.awayTeam}`,
@@ -994,7 +1005,7 @@ export async function POST(request: NextRequest) {
           results.push({ success: false, match: `${match.homeTeam} vs ${match.awayTeam}`, fixtureId: match.fixtureId, error: err.message, stage: 'generation', duration: Date.now() - pipelineStart })
         }
       } else {
-        const result = await processMatch(match, supabase)
+        const result = await processMatch(match, supabase, aiModel)
         results.push(result)
       }
     }
