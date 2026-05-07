@@ -5,8 +5,9 @@
 //   Step 1: Fetch finished matches from API-Football
 //   Step 2: Generate article text via AI (z-ai-web-dev-sdk)
 //   Step 3: Generate featured image via AI (z-ai-web-dev-sdk)
-//   Step 4: Upload image to Supabase Storage + save article to DB
+//   Step 4: Apply GOALZONE watermark (sharp) + Upload to Supabase Storage
 //   Step 5: Generate SEO metadata
+//   Step 6: Publish article to Supabase database
 // ============================================================
 
 import express from 'express'
@@ -29,6 +30,7 @@ import {
   uploadImageToSupabase,
   type ImageResult,
 } from './ai-artist.js'
+import { applyWatermark } from './watermark.js'
 import {
   publishArticle,
   articleExistsByFixtureId,
@@ -125,17 +127,33 @@ async function processMatch(fixtureId: number): Promise<GenerationResult> {
     result.image = image
     console.log(`   Image: ${image.success ? '✅ Generated' : '❌ Failed'}`)
 
-    // ── STEP 4: Upload Image to Supabase Storage ──
+    // ── STEP 4: Watermark + Upload Image to Supabase Storage ──
     let storageUrl: string | null = null
     if (image.success && image.buffer) {
-      console.log(`\n☁️  STEP 4a: Uploading image to Supabase Storage...`)
+      // Apply GOALZONE watermark before uploading
+      console.log(`\n💧 STEP 4a: Applying GOALZONE watermark...`)
       try {
-        const uploadResult = await uploadImageToSupabase(image.buffer, article.slug)
+        const watermarkedBuffer = await applyWatermark(image.buffer, {
+          position: 'bottom-right',
+          logoScale: 0.10,
+          opacity: 0.55,
+          padding: 24,
+        })
+        console.log(`   ✅ Watermark applied (${(watermarkedBuffer.length / 1024).toFixed(0)} KB)`)
+
+        console.log(`\n☁️  STEP 4b: Uploading to Supabase Storage...`)
+        const uploadResult = await uploadImageToSupabase(watermarkedBuffer, article.slug)
         storageUrl = uploadResult.url
         console.log(`   Storage URL: ${storageUrl}`)
-      } catch (uploadErr: any) {
-        console.warn(`   ⚠️  Storage upload failed: ${uploadErr.message}`)
-        // Continue without image — still publish article
+      } catch (wmErr: any) {
+        console.warn(`   ⚠️  Watermark failed (${wmErr.message}), uploading original...`)
+        try {
+          const uploadResult = await uploadImageToSupabase(image.buffer, article.slug)
+          storageUrl = uploadResult.url
+          console.log(`   Storage URL: ${storageUrl}`)
+        } catch (uploadErr: any) {
+          console.warn(`   ⚠️  Storage upload failed: ${uploadErr.message}`)
+        }
       }
     }
 
