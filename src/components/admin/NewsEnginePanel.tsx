@@ -26,6 +26,7 @@ import {
   Rss,
   ExternalLink,
   Calendar,
+  Terminal,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -454,7 +455,11 @@ function BloggerFeedSection() {
 
 // ─── Main Component ─────────────────────────────────────────
 
-export default function NewsEnginePanel() {
+interface NewsEnginePanelProps {
+  authToken?: string | null
+}
+
+export default function NewsEnginePanel({ authToken }: NewsEnginePanelProps = {}) {
   const [status, setStatus] = useState<ServiceStatus | null>(null)
   const [running, setRunning] = useState(false)
   const [response, setResponse] = useState<PipelineResponse | null>(null)
@@ -493,16 +498,21 @@ export default function NewsEnginePanel() {
 
       const res = await fetch('/api/cron/generate-news', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
         body: JSON.stringify(body),
       })
 
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Pipeline failed')
+      if (!res.ok) throw new Error(data.error || data.debug?.message || `Pipeline failed (${res.status})`)
       setResponse(data)
       setShowResult(true)
     } catch (err: any) {
-      setError(err.message)
+      const errorMsg = err.message || 'Pipeline failed'
+      console.error('[NewsEnginePanel] Pipeline error:', errorMsg)
+      setError(errorMsg)
     } finally {
       setRunning(false)
     }
@@ -620,17 +630,25 @@ export default function NewsEnginePanel() {
 
         {/* Error */}
         {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20"
-          >
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
             <XCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
-            <div>
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-red-400">Pipeline Error</p>
-              <p className="text-xs text-red-400/70 mt-0.5">{error}</p>
+              <p className="text-xs text-red-400/70 mt-0.5 break-words">{error}</p>
+              {error.includes('Unauthorized') && (
+                <p className="text-[10px] text-amber-400 mt-1.5 flex items-center gap-1">
+                  <Shield className="w-3 h-3" />
+                  Set ADMIN_API_KEY atau CRON_SECRET di environment variables, atau pastikan token masih valid.
+                </p>
+              )}
+              {error.includes('RLS') && (
+                <p className="text-[10px] text-amber-400 mt-1.5 flex items-center gap-1">
+                  <Shield className="w-3 h-3" />
+                  Jalankan SQL berikut di Supabase Dashboard: CREATE POLICY &quot;service_role_all&quot; ON articles FOR ALL TO service_role USING (true) WITH CHECK (true);
+                </p>
+              )}
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* Run Button */}

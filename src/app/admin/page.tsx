@@ -614,7 +614,7 @@ export default function AdminDashboard() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              <NewsEnginePanel />
+              <NewsEnginePanel authToken={token} />
             </motion.div>
           )}
 

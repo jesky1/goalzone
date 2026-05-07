@@ -92,13 +92,36 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('[Admin Articles POST Error]', error.message);
-      return NextResponse.json({ success: false, error: 'Gagal membuat artikel' }, { status: 500 });
+      const supabaseDetail = JSON.stringify({
+        code: error.code,
+        message: error.message,
+        hint: error.hint,
+        details: error.details,
+      })
+      console.error('[Admin Articles POST Error]', supabaseDetail)
+
+      // Build user-friendly error message with Supabase details for debugging
+      let userMessage = 'Gagal membuat artikel'
+      if (error.code === '42501') {
+        userMessage = 'RLS (Row Level Security) memblokir insert. Pastikan tabel articles memiliki policy untuk service_role, atau SUPABASE_SERVICE_ROLE_KEY sudah benar.'
+      } else if (error.code === '23505') {
+        userMessage = 'Slug artikel sudah digunakan. Gunakan slug yang berbeda.'
+      } else if (error.code === '23503') {
+        userMessage = `Foreign key error: ${error.details || 'category_id atau author_id tidak valid.'}`
+      } else if (error.code === '23502') {
+        userMessage = `Kolom wajib tidak boleh kosong: ${error.details || 'title, slug, content, category_id'}`
+      }
+
+      return NextResponse.json({
+        success: false,
+        error: userMessage,
+        debug: { code: error.code, message: error.message, hint: error.hint, details: error.details },
+      }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, message: 'Artikel berhasil dibuat', data: mapArticleWithNames(article) }, { status: 201 });
   } catch (error: any) {
-    console.error('[Admin Articles POST Error]', error.message);
-    return NextResponse.json({ success: false, error: 'Gagal membuat artikel' }, { status: 500 });
+    console.error('[Admin Articles POST Error]', error.message, error.stack);
+    return NextResponse.json({ success: false, error: 'Gagal membuat artikel', debug: { message: error.message } }, { status: 500 });
   }
 }

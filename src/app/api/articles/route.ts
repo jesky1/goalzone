@@ -230,19 +230,30 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Supabase error creating article:', error)
+      const supabaseDetail = JSON.stringify({ code: error.code, message: error.message, hint: error.hint, details: error.details })
+      console.error('Supabase error creating article:', supabaseDetail)
+
+      let userMessage = 'Failed to create article'
+      if (error.code === '42501') {
+        userMessage = 'RLS memblokir insert. Pastikan SUPABASE_SERVICE_ROLE_KEY sudah benar.'
+      } else if (error.code === '23505') {
+        userMessage = 'Slug artikel sudah digunakan.'
+      } else if (error.code === '23503') {
+        userMessage = `Foreign key error: ${error.details || 'category_id atau author_id tidak valid.'}`
+      }
+
       return NextResponse.json(
-        { error: 'Failed to create article' },
+        { error: userMessage, debug: { code: error.code, message: error.message, hint: error.hint } },
         { status: 500 }
       )
     }
 
     const article = mapArticleToAPI(row)
     return NextResponse.json(article, { status: 201 })
-  } catch (error) {
-    console.error('Error creating article:', error)
+  } catch (error: any) {
+    console.error('Error creating article:', error.message, error.stack)
     return NextResponse.json(
-      { error: 'Failed to create article' },
+      { error: 'Failed to create article', debug: { message: error.message } },
       { status: 500 }
     )
   }

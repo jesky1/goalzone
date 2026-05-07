@@ -65,14 +65,19 @@ export async function PUT(
       .single();
 
     if (error) {
-      console.error('[Admin Article PUT Error]', error.message);
-      return NextResponse.json({ success: false, error: 'Gagal mengupdate artikel' }, { status: 500 });
+      const supabaseDetail = JSON.stringify({ code: error.code, message: error.message, hint: error.hint, details: error.details })
+      console.error('[Admin Article PUT Error]', supabaseDetail)
+      return NextResponse.json({
+        success: false,
+        error: 'Gagal mengupdate artikel',
+        debug: { code: error.code, message: error.message, hint: error.hint },
+      }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, message: 'Artikel berhasil diupdate', data: mapArticleWithNames(article) });
   } catch (error: any) {
-    console.error('[Admin Article PUT Error]', error.message);
-    return NextResponse.json({ success: false, error: 'Gagal mengupdate artikel' }, { status: 500 });
+    console.error('[Admin Article PUT Error]', error.message, error.stack);
+    return NextResponse.json({ success: false, error: 'Gagal mengupdate artikel', debug: { message: error.message } }, { status: 500 });
   }
 }
 
@@ -103,12 +108,23 @@ export async function DELETE(
     }
 
     // Delete associated comments first, then the article
-    await supabase.from('comments').delete().eq('article_id', id);
-    await supabase.from('articles').delete().eq('id', id);
+    const { error: commentDelErr } = await supabase.from('comments').delete().eq('article_id', id)
+    if (commentDelErr) {
+      console.error('[Admin Article DELETE] Comment cleanup warning:', JSON.stringify({ code: commentDelErr.code, message: commentDelErr.message }))
+    }
+    const { error: articleDelErr } = await supabase.from('articles').delete().eq('id', id)
+    if (articleDelErr) {
+      console.error('[Admin Article DELETE Error]', JSON.stringify({ code: articleDelErr.code, message: articleDelErr.message, hint: articleDelErr.hint }))
+      return NextResponse.json({
+        success: false,
+        error: 'Gagal menghapus artikel',
+        debug: { code: articleDelErr.code, message: articleDelErr.message },
+      }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true, message: `Artikel "${existing.title}" berhasil dihapus` });
   } catch (error: any) {
-    console.error('[Admin Article DELETE Error]', error.message);
-    return NextResponse.json({ success: false, error: 'Gagal menghapus artikel' }, { status: 500 });
+    console.error('[Admin Article DELETE Error]', error.message, error.stack);
+    return NextResponse.json({ success: false, error: 'Gagal menghapus artikel', debug: { message: error.message } }, { status: 500 });
   }
 }

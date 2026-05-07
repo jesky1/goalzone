@@ -587,75 +587,131 @@ async function publishArticle(supabase: any, article: GeneratedArticle, imageUrl
     // Resolve category
     let categoryId = DEFAULT_CATEGORY_ID
     if (!categoryId) {
-      const { data: catData } = await supabase
-        .from('categories')
-        .select('id')
-        .eq('slug', 'match-report')
-        .maybeSingle()
-      if (catData) categoryId = catData.id
-      else {
-        // Create category if not exists
-        const { data: newCat } = await supabase
+      try {
+        const { data: catData, error: catErr } = await supabase
           .from('categories')
-          .insert({ name: 'Match Report', slug: 'match-report', color: '#10b981' })
           .select('id')
-          .single()
-        categoryId = newCat?.id || ''
+          .eq('slug', 'match-report')
+          .maybeSingle()
+        if (catErr) {
+          console.error('[News Engine] Category query error:', JSON.stringify({ code: catErr.code, message: catErr.message, hint: catErr.hint, details: catErr.details }))
+        }
+        if (catData) categoryId = catData.id
+        else {
+          // Create category if not exists
+          const { data: newCat, error: newCatErr } = await supabase
+            .from('categories')
+            .insert({ name: 'Match Report', slug: 'match-report', color: '#10b981' })
+            .select('id')
+            .single()
+          if (newCatErr) {
+            console.error('[News Engine] Category insert error:', JSON.stringify({ code: newCatErr.code, message: newCatErr.message, hint: newCatErr.hint, details: newCatErr.details }))
+          }
+          categoryId = newCat?.id || ''
+        }
+      } catch (err: any) {
+        console.error('[News Engine] Category resolution failed:', err.message)
       }
     }
 
     // Resolve author
     let authorId = DEFAULT_AUTHOR_ID
     if (!authorId) {
-      const { data: authorData } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('username', 'goalzone-auto')
-        .maybeSingle()
-      if (authorData) authorId = authorData.id
-      else {
-        const { data: newAuthor } = await supabase
+      try {
+        const { data: authorData, error: authorErr } = await supabase
           .from('profiles')
-          .insert({ username: 'goalzone-auto', role: 'admin' })
           .select('id')
-          .single()
-        authorId = newAuthor?.id || ''
+          .eq('username', 'goalzone-auto')
+          .maybeSingle()
+        if (authorErr) {
+          console.error('[News Engine] Author query error:', JSON.stringify({ code: authorErr.code, message: authorErr.message, hint: authorErr.hint, details: authorErr.details }))
+        }
+        if (authorData) authorId = authorData.id
+        else {
+          const { data: newAuthor, error: newAuthorErr } = await supabase
+            .from('profiles')
+            .insert({ username: 'goalzone-auto', role: 'admin' })
+            .select('id')
+            .single()
+          if (newAuthorErr) {
+            console.error('[News Engine] Author insert error:', JSON.stringify({ code: newAuthorErr.code, message: newAuthorErr.message, hint: newAuthorErr.hint, details: newAuthorErr.details }))
+          }
+          authorId = newAuthor?.id || ''
+        }
+      } catch (err: any) {
+        console.error('[News Engine] Author resolution failed:', err.message)
       }
     }
 
     if (!categoryId || !authorId) {
-      console.error('[News Engine] Cannot resolve category or author')
+      console.error('[News Engine] Cannot resolve category or author — check that categories/profiles tables exist and RLS allows service_role inserts')
       return null
     }
 
+    // Build article payload with all required columns
+    const insertPayload = {
+      title: article.title,
+      slug: article.slug,
+      content: article.contentHtml,
+      summary: article.summary,
+      cover_image: imageUrl,
+      category_id: categoryId,
+      author_id: authorId,
+      status: 'published',
+      is_featured: false,
+      read_time: Math.max(3, Math.ceil(article.contentHtml.length / 1000)),
+      seo_title: article.title,
+      seo_description: article.metaDescription,
+      published_at: new Date().toISOString(),
+    }
+
+    console.log('[News Engine] Inserting article with payload:', JSON.stringify({
+      title: insertPayload.title,
+      slug: insertPayload.slug,
+      category_id: insertPayload.category_id,
+      author_id: insertPayload.author_id,
+      content_length: insertPayload.content?.length,
+      has_summary: !!insertPayload.summary,
+      has_cover_image: !!insertPayload.cover_image,
+    }))
+
     const { data, error } = await supabase
       .from('articles')
-      .insert({
-        title: article.title,
-        slug: article.slug,
-        content: article.contentHtml,
-        summary: article.summary,
-        cover_image: imageUrl,
-        category_id: categoryId,
-        author_id: authorId,
-        status: 'published',
-        is_featured: false,
-        read_time: Math.max(3, Math.ceil(article.contentHtml.length / 1000)),
-        seo_title: article.title,
-        seo_description: article.metaDescription,
-        published_at: new Date().toISOString(),
-      })
+      .insert(insertPayload)
       .select('id')
       .single()
 
     if (error) {
-      console.error(`[News Engine] DB insert error: ${error.message}`)
+      // Detailed Supabase error logging for debugging RLS and constraint issues
+      const errorDetail = JSON.stringify({
+        code: error.code,
+        message: error.message,
+        hint: error.hint,
+        details: error.details,
+      })
+      console.error(`[News Engine] DB insert error: ${errorDetail}`)
+
+      // Provide specific guidance for common RLS errors
+      if (error.code === '42501') {
+        console.error('[News Engine] RLS (Row Level Security) BLOCKED the insert! The service_role key should bypass RLS. Check that SUPABASE_SERVICE_ROLE_KEY is set correctly in your environment variables. If you recently enabled RLS on the articles table, you may need to add a policy: ALTER TABLE articles ENABLE ROW LEVEL SECURITY; CREATE POLICY "Service role full access" ON articles FOR ALL TO service_role USING (true) WITH CHECK (true);')
+      }
+      if (error.code === '23505') {
+        console.error('[News Engine] Duplicate key violation — article slug already exists')
+      }
+      if (error.code === '23503') {
+        console.error('[News Engine] Foreign key violation — check that category_id and author_id reference valid rows in categories and profiles tables')
+      }
+      if (error.code === '23502') {
+        console.error('[News Engine] NOT NULL violation — a required column is missing. Required columns: title, slug, content, category_id, author_id, status')
+      }
+
       return null
     }
 
+    console.log(`[News Engine] Article published successfully: id=${data.id}, slug=${article.slug}`)
     return data.id
   } catch (err: any) {
-    console.error(`[News Engine] publishArticle failed: ${err.message}`)
+    console.error(`[News Engine] publishArticle unexpected error: ${err.message}`, err.stack)
     return null
   }
 }
@@ -804,6 +860,23 @@ export async function POST(request: NextRequest) {
   const pipelineStart = Date.now()
 
   try {
+    // Auth check — protect the pipeline from unauthorized access
+    const authHeader = request.headers.get('authorization')
+    const adminApiKey = process.env.ADMIN_API_KEY
+    const cronSecret = process.env.CRON_SECRET
+
+    // Allow if: (1) no keys configured (dev mode), (2) valid ADMIN_API_KEY, or (3) valid CRON_SECRET
+    if (adminApiKey || cronSecret) {
+      const token = authHeader?.replace('Bearer ', '') || ''
+      const isValidAdmin = adminApiKey && token === adminApiKey
+      const isValidCron = cronSecret && token === cronSecret
+
+      if (!isValidAdmin && !isValidCron) {
+        console.warn('[News Engine] Unauthorized pipeline trigger attempt')
+        return NextResponse.json({ error: 'Unauthorized — valid ADMIN_API_KEY or CRON_SECRET required' }, { status: 401 })
+      }
+    }
+
     const body = await request.json().catch(() => ({}))
     const {
       mode = 'auto',       // 'auto' (fetch matches) | 'manual' (provide fixtureIds)

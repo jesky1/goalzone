@@ -106,19 +106,19 @@ export async function PUT(
       .single()
 
     if (error) {
-      console.error('Supabase error updating article:', error)
+      console.error('Supabase error updating article:', JSON.stringify({ code: error.code, message: error.message, hint: error.hint }))
       return NextResponse.json(
-        { error: 'Failed to update article' },
+        { error: 'Failed to update article', debug: { code: error.code, message: error.message } },
         { status: 500 }
       )
     }
 
     const article = mapArticleToAPI(row)
     return NextResponse.json(article)
-  } catch (error) {
-    console.error('Error updating article:', error)
+  } catch (error: any) {
+    console.error('Error updating article:', error.message, error.stack)
     return NextResponse.json(
-      { error: 'Failed to update article' },
+      { error: 'Failed to update article', debug: { message: error.message } },
       { status: 500 }
     )
   }
@@ -156,18 +156,18 @@ export async function DELETE(
       .eq('slug', slug)
 
     if (error) {
-      console.error('Supabase error deleting article:', error)
+      console.error('Supabase error deleting article:', JSON.stringify({ code: error.code, message: error.message, hint: error.hint }))
       return NextResponse.json(
-        { error: 'Failed to delete article' },
+        { error: 'Failed to delete article', debug: { code: error.code, message: error.message } },
         { status: 500 }
       )
     }
 
     return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error deleting article:', error)
+  } catch (error: any) {
+    console.error('Error deleting article:', error.message, error.stack)
     return NextResponse.json(
-      { error: 'Failed to delete article' },
+      { error: 'Failed to delete article', debug: { message: error.message } },
       { status: 500 }
     )
   }
