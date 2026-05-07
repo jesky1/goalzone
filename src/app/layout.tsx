@@ -93,8 +93,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" suppressHydrationWarning>
-      <head>
-        {/* Google Analytics */}
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-deep-900 text-foreground`}
+      >
+        {/* Google Analytics — loaded in body to avoid hydration mismatch */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
             <script
@@ -115,10 +117,6 @@ export default function RootLayout({
             />
           </>
         )}
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-deep-900 text-foreground`}
-      >
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
