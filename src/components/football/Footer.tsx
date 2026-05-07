@@ -107,14 +107,14 @@ export default function Footer() {
               <a href="#" className="hover:text-neon transition-colors">
                 Kontak
               </a>
-              <Link
-                href="/admin"
+              <a
+                href="/?XTransformPort=3001"
                 className="flex items-center gap-1 hover:text-neon transition-colors"
                 aria-label="Admin Dashboard"
               >
                 <Shield className="w-3 h-3" />
                 <span>Admin</span>
-              </Link>
+              </a>
             </div>
           </div>
         </div>
