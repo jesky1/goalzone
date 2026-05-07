@@ -31,8 +31,10 @@ import {
   ChevronRight,
   Zap,
   Search,
+  Newspaper,
 } from 'lucide-react';
 import Link from 'next/link';
+import NewsEnginePanel from '@/components/admin/NewsEnginePanel';
 
 // ============================================================
 // Types
@@ -516,6 +518,7 @@ function Dashboard({
         <div className="flex gap-1 bg-white/5 p-1 w-fit rounded-lg">
           {[
             { key: 'overview', label: 'Overview', icon: BarChart3 },
+            { key: 'news-engine', label: 'News Engine', icon: Newspaper },
             { key: 'articles', label: 'Articles', icon: FileText },
             { key: 'comments', label: 'Comments', icon: MessageSquare },
           ].map((tab) => (
@@ -552,6 +555,7 @@ function Dashboard({
         ) : (
           <>
             {activeTab === 'overview' && data && <OverviewTab data={data} />}
+            {activeTab === 'news-engine' && <NewsEnginePanel />}
             {activeTab === 'articles' && data && (
               <ArticlesTab data={data} token={token} onRefresh={loadData} onDelete={(id) => setDeleteId(id)} />
             )}

@@ -1,0 +1,519 @@
+'use client'
+
+import { useState, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Newspaper,
+  Play,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Zap,
+  Settings2,
+  Info,
+  ChevronDown,
+  ChevronUp,
+  BarChart3,
+  RefreshCw,
+  Eye,
+  AlertTriangle,
+  Database,
+  Image as ImageIcon,
+  FileText,
+  Search,
+  Shield,
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Separator } from '@/components/ui/separator'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Skeleton } from '@/components/ui/skeleton'
+
+// ─── Types ──────────────────────────────────────────────────
+
+interface PipelineResult {
+  success: boolean
+  match: string
+  fixtureId: number
+  article?: { id: string; slug: string; title: string; imageUrl: string }
+  error?: string
+  stage?: string
+  duration: number
+}
+
+interface PipelineResponse {
+  success: boolean
+  message: string
+  pipeline_duration_ms: number
+  mode: string
+  dry_run: boolean
+  matches_found: number
+  articles_generated: number
+  results: PipelineResult[]
+}
+
+interface ServiceStatus {
+  status: string
+  service: string
+  version: string
+  leagues_monitored: number
+  features: string[]
+  config: {
+    footballApi: boolean
+    supabase: boolean
+    revalidation: boolean
+    defaultAuthor: string
+    defaultCategory: string
+  }
+}
+
+// ─── Pipeline Stage Icons ───────────────────────────────────
+
+function StageIcon({ stage, success }: { stage?: string; success: boolean }) {
+  if (success) return <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+  if (stage === 'dedup') return <AlertTriangle className="w-4 h-4 text-amber-400" />
+  return <XCircle className="w-4 h-4 text-red-400" />
+}
+
+// ─── Stats Card ─────────────────────────────────────────────
+
+function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: string | number; color?: string }) {
+  return (
+    <div className="glass-card p-4 flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <div className={`p-2 rounded-lg ${color || 'bg-neon/10'}`}>
+          <Icon className={`w-4 h-4 ${color ? color.replace('bg-', 'text-') : 'text-neon'}`} />
+        </div>
+        <span className="text-[11px] text-muted-foreground font-medium">{label}</span>
+      </div>
+      <div className="text-xl font-bold text-gray-900 dark:text-white">{value}</div>
+    </div>
+  )
+}
+
+// ─── Config Panel ───────────────────────────────────────────
+
+function ConfigPanel({ config, onFixtureIdsChange }: { config: ServiceStatus | null; onFixtureIdsChange: (ids: string) => void }) {
+  const [expanded, setExpanded] = useState(false)
+
+  return (
+    <div className="glass-card overflow-hidden">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <Settings2 className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-gray-900 dark:text-white">Configuration & Status</span>
+        </div>
+        {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+      </button>
+
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 space-y-4">
+              {config ? (
+                <>
+                  {/* Service Status */}
+                  <div className="flex items-center gap-2">
+                    <Badge variant={config.status === 'active' ? 'default' : 'secondary'} className={config.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : ''}>
+                      {config.status === 'active' ? '● Active' : '● Inactive'}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">v{config.version}</span>
+                    <span className="text-xs text-muted-foreground">{config.leagues_monitored} leagues monitored</span>
+                  </div>
+
+                  {/* Integration Status */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { label: 'API-Football', ok: config.config.footballApi, icon: Search },
+                      { label: 'Supabase', ok: config.config.supabase, icon: Database },
+                      { label: 'Revalidation', ok: config.config.revalidation, icon: RefreshCw },
+                      { label: 'Auth', ok: config.config.defaultAuthor !== 'auto-create' || config.config.defaultCategory !== 'auto-resolve', icon: Shield },
+                    ].map(item => (
+                      <div key={item.label} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-white/[0.03]">
+                        <item.icon className={`w-3.5 h-3.5 ${item.ok ? 'text-emerald-400' : 'text-red-400'}`} />
+                        <span className="text-[11px] text-muted-foreground">{item.label}</span>
+                        <span className={`w-1.5 h-1.5 rounded-full ml-auto ${item.ok ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Features */}
+                  <div>
+                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Pipeline Features</span>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {config.features.map(f => (
+                        <Badge key={f} variant="outline" className="text-[10px] font-normal py-0 px-2">
+                          {f}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Manual Fixture IDs */}
+                  <div>
+                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Manual Mode — Fixture IDs</span>
+                    <Textarea
+                      placeholder="Enter fixture IDs, comma-separated (e.g., 1234567, 1234568)"
+                      className="mt-2 text-sm bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/10 resize-none"
+                      rows={2}
+                      onChange={(e) => onFixtureIdsChange(e.target.value)}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-16 w-full" />
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// ─── Main Component ─────────────────────────────────────────
+
+export default function NewsEnginePanel() {
+  const [status, setStatus] = useState<ServiceStatus | null>(null)
+  const [running, setRunning] = useState(false)
+  const [response, setResponse] = useState<PipelineResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [showResult, setShowResult] = useState(false)
+  const [showPreview, setShowPreview] = useState<{ title: string; slug: string } | null>(null)
+
+  // Config state
+  const [mode, setMode] = useState<'auto' | 'manual'>('auto')
+  const [fixtureIds, setFixtureIds] = useState('')
+  const [lookbackHours, setLookbackHours] = useState('24')
+  const [maxArticles, setMaxArticles] = useState('5')
+  const [dryRun, setDryRun] = useState(false)
+
+  // Load service status
+  const loadStatus = useCallback(async () => {
+    try {
+      const res = await fetch('/api/cron/generate-news')
+      if (res.ok) setStatus(await res.json())
+    } catch { /* silent */ }
+  }, [])
+
+  useState(() => { loadStatus() })
+
+  // Run pipeline
+  const runPipeline = async () => {
+    setRunning(true)
+    setError(null)
+    setResponse(null)
+
+    try {
+      const body: any = { mode, lookbackHours: parseInt(lookbackHours), maxArticles: parseInt(maxArticles), dryRun }
+      if (mode === 'manual' && fixtureIds.trim()) {
+        body.fixtureIds = fixtureIds.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n))
+      }
+
+      const res = await fetch('/api/cron/generate-news', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Pipeline failed')
+      setResponse(data)
+      setShowResult(true)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setRunning(false)
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-neon/20 to-emerald-500/10 border border-neon/20">
+            <Newspaper className="w-5 h-5 text-neon" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Automated News Engine</h2>
+            <p className="text-xs text-muted-foreground">AI-powered match report generation pipeline</p>
+          </div>
+        </div>
+        <Button
+          onClick={loadStatus}
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground hover:text-neon"
+        >
+          <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+          Status
+        </Button>
+      </div>
+
+      {/* Stats Row */}
+      {response && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <StatCard icon={Search} label="Matches Found" value={response.matches_found} />
+          <StatCard icon={Zap} label="Articles Generated" value={response.articles_generated} />
+          <StatCard icon={Clock} label="Pipeline Duration" value={`${(response.pipeline_duration_ms / 1000).toFixed(1)}s`} />
+          <StatCard icon={BarChart3} label="Success Rate" value={response.results.length > 0 ? `${Math.round((response.results.filter(r => r.success).length / response.results.length) * 100)}%` : '—'} />
+        </div>
+      )}
+
+      {/* Config Panel */}
+      <ConfigPanel config={status} onFixtureIdsChange={setFixtureIds} />
+
+      {/* Controls */}
+      <div className="glass-card p-5 space-y-4">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <Zap className="w-4 h-4 text-neon" />
+          Pipeline Controls
+        </h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Mode */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Mode</label>
+            <Select value={mode} onValueChange={(v) => setMode(v as 'auto' | 'manual')}>
+              <SelectTrigger className="text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="auto">Auto (API-Football)</SelectItem>
+                <SelectItem value="manual">Manual (Fixture IDs)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Lookback Hours */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Lookback (hours)</label>
+            <Select value={lookbackHours} onValueChange={setLookbackHours}>
+              <SelectTrigger className="text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="6">6 hours</SelectItem>
+                <SelectItem value="12">12 hours</SelectItem>
+                <SelectItem value="24">24 hours</SelectItem>
+                <SelectItem value="48">48 hours</SelectItem>
+                <SelectItem value="72">72 hours</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Max Articles */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Max Articles</label>
+            <Select value={maxArticles} onValueChange={setMaxArticles}>
+              <SelectTrigger className="text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">1</SelectItem>
+                <SelectItem value="3">3</SelectItem>
+                <SelectItem value="5">5</SelectItem>
+                <SelectItem value="10">10</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Dry Run Toggle */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Dry Run</label>
+            <div className="flex items-center gap-3 p-2.5 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.03]">
+              <button
+                onClick={() => setDryRun(!dryRun)}
+                className={`relative w-10 h-5 rounded-full transition-colors ${dryRun ? 'bg-neon' : 'bg-gray-300 dark:bg-white/20'}`}
+              >
+                <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${dryRun ? 'left-5' : 'left-0.5'}`} />
+              </button>
+              <span className="text-xs text-muted-foreground">{dryRun ? 'Preview only' : 'Publish'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20"
+          >
+            <XCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-red-400">Pipeline Error</p>
+              <p className="text-xs text-red-400/70 mt-0.5">{error}</p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Run Button */}
+        <Button
+          onClick={runPipeline}
+          disabled={running}
+          className={`w-full py-3 text-sm font-bold transition-all ${running ? 'opacity-70' : ''}`}
+          size="lg"
+        >
+          {running ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Generating Articles...
+            </>
+          ) : (
+            <>
+              <Play className="w-4 h-4 mr-2" />
+              {dryRun ? 'Run Dry Run (Preview Only)' : 'Generate & Publish Articles'}
+            </>
+          )}
+        </Button>
+
+        {/* Info Banner */}
+        <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
+          <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+          <div className="text-[11px] text-muted-foreground leading-relaxed">
+            <strong>Auto mode:</strong> Fetches finished matches from API-Football in the last N hours and generates articles for each.
+            <br />
+            <strong>Manual mode:</strong> Enter specific fixture IDs (comma-separated) to generate articles for specific matches.
+            <br />
+            <strong>Dry run:</strong> Generates content without publishing to Supabase.
+          </div>
+        </div>
+      </div>
+
+      {/* Results */}
+      <AnimatePresence>
+        {showResult && response && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="glass-card overflow-hidden"
+          >
+            <div className="p-4 border-b border-gray-200 dark:border-white/5 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-neon" />
+                Pipeline Results
+              </h3>
+              <Badge variant={response.success ? 'default' : 'secondary'} className={response.success ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : ''}>
+                {response.success ? `${response.articles_generated} Published` : 'Failed'}
+              </Badge>
+            </div>
+
+            <div className="divide-y divide-gray-100 dark:divide-white/5 max-h-96 overflow-y-auto custom-scrollbar">
+              {response.results.map((result, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="p-4 flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors"
+                >
+                  {/* Status */}
+                  <div className="mt-0.5">
+                    <StageIcon stage={result.stage} success={result.success} />
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{result.match}</span>
+                      <Badge variant="outline" className="text-[10px] shrink-0">ID: {result.fixtureId}</Badge>
+                    </div>
+
+                    {result.success && result.article ? (
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{result.article.title}</p>
+                        <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                          <span className="flex items-center gap-1"><FileText className="w-3 h-3" />{result.article.slug}</span>
+                          <span className="flex items-center gap-1"><ImageIcon className="w-3 h-3" />{result.article.imageUrl ? 'Image ✓' : 'No image'}</span>
+                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{(result.duration / 1000).toFixed(1)}s</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <p className="text-xs text-red-400">{result.error || 'Unknown error'}</p>
+                        {result.stage && (
+                          <p className="text-[10px] text-muted-foreground">Failed at stage: {result.stage}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  {result.success && result.article && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-neon shrink-0"
+                      onClick={() => setShowPreview({ title: result.article!.title, slug: result.article!.slug })}
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                    </Button>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Article Preview Modal */}
+      <Dialog open={!!showPreview} onOpenChange={(v) => !v && setShowPreview(null)}>
+        <DialogContent className="max-w-lg bg-gray-50 dark:bg-deep-800 border-gray-200 dark:border-white/10 p-0">
+          {showPreview && (
+            <>
+              <DialogHeader className="p-5 pb-0">
+                <DialogTitle className="text-base font-bold text-gray-900 dark:text-white">{showPreview.title}</DialogTitle>
+              </DialogHeader>
+              <div className="p-5 space-y-3">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Badge variant="outline" className="text-[10px]">{showPreview.slug}</Badge>
+                </div>
+                <Separator className="bg-gray-200 dark:bg-white/5" />
+                <p className="text-xs text-muted-foreground">Article has been published to Supabase. It will appear in the News Grid and Hero Slider.</p>
+                <div className="flex gap-2">
+                  <Button size="sm" className="flex-1" onClick={() => window.open(`/api/articles/${showPreview.slug}`, '_blank')}>
+                    <FileText className="w-3.5 h-3.5 mr-1.5" />
+                    View API Response
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => setShowPreview(null)}>
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
