@@ -15,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { AuthProvider, useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/auth-context';
 
 // ─── Login Form (must be inside AuthProvider + Suspense) ─────
 
@@ -235,12 +235,8 @@ function LoginContent() {
   );
 }
 
-// ─── Page (wraps with AuthProvider) ─────────────────────────
+// ─── Page (AuthProvider already provided by admin layout) ────
 
 export default function AdminLoginPage() {
-  return (
-    <AuthProvider>
-      <LoginContent />
-    </AuthProvider>
-  );
+  return <LoginContent />;
 }
