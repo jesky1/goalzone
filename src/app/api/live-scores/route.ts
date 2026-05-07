@@ -17,6 +17,8 @@ interface LiveMatch {
   leagueLogo: string
   homeTeam: string
   awayTeam: string
+  homeLogo: string
+  awayLogo: string
   homeScore: number
   awayScore: number
   status: 'LIVE' | 'HT' | 'FT' | 'NS'
@@ -89,6 +91,8 @@ export async function GET() {
           leagueLogo: f.league.logo || '',
           homeTeam: f.teams.home.name,
           awayTeam: f.teams.away.name,
+          homeLogo: f.teams.home.logo || '',
+          awayLogo: f.teams.away.logo || '',
           homeScore: f.goals.home ?? 0,
           awayScore: f.goals.away ?? 0,
           status: mapStatus(f.fixture.status.short),
@@ -117,22 +121,28 @@ export async function GET() {
 function getMockMatches(): LiveMatch[] {
   return [
     {
-      id: 'mock-1', league: 'Premier League', leagueLogo: '',
+      id: 'mock-1', league: 'Premier League', leagueLogo: 'https://media.api-sports.io/football/leagues/39.png',
       homeTeam: 'Arsenal', awayTeam: 'Manchester City',
+      homeLogo: 'https://media.api-sports.io/football/teams/42.png',
+      awayLogo: 'https://media.api-sports.io/football/teams/50.png',
       homeScore: 2, awayScore: 1, status: 'LIVE', minute: 67,
       homeEvents: [{ type: 'goal', minute: 12, player: 'Saka' }, { type: 'goal', minute: 45, player: 'Havertz' }],
       awayEvents: [{ type: 'goal', minute: 38, player: 'Haaland' }],
     },
     {
-      id: 'mock-2', league: 'La Liga', leagueLogo: '',
+      id: 'mock-2', league: 'La Liga', leagueLogo: 'https://media.api-sports.io/football/leagues/140.png',
       homeTeam: 'Real Madrid', awayTeam: 'Barcelona',
+      homeLogo: 'https://media.api-sports.io/football/teams/541.png',
+      awayLogo: 'https://media.api-sports.io/football/teams/529.png',
       homeScore: 3, awayScore: 2, status: 'HT', minute: 45,
       homeEvents: [{ type: 'goal', minute: 15, player: 'Vinícius Jr.' }, { type: 'goal', minute: 55, player: 'Bellingham' }],
       awayEvents: [{ type: 'goal', minute: 30, player: 'Lewandowski' }],
     },
     {
-      id: 'mock-3', league: 'Champions League', leagueLogo: '',
+      id: 'mock-3', league: 'Champions League', leagueLogo: 'https://media.api-sports.io/football/leagues/2.png',
       homeTeam: 'Liverpool', awayTeam: 'Real Madrid',
+      homeLogo: 'https://media.api-sports.io/football/teams/40.png',
+      awayLogo: 'https://media.api-sports.io/football/teams/541.png',
       homeScore: 0, awayScore: 0, status: 'NS', minute: null,
       homeEvents: [], awayEvents: [],
     },

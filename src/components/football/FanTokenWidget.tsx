@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Coins, RefreshCw, ExternalLink } from 'lucide-react';
 
@@ -16,6 +16,8 @@ interface FanToken {
   marketCap: number;
   logo: string;
   color: string;
+  image: string;
+  sparkline: number[];
 }
 
 interface FanTokenSummary {
@@ -41,29 +43,34 @@ function formatNumber(num: number): string {
   return `$${num.toLocaleString()}`;
 }
 
-function MiniSparkline({ positive }: { positive: boolean }) {
-  const points = Array.from({ length: 12 }, (_, i) => {
-    const base = positive ? 30 : 70;
-    const trend = positive ? -i * 1.5 : i * 1.5;
-    const noise = (Math.sin(i * 1.7) * 8) + (Math.cos(i * 0.9) * 5);
-    return Math.max(5, Math.min(95, base + trend + noise));
-  });
+function RealSparkline({ data, positive }: { data: number[]; positive: boolean }) {
+  const color = positive ? '#22c55e' : '#ef4444';
+  const gradientId = `spark-${Math.random().toString(36).slice(2, 8)}`;
 
-  const pathD = points
+  const normalized = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const range = max - min || 1;
+    return data.map((v) => ((v - min) / range) * 80 + 10);
+  }, [data]);
+
+  if (normalized.length === 0) {
+    return <div className="w-full h-8" />;
+  }
+
+  const pathD = normalized
     .map((y, i) => {
-      const x = (i / (points.length - 1)) * 80 + 10;
-      return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+      const x = (i / (normalized.length - 1)) * 80 + 10;
+      return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
     })
     .join(' ');
 
-  const color = positive ? '#22c55e' : '#ef4444';
-  const gradientId = positive ? 'sparkGreen' : 'sparkRed';
-
   return (
-    <svg viewBox="0 0 100 100" className="w-full h-8 opacity-70" preserveAspectRatio="none">
+    <svg viewBox="0 0 100 100" className="w-full h-8 opacity-80" preserveAspectRatio="none">
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
@@ -75,7 +82,7 @@ function MiniSparkline({ positive }: { positive: boolean }) {
         d={pathD}
         fill="none"
         stroke={color}
-        strokeWidth="3"
+        strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -89,6 +96,7 @@ export default function FanTokenWidget() {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [dataSource, setDataSource] = useState<string>('loading');
 
   const loadTokens = async () => {
     if (refreshing) return;
@@ -102,6 +110,7 @@ export default function FanTokenWidget() {
           setTokens(list);
           setSummary(data.summary || null);
           setLastUpdated(new Date());
+          setDataSource(data.source || 'unknown');
         }
       }
     } catch {
@@ -136,17 +145,26 @@ export default function FanTokenWidget() {
             Fan <span className="neon-text">Tokens</span>
           </h3>
         </div>
-        <button
-          onClick={loadTokens}
-          disabled={refreshing}
-          className="p-1.5 rounded-lg hover:bg-white/5 transition-colors disabled:opacity-40"
-          aria-label="Refresh token prices"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 text-muted-foreground ${refreshing ? 'animate-spin' : ''}`} />
-        </button>
+        <div className="flex items-center gap-1.5">
+          <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
+            dataSource === 'coingecko' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+            dataSource === 'mock' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+            'bg-gray-500/10 text-gray-400'
+          }`}>
+            {dataSource === 'coingecko' ? 'LIVE' : dataSource === 'mock' ? 'OFFLINE' : '...'}
+          </span>
+          <button
+            onClick={loadTokens}
+            disabled={refreshing}
+            className="p-1.5 rounded-lg hover:bg-white/5 transition-colors disabled:opacity-40"
+            aria-label="Refresh token prices"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-muted-foreground ${refreshing ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
       </div>
       <p className="text-xs text-muted-foreground mb-3">
-        Harga Fan Token klub bola real-time
+        Harga Fan Token klub bola {dataSource === 'coingecko' ? 'real-time via CoinGecko' : 'dari data lokal'}
       </p>
 
       {/* Summary Bar */}
@@ -197,12 +215,16 @@ export default function FanTokenWidget() {
               transition={{ duration: 0.25, delay: index * 0.04 }}
               className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-all duration-200 group cursor-pointer"
             >
-              {/* Token Icon */}
+              {/* Token Icon - Show real image if available */}
               <div
-                className="w-9 h-9 rounded-lg flex items-center justify-center text-base shrink-0 border border-white/10"
+                className="w-9 h-9 rounded-lg flex items-center justify-center text-base shrink-0 border border-white/10 overflow-hidden"
                 style={{ backgroundColor: `${token.color}20` }}
               >
-                {token.logo}
+                {token.image ? (
+                  <img src={token.image} alt={token.symbol} className="w-full h-full object-cover" />
+                ) : (
+                  token.logo
+                )}
               </div>
 
               {/* Token Info */}
@@ -220,29 +242,39 @@ export default function FanTokenWidget() {
                 </div>
               </div>
 
-              {/* Mini Sparkline */}
-              <div className="w-12 h-6 shrink-0 hidden sm:block">
-                <MiniSparkline positive={isPositive} />
+              {/* Real Sparkline from CoinGecko */}
+              <div className="w-14 h-7 shrink-0 hidden sm:block">
+                {token.sparkline && token.sparkline.length > 0 ? (
+                  <RealSparkline data={token.sparkline} positive={isPositive} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-[8px] text-gray-600">—</div>
+                )}
               </div>
 
               {/* Price & Change */}
               <div className="text-right shrink-0">
-                <div className="text-sm font-bold text-white tabular-nums">
-                  {formatPrice(token.price)}
-                </div>
-                <div
-                  className={`text-[11px] font-semibold tabular-nums flex items-center justify-end gap-0.5 ${
-                    isPositive ? 'text-green-400' : 'text-red-400'
-                  }`}
-                >
-                  {isPositive ? (
-                    <TrendingUp className="w-3 h-3" />
-                  ) : (
-                    <TrendingDown className="w-3 h-3" />
-                  )}
-                  {isPositive ? '+' : ''}
-                  {token.changePercent24h.toFixed(2)}%
-                </div>
+                {token.price > 0 ? (
+                  <>
+                    <div className="text-sm font-bold text-white tabular-nums">
+                      {formatPrice(token.price)}
+                    </div>
+                    <div
+                      className={`text-[11px] font-semibold tabular-nums flex items-center justify-end gap-0.5 ${
+                        isPositive ? 'text-green-400' : 'text-red-400'
+                      }`}
+                    >
+                      {isPositive ? (
+                        <TrendingUp className="w-3 h-3" />
+                      ) : (
+                        <TrendingDown className="w-3 h-3" />
+                      )}
+                      {isPositive ? '+' : ''}
+                      {token.changePercent24h.toFixed(2)}%
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-xs text-gray-600">N/A</div>
+                )}
               </div>
             </motion.div>
           );
@@ -278,7 +310,7 @@ export default function FanTokenWidget() {
       )}
 
       {/* Top Gainer Banner */}
-      {!loading && summary && summary.topGainer && (
+      {!loading && summary && summary.topGainer && summary.topGainer.changePercent24h !== 0 && (
         <div className="mt-3 p-2.5 rounded-lg bg-green-500/5 border border-green-500/10">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-green-400">Top Gainer</span>

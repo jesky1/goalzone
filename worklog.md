@@ -358,3 +358,39 @@ Stage Summary:
 - Field mapping helpers ensure frontend compatibility (camelCase API responses)
 - Server-side Supabase client uses service role key (bypasses RLS)
 - Project is production-ready for Vercel + Supabase deployment
+
+---
+Task ID: 16
+Agent: Main Developer
+Task: Add club logos + player positions (lineups) to live scores, and make fan tokens auto-update with real CoinGecko data
+
+Work Log:
+- Updated `/src/app/api/live-scores/route.ts` to include `homeLogo` and `awayLogo` fields from API-Football response (f.teams.home.logo, f.teams.away.logo)
+- Created `/src/app/api/fixtures/[id]/route.ts` — new API route for match details:
+  - Fetches fixture info, lineups, formations, player positions/ratings from API-Football
+  - Parses player events (goals, cards) and match statistics
+  - Falls back to rich mock data (11v11 lineups with ratings)
+- Rewrote `/src/app/page.tsx` with new MatchDetailModal:
+  - Match header with team logos, score, league info, venue, referee
+  - 3-tab layout: Lineup | Statistik | Events
+  - Lineups tab: formation badges, coach names, starting XI with position badges (GK/DEF/MID/FWD), color-coded ratings, goal/card indicators, expandable substitutes
+  - Stats tab: visual bar comparison for both teams
+  - Events tab: timeline of goals and cards
+  - MatchRow now clickable with hover chevron indicator
+- Updated `/src/app/api/fan-tokens/route.ts` to use CoinGecko `/coins/markets` API:
+  - Real-time prices with 7-day sparkline data
+  - 12 Socios fan tokens mapped to CoinGecko IDs
+  - Real token images from CoinGecko
+  - Fallback to mock data if CoinGecko unavailable
+- Updated `/src/components/football/FanTokenWidget.tsx`:
+  - Real sparkline charts from CoinGecko 7-day data
+  - Real token images replacing emoji placeholders
+  - LIVE/OFFLINE status indicator showing data source
+  - N/A display for delisted tokens ($0 price)
+- All APIs verified: live-scores (200), fan-tokens (200, real CoinGecko data), fixtures/[id] (200)
+
+Stage Summary:
+- Live scores now show club logos from API-Football
+- Click any match to see detailed lineup with positions (GK/DEF/MID/FWD), ratings, formations, coaches
+- Fan tokens use real CoinGecko API with 7-day sparkline charts and live price updates
+- Lint: 0 errors, 2 pre-existing warnings
