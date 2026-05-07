@@ -127,14 +127,23 @@ function parseLineup(lineup: any, events: any[], teamId: number): TeamLineup {
       (e: any) => e.player?.id === p.player?.id
     )
 
+    const playerId = p.player?.id || 0
+    // Use API-Football photo if provided, otherwise construct CDN URL from player ID
+    const rawPhoto = p.player?.photo || ''
+    const photo = rawPhoto && rawPhoto.length > 5
+      ? rawPhoto
+      : playerId > 0
+        ? `https://media.api-sports.io/football/players/${playerId}.png`
+        : ''
+
     return {
-      id: p.player?.id || 0,
+      id: playerId,
       name: p.player?.name || 'Unknown',
       number: p.player?.number || 0,
       position: p.player?.pos || (isStarter ? 'N/A' : 'SUB'),
       grid: p.player?.grid || null,
       rating: p.player?.rating ? parseFloat(p.player.rating) : null,
-      photo: p.player?.photo || '',
+      photo,
       events: playerEvents.map((e: any) => ({
         type: e.type,
         detail: e.detail,
@@ -163,13 +172,24 @@ function parseLineup(lineup: any, events: any[], teamId: number): TeamLineup {
 function extractMatchEvents(events: any[], teamId: number) {
   return events
     .filter((e: any) => e.team.id === teamId && (e.type === 'goal' || e.type === 'card'))
-    .map((e: any) => ({
-      type: e.type,
-      minute: e.time?.elapsed || 0,
-      player: e.player?.name || '',
-      detail: e.detail || '',
-      card: e.cards?.[0]?.color || null,
-    }))
+    .map((e: any) => {
+      const playerId = e.player?.id || 0
+      const rawPhoto = e.player?.photo || ''
+      const photo = rawPhoto && rawPhoto.length > 5
+        ? rawPhoto
+        : playerId > 0
+          ? `https://media.api-sports.io/football/players/${playerId}.png`
+          : ''
+      return {
+        type: e.type,
+        minute: e.time?.elapsed || 0,
+        player: e.player?.name || '',
+        playerId,
+        playerPhoto: photo,
+        detail: e.detail || '',
+        card: e.cards?.[0]?.color || null,
+      }
+    })
 }
 
 function getMockFixtureDetail(id: string) {
@@ -201,12 +221,12 @@ function getMockFixtureDetail(id: string) {
         round: 'Regular Season - 28',
       },
       homeEvents: [
-        { type: 'goal', minute: 12, player: 'B. Saka', detail: 'Normal Goal', card: null },
-        { type: 'goal', minute: 45, player: 'K. Havertz', detail: 'Normal Goal', card: null },
-        { type: 'card', minute: 34, player: 'M. Rice', detail: 'Yellow Card', card: 'yellow' },
+        { type: 'goal', minute: 12, player: 'B. Saka', playerId: 873, playerPhoto: pp(873), detail: 'Normal Goal', card: null },
+        { type: 'goal', minute: 45, player: 'K. Havertz', playerId: 860, playerPhoto: pp(860), detail: 'Normal Goal', card: null },
+        { type: 'card', minute: 34, player: 'M. Rice', playerId: 289, playerPhoto: pp(289), detail: 'Yellow Card', card: 'yellow' },
       ],
       awayEvents: [
-        { type: 'goal', minute: 38, player: 'E. Haaland', detail: 'Normal Goal', card: null },
+        { type: 'goal', minute: 38, player: 'E. Haaland', playerId: 882, playerPhoto: pp(882), detail: 'Normal Goal', card: null },
       ],
       homeStatistics: [
         { type: 'Total Shots', value: 14 },

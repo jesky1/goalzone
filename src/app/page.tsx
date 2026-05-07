@@ -13,6 +13,7 @@ import RefereeModal from '@/components/football/RefereeModal';
 import type { RefereeData } from '@/components/football/RefereeModal';
 import StadiumName from '@/components/football/StadiumName';
 import TransferFeed from '@/components/football/TransferFeed';
+import SearchDialog from '@/components/football/SearchDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Eye, Calendar, ChevronRight, ChevronDown, ChevronUp, MapPin, User, X, Loader2, Sparkles, Send } from 'lucide-react';
@@ -45,7 +46,7 @@ interface Article {
   author: { username: string }; viewCount: number; readTime: number; createdAt: string; isFeatured?: boolean;
 }
 
-interface MatchEvent { type: string; minute: number; player: string; detail?: string; card?: string | null; }
+interface MatchEvent { type: string; minute: number; player: string; playerId?: number; playerPhoto?: string; detail?: string; card?: string | null; }
 
 interface Match {
   id: string; league: string; leagueLogo?: string;
@@ -322,7 +323,32 @@ function MatchDetailModal({ match, open, onClose, onRefereeClick }: { match: Mat
     return colors[pos] || 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10';
   };
 
-  const renderPlayerRow = (player: LineupPlayer, isHome: boolean) => {
+  const PlayerAvatar = ({ photo, name, fallbackLogo, size = 24 }: { photo: string; name: string; fallbackLogo: string; size?: number }) => {
+    const [imgFailed, setImgFailed] = useState(false);
+    const hasPhoto = photo && photo.length > 10 && !imgFailed;
+    const hasLogo = fallbackLogo && fallbackLogo.length > 10;
+    const initials = name.split(' ').filter(n => n.length > 0 && n[0] === n[0].toUpperCase()).map(n => n[0]).slice(0, 2).join('');
+    return (
+      <div
+        className="rounded-full overflow-hidden shrink-0 bg-gray-200 dark:bg-white/10"
+        style={{ width: size, height: size }}
+      >
+        {hasPhoto ? (
+          <img src={photo} alt={name} className="w-full h-full object-cover" loading="lazy" onError={() => setImgFailed(true)} />
+        ) : hasLogo ? (
+          <div className="w-full h-full flex items-center justify-center bg-white/10">
+            <img src={fallbackLogo} alt="" className="w-[70%] h-[70%] object-contain" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          </div>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-[9px] font-bold text-gray-500 dark:text-gray-400">{initials || '?'}</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderPlayerRow = (player: LineupPlayer, isHome: boolean, teamLogo: string = '') => {
     const hasGoal = player.events.some(e => e.type === 'goal');
     const hasYellow = player.events.some(e => e.type === 'card' && e.detail?.includes('Yellow'));
     const hasRed = player.events.some(e => e.type === 'card' && e.detail?.includes('Red'));
@@ -342,6 +368,7 @@ function MatchDetailModal({ match, open, onClose, onRefereeClick }: { match: Mat
         {/* Player Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
+            <PlayerAvatar photo={player.photo} name={player.name} fallbackLogo={teamLogo} size={22} />
             <span className="text-xs text-gray-400 dark:text-gray-500 w-4 shrink-0 tabular-nums">{player.number}</span>
             <span className="text-[13px] text-gray-900 dark:text-white truncate">{player.name}</span>
             <span className={`text-[9px] px-1.5 py-0.5 rounded border font-bold shrink-0 ${getPositionColor(player.position)}`}>
@@ -381,7 +408,7 @@ function MatchDetailModal({ match, open, onClose, onRefereeClick }: { match: Mat
         {/* Starting XI */}
         <div className="space-y-0.5 mb-2">
           {lineup.startXI.length > 0 ? (
-            lineup.startXI.map(p => renderPlayerRow(p, isHome))
+            lineup.startXI.map(p => renderPlayerRow(p, isHome, lineup.team.logo))
           ) : (
             <div className="text-[11px] text-gray-300 dark:text-gray-600 text-center py-4">Lineup belum tersedia</div>
           )}
@@ -407,7 +434,7 @@ function MatchDetailModal({ match, open, onClose, onRefereeClick }: { match: Mat
                   className="overflow-hidden"
                 >
                   <div className="space-y-0.5 pb-2">
-                    {lineup.substitutes.map(p => renderPlayerRow(p, isHome))}
+                    {lineup.substitutes.map(p => renderPlayerRow(p, isHome, lineup.team.logo))}
                   </div>
                 </motion.div>
               )}
@@ -474,6 +501,9 @@ function MatchDetailModal({ match, open, onClose, onRefereeClick }: { match: Mat
       ...f.awayEvents.map(e => ({ ...e, side: 'away' as const })),
     ].sort((a, b) => a.minute - b.minute);
 
+    const eventTeamLogo = (e: typeof allEvents[number]) =>
+      e.side === 'home' ? (f?.homeLogo || '') : (f?.awayLogo || '');
+
     return (
       <div className="space-y-1.5">
         {allEvents.map((e, i) => (
@@ -486,6 +516,9 @@ function MatchDetailModal({ match, open, onClose, onRefereeClick }: { match: Mat
             ) : (
               <span className="w-2.5 h-3 rounded-sm bg-yellow-500 shrink-0" />
             )}
+            {e.playerPhoto ? (
+              <PlayerAvatar photo={e.playerPhoto || ''} name={e.player} fallbackLogo={eventTeamLogo(e)} size={20} />
+            ) : null}
             <span className="text-gray-900 dark:text-white">{e.player}</span>
             {e.detail && <span className="text-gray-400 dark:text-gray-500 text-[10px]">({e.detail})</span>}
           </div>
@@ -788,6 +821,26 @@ export default function Home() {
   const handleMatchClick = (match: Match) => { setSelectedMatch(match); setMatchModalOpen(true); };
   const handleCloseMatchModal = () => { setMatchModalOpen(false); setTimeout(() => setSelectedMatch(null), 300); };
 
+  // Listen for search dialog article/match clicks
+  useEffect(() => {
+    const handleArticleEvent = (e: Event) => {
+      const article = (e as CustomEvent).detail as Article;
+      setSelectedArticle(article);
+      setModalOpen(true);
+    };
+    const handleMatchEvent = (e: Event) => {
+      const match = (e as CustomEvent).detail as Match;
+      setSelectedMatch(match);
+      setMatchModalOpen(true);
+    };
+    window.addEventListener('goalzone:open-article', handleArticleEvent);
+    window.addEventListener('goalzone:open-match', handleMatchEvent);
+    return () => {
+      window.removeEventListener('goalzone:open-article', handleArticleEvent);
+      window.removeEventListener('goalzone:open-match', handleMatchEvent);
+    };
+  }, []);
+
   const handleRefereeClick = async (name: string) => {
     try {
       const res = await fetch(`/api/referees/${encodeURIComponent(name)}`);
@@ -905,6 +958,7 @@ export default function Home() {
       <ArticleModalView article={selectedArticle} open={modalOpen} onClose={handleCloseModal} />
       <MatchDetailModal match={selectedMatch} open={matchModalOpen} onClose={handleCloseMatchModal} onRefereeClick={handleRefereeClick} />
       <RefereeModal referee={refereeData} open={refereeModalOpen} onClose={handleCloseRefereeModal} />
+      <SearchDialog />
 
     </div>
   );
