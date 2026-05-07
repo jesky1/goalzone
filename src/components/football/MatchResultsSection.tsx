@@ -494,15 +494,14 @@ function FinishedCard({
       whileHover={{ y: -2, scale: 1.01 }}
       className="relative group"
     >
-      <button
-        type="button"
-        onClick={() => onSelect(match)}
-        className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-neon/40 focus-visible:ring-offset-2 focus-visible:ring-offset-deep-900 rounded-2xl"
+      <Link
+        href={`/matches/${match.id}`}
+        className="block w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-neon/40 focus-visible:ring-offset-2 focus-visible:ring-offset-deep-900 rounded-2xl"
       >
         <div className={`relative rounded-2xl overflow-hidden border transition-all duration-300
           ${result.border}
           glass-card glass-hover
-          hover:cursor-pointer hover:border-cyan-500
+          hover:cursor-pointer hover:border-cyan-500 hover:bg-cyan-500/10
           hover:shadow-[0_0_15px_rgba(0,255,255,0.3)]`}>
           {/* Top gradient */}
           <div className={`absolute inset-x-0 top-0 h-[2px] opacity-60
@@ -585,7 +584,7 @@ function FinishedCard({
             )}
           </div>
         </div>
-      </button>
+      </Link>
     </motion.div>
   );
 }
@@ -614,15 +613,14 @@ function UpcomingCard({
       whileHover={{ y: -2, scale: 1.01 }}
       className="relative group"
     >
-      <button
-        type="button"
-        onClick={() => onSelect(match)}
-        className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-deep-900 rounded-2xl"
+      <Link
+        href={`/matches/${match.id}`}
+        className="block w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-deep-900 rounded-2xl"
       >
         <div className={`relative rounded-2xl overflow-hidden border transition-all duration-300
           border-blue-500/15
           glass-card glass-hover
-          hover:cursor-pointer hover:border-cyan-500
+          hover:cursor-pointer hover:border-cyan-500 hover:bg-cyan-500/10
           hover:shadow-[0_0_15px_rgba(0,255,255,0.3)]`}>
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-60" />
 
@@ -696,7 +694,7 @@ function UpcomingCard({
             )}
           </div>
         </div>
-      </button>
+      </Link>
     </motion.div>
   );
 }
