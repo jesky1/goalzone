@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Menu, Zap } from 'lucide-react';
+import { Menu, Zap, Search } from 'lucide-react';
 import ThemeToggle from '@/components/football/ThemeToggle';
 import {
   Sheet,
@@ -19,6 +19,10 @@ const navLinks = [
   { label: 'Klasemen', href: '#standings' },
   { label: 'Transfer', href: '#transfer' },
 ];
+
+function openSearchDialog() {
+  window.dispatchEvent(new CustomEvent('goalzone:open-search'));
+}
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -51,13 +55,33 @@ export default function Navbar() {
                 {link.label}
               </a>
             ))}
-            <div className="ml-2 pl-2 border-l border-gray-200 dark:border-white/10">
+            {/* Search Bar */}
+            <button
+              type="button"
+              onClick={openSearchDialog}
+              className="ml-2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-gray-500 hover:text-gray-300 transition-all group min-w-[180px]"
+            >
+              <Search className="w-3.5 h-3.5 text-gray-500 group-hover:text-neon transition-colors" />
+              <span className="text-xs">Cari artikel, tim...</span>
+              <kbd className="ml-auto hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/[0.08] font-mono text-[9px] text-gray-500">
+                ⌘K
+              </kbd>
+            </button>
+            <div className="ml-1 pl-2 border-l border-gray-200 dark:border-white/10">
               <ThemeToggle />
             </div>
           </div>
 
           {/* Mobile Menu */}
           <div className="md:hidden flex items-center gap-2">
+            <button
+              type="button"
+              onClick={openSearchDialog}
+              className="p-2 rounded-lg hover:bg-white/5 transition-colors"
+              aria-label="Search"
+            >
+              <Search className="w-5 h-5 text-foreground" />
+            </button>
             <ThemeToggle />
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
