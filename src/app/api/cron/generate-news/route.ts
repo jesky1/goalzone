@@ -113,7 +113,7 @@ const LEAGUE_IDS = [
 const DEFAULT_AUTHOR_ID = process.env.ARTICLE_GEN_AUTHOR_ID || ''
 const DEFAULT_CATEGORY_ID = process.env.ARTICLE_GEN_CATEGORY_ID || ''
 
-const SITE_URL = process.env.SITE_URL || 'https://goalzone-seven.vercel.app'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://goalzone.vercel.app'
 const REVALIDATION_SECRET = process.env.REVALIDATION_SECRET || ''
 
 // ─── 1. DATA ACQUISITION (API-Football) ──────────────────────

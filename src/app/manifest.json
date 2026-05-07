@@ -1,0 +1,19 @@
+{
+  "name": "GOALZONE",
+  "short_name": "GOALZONE",
+  "description": "Portal Berita Sepak Bola Terkini — Live score, klasemen, transfer, analisis taktis",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0f1e",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "categories": ["sports", "news"],
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
