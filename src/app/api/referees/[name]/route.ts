@@ -31,7 +31,7 @@ interface RefereeProfile {
 const REFEREE_DATABASE: Record<string, Partial<RefereeProfile>> = {
   'michael oliver': {
     name: 'Michael Oliver',
-    photo: 'https://media.api-sports.io/football/referees/12092.png',
+    photo: '/referees/michael-oliver.png',
     age: 39,
     nationality: 'England',
     countryFlag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
@@ -52,7 +52,7 @@ const REFEREE_DATABASE: Record<string, Partial<RefereeProfile>> = {
   },
   'anthony taylor': {
     name: 'Anthony Taylor',
-    photo: 'https://media.api-sports.io/football/referees/12093.png',
+    photo: '/referees/anthony-taylor.png',
     age: 46,
     nationality: 'England',
     countryFlag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
@@ -73,7 +73,7 @@ const REFEREE_DATABASE: Record<string, Partial<RefereeProfile>> = {
   },
   'clement turpin': {
     name: 'Clément Turpin',
-    photo: 'https://media.api-sports.io/football/referees/12094.png',
+    photo: '/referees/clement-turpin.png',
     age: 42,
     nationality: 'France',
     countryFlag: '🇫🇷',
@@ -94,7 +94,7 @@ const REFEREE_DATABASE: Record<string, Partial<RefereeProfile>> = {
   },
   'daniele orsato': {
     name: 'Daniele Orsato',
-    photo: 'https://media.api-sports.io/football/referees/12095.png',
+    photo: '/referees/daniele-orsato.png',
     age: 48,
     nationality: 'Italy',
     countryFlag: '🇮🇹',
@@ -115,7 +115,7 @@ const REFEREE_DATABASE: Record<string, Partial<RefereeProfile>> = {
   },
   'felix brych': {
     name: 'Felix Brych',
-    photo: 'https://media.api-sports.io/football/referees/12096.png',
+    photo: '/referees/felix-brych.png',
     age: 49,
     nationality: 'Germany',
     countryFlag: '🇩🇪',
@@ -136,7 +136,7 @@ const REFEREE_DATABASE: Record<string, Partial<RefereeProfile>> = {
   },
   'szymon marciniak': {
     name: 'Szymon Marciniak',
-    photo: 'https://media.api-sports.io/football/referees/12097.png',
+    photo: '/referees/szymon-marciniak.png',
     age: 43,
     nationality: 'Poland',
     countryFlag: '🇵🇱',
@@ -157,7 +157,7 @@ const REFEREE_DATABASE: Record<string, Partial<RefereeProfile>> = {
   },
   'mateu lahoz': {
     name: 'Antonio Mateu Lahoz',
-    photo: 'https://media.api-sports.io/football/referees/12098.png',
+    photo: '/referees/antonio-mateu-lahoz.png',
     age: 47,
     nationality: 'Spain',
     countryFlag: '🇪🇸',
@@ -178,7 +178,7 @@ const REFEREE_DATABASE: Record<string, Partial<RefereeProfile>> = {
   },
   'daniele dundar': {
     name: 'Daniele Doveri',
-    photo: '',
+    photo: '/referees/daniele-doveri.png',
     age: 44,
     nationality: 'Italy',
     countryFlag: '🇮🇹',

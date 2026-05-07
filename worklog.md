@@ -173,3 +173,22 @@ Stage Summary:
 - Glassmorphism card with hexagonal pattern, neon glow border, scanline overlay
 - Interactive 3D tilt-on-hover effect for immersion
 - Triggered by clicking referee name in match detail modal
+
+---
+Task ID: 12
+Agent: main
+Task: Generate AI referee photos for all known referees
+
+Work Log:
+- Generated 8 professional AI referee portrait photos using z-ai image generation CLI
+  - Michael Oliver, Anthony Taylor, Clément Turpin, Daniele Orsato
+  - Felix Brych, Szymon Marciniak, Antonio Mateu Lahoz, Daniele Doveri
+- All photos saved to `public/referees/` directory as PNG files (864x1152 portrait)
+- Updated `src/app/api/referees/[name]/route.ts` to use local `/referees/{name}.png` paths
+- Prompts designed for FIFA official headshot style: black referee uniform, studio lighting, dark background
+- Lint passes with 0 errors, all 8 image files confirmed present
+
+Stage Summary:
+- 8 AI-generated referee portrait photos created and deployed
+- RefereeModal now displays real referee photos in the avatar section
+- All photos are local assets in public/referees/ for instant loading with no external dependencies
