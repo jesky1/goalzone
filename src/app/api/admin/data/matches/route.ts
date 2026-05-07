@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const league = searchParams.get('league') || '';
+    const status = searchParams.get('status') || '';
     const limit = Number(searchParams.get('limit') || '100');
     const offset = Number(searchParams.get('offset') || '0');
 
@@ -44,6 +45,9 @@ export async function GET(request: NextRequest) {
     }
     if (league) {
       query = query.eq('league', league);
+    }
+    if (status) {
+      query = query.eq('status', status);
     }
 
     const { data: matches, count: total, error } = await query;

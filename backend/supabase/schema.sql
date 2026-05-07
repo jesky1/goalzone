@@ -174,7 +174,7 @@ CREATE TABLE IF NOT EXISTS public.match_results (
   season INT,
   venue VARCHAR(300),
   match_week INT,
-  status VARCHAR(20) DEFAULT 'finished' CHECK (status IN ('finished', 'postponed', 'cancelled', 'abandoned')),
+  status VARCHAR(20) DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'finished', 'postponed', 'cancelled', 'abandoned')),
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()

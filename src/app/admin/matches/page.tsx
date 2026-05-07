@@ -133,6 +133,7 @@ function getResultBadge(homeScore: number, awayScore: number) {
 
 function getStatusColor(status: string) {
   switch (status) {
+    case 'scheduled': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
     case 'finished': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
     case 'postponed': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
     case 'cancelled': return 'bg-red-500/10 text-red-400 border-red-500/20';
@@ -151,6 +152,7 @@ export default function AdminMatchesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('');
   const [totalMatches, setTotalMatches] = useState(0);
 
   // Dialog states
@@ -179,6 +181,7 @@ export default function AdminMatchesPage() {
     try {
       const params = new URLSearchParams();
       if (searchQuery) params.set('search', searchQuery);
+      if (statusFilter) params.set('status', statusFilter);
 
       const res = await fetch(`/api/admin/data/matches?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -199,7 +202,7 @@ export default function AdminMatchesPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, searchQuery]);
+  }, [token, searchQuery, statusFilter]);
 
   useEffect(() => {
     if (isAuthenticated && token) {
@@ -303,7 +306,15 @@ export default function AdminMatchesPage() {
   };
 
   // ─── Filter matches ───────────────────────────────────────
-  const filteredMatches = matches; // search is server-side
+  const filteredMatches = matches; // search & status filter are server-side
+
+  const statusTabs = [
+    { value: '', label: 'Semua' },
+    { value: 'scheduled', label: 'Mendatang' },
+    { value: 'finished', label: 'Selesai' },
+    { value: 'postponed', label: 'Ditunda' },
+    { value: 'cancelled', label: 'Dibatalkan' },
+  ];
 
   // ─── Auth states ──────────────────────────────────────────
   if (authLoading) {
@@ -383,7 +394,7 @@ export default function AdminMatchesPage() {
       {/* ─── Content ─────────────────────────────────────── */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         {/* Search Bar */}
-        <div className="mb-4 sm:mb-6">
+        <div className="mb-3">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
@@ -401,6 +412,31 @@ export default function AdminMatchesPage() {
               </button>
             )}
           </div>
+        </div>
+
+        {/* Status Filter Tabs */}
+        <div className="flex items-center gap-2 mb-4 sm:mb-6 overflow-x-auto pb-1">
+          {statusTabs.map((tab) => {
+            const isActive = statusFilter === tab.value;
+            const tabColor = !tab.value ? 'bg-neon/10 text-neon border-neon/20' :
+              tab.value === 'scheduled' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+              tab.value === 'finished' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+              tab.value === 'postponed' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+              'bg-red-500/10 text-red-400 border-red-500/20';
+
+            return (
+              <button
+                key={tab.value}
+                onClick={() => setStatusFilter(tab.value)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all duration-200 border
+                  ${isActive
+                    ? tabColor
+                    : 'text-muted-foreground hover:text-white bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04]'}`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Error Banner */}
@@ -467,11 +503,11 @@ export default function AdminMatchesPage() {
               <Swords className="w-8 h-8 text-muted-foreground/30" />
             </div>
             <h3 className="text-base sm:text-lg font-semibold text-white mb-1">
-              {searchQuery ? 'Tidak ada hasil' : 'Belum ada pertandingan'}
+              {searchQuery || statusFilter ? 'Tidak ada hasil' : 'Belum ada pertandingan'}
             </h3>
             <p className="text-sm text-muted-foreground mb-6">
-              {searchQuery
-                ? `Tidak ditemukan pertandingan untuk "${searchQuery}"`
+              {searchQuery || statusFilter
+                ? `Tidak ditemukan pertandingan${statusFilter ? ` dengan status "${statusTabs.find(t => t.value === statusFilter)?.label}"` : ''}${searchQuery ? ` untuk "${searchQuery}"` : ''}`
                 : 'Mulai tambahkan hasil pertandingan'}
             </p>
             {!searchQuery && (
@@ -557,7 +593,8 @@ export default function AdminMatchesPage() {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className={`${getStatusColor(match.status)} text-[10px]`}>
-                            {match.status === 'finished' ? 'Selesai' :
+                            {match.status === 'scheduled' ? 'Mendatang' :
+                             match.status === 'finished' ? 'Selesai' :
                              match.status === 'postponed' ? 'Ditunda' :
                              match.status === 'cancelled' ? 'Dibatalkan' :
                              match.status === 'abandoned' ? 'Dihentikan' : match.status}
@@ -680,6 +717,7 @@ export default function AdminMatchesPage() {
               {/* ─── Count ─────────────────────────────────── */}
               <p className="text-xs text-muted-foreground/50 text-center mt-4 sm:mt-6">
                 {totalMatches} pertandingan
+                {statusFilter && ` · ${statusTabs.find(t => t.value === statusFilter)?.label}`}
                 {searchQuery && ` cocok dengan "${searchQuery}"`}
               </p>
             </motion.div>
@@ -792,6 +830,7 @@ export default function AdminMatchesPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-[#1a1a2e] border-white/10">
+                    <SelectItem value="scheduled">Mendatang (Jadwal)</SelectItem>
                     <SelectItem value="finished">Selesai</SelectItem>
                     <SelectItem value="postponed">Ditunda</SelectItem>
                     <SelectItem value="cancelled">Dibatalkan</SelectItem>

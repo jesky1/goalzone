@@ -55,93 +55,95 @@ function mapMatch(row: MatchResultRow): MatchResultAPI {
 
 // ─── Mock Data (fallback jika Supabase belum dikonfigurasi) ──
 
-function getMockResults(): MatchResultAPI[] {
-  return [
+function getMockResults(statusFilter: string = 'all'): MatchResultAPI[] {
+  const all: MatchResultAPI[] = [
+    // ── Scheduled (Upcoming) ──
+    {
+      id: 'mock-up1',
+      homeTeam: 'Liverpool',
+      awayTeam: 'Arsenal',
+      homeScore: 0, awayScore: 0,
+      matchDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+      league: 'Premier League', season: 2025, venue: 'Anfield', matchWeek: 31,
+      status: 'scheduled', notes: 'Big Match',
+    },
+    {
+      id: 'mock-up2',
+      homeTeam: 'Juventus',
+      awayTeam: 'Napoli',
+      homeScore: 0, awayScore: 0,
+      matchDate: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
+      league: 'Serie A', season: 2025, venue: 'Allianz Stadium', matchWeek: 30,
+      status: 'scheduled', notes: null,
+    },
+    {
+      id: 'mock-up3',
+      homeTeam: 'Bayern Munich',
+      awayTeam: 'RB Leipzig',
+      homeScore: 0, awayScore: 0,
+      matchDate: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
+      league: 'Bundesliga', season: 2025, venue: 'Allianz Arena', matchWeek: 27,
+      status: 'scheduled', notes: null,
+    },
+    // ── Finished ──
     {
       id: 'mock-1',
       homeTeam: 'Arsenal',
       awayTeam: 'Manchester City',
-      homeScore: 2,
-      awayScore: 1,
+      homeScore: 2, awayScore: 1,
       matchDate: new Date().toISOString().split('T')[0],
-      league: 'Premier League',
-      season: 2025,
-      venue: 'Emirates Stadium',
-      matchWeek: 28,
-      status: 'finished',
-      notes: null,
+      league: 'Premier League', season: 2025, venue: 'Emirates Stadium', matchWeek: 28,
+      status: 'finished', notes: null,
     },
     {
       id: 'mock-2',
       homeTeam: 'Real Madrid',
       awayTeam: 'Barcelona',
-      homeScore: 3,
-      awayScore: 3,
+      homeScore: 3, awayScore: 3,
       matchDate: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-      league: 'La Liga',
-      season: 2025,
-      venue: 'Santiago Bernabéu',
-      matchWeek: 30,
-      status: 'finished',
-      notes: 'El Clásico',
+      league: 'La Liga', season: 2025, venue: 'Santiago Bernabéu', matchWeek: 30,
+      status: 'finished', notes: 'El Clásico',
     },
     {
       id: 'mock-3',
       homeTeam: 'AC Milan',
       awayTeam: 'Inter Milan',
-      homeScore: 1,
-      awayScore: 2,
+      homeScore: 1, awayScore: 2,
       matchDate: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0],
-      league: 'Serie A',
-      season: 2025,
-      venue: 'San Siro',
-      matchWeek: 29,
-      status: 'finished',
-      notes: 'Derby della Madonnina',
+      league: 'Serie A', season: 2025, venue: 'San Siro', matchWeek: 29,
+      status: 'finished', notes: 'Derby della Madonnina',
     },
     {
       id: 'mock-4',
       homeTeam: 'Bayern Munich',
       awayTeam: 'Borussia Dortmund',
-      homeScore: 4,
-      awayScore: 2,
+      homeScore: 4, awayScore: 2,
       matchDate: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0],
-      league: 'Bundesliga',
-      season: 2025,
-      venue: 'Allianz Arena',
-      matchWeek: 26,
-      status: 'finished',
-      notes: null,
+      league: 'Bundesliga', season: 2025, venue: 'Allianz Arena', matchWeek: 26,
+      status: 'finished', notes: null,
     },
     {
       id: 'mock-5',
       homeTeam: 'Liverpool',
       awayTeam: 'Chelsea',
-      homeScore: 0,
-      awayScore: 0,
+      homeScore: 0, awayScore: 0,
       matchDate: new Date(Date.now() - 4 * 86400000).toISOString().split('T')[0],
-      league: 'Premier League',
-      season: 2025,
-      venue: 'Anfield',
-      matchWeek: 27,
-      status: 'postponed',
-      notes: 'Ditunda karena cuaca buruk',
+      league: 'Premier League', season: 2025, venue: 'Anfield', matchWeek: 27,
+      status: 'postponed', notes: 'Ditunda karena cuaca buruk',
     },
     {
       id: 'mock-6',
       homeTeam: 'PSG',
       awayTeam: 'Marseille',
-      homeScore: 2,
-      awayScore: 0,
+      homeScore: 2, awayScore: 0,
       matchDate: new Date(Date.now() - 5 * 86400000).toISOString().split('T')[0],
-      league: 'Ligue 1',
-      season: 2025,
-      venue: 'Parc des Princes',
-      matchWeek: 25,
-      status: 'finished',
-      notes: 'Le Classique',
+      league: 'Ligue 1', season: 2025, venue: 'Parc des Princes', matchWeek: 25,
+      status: 'finished', notes: 'Le Classique',
     },
   ];
+
+  if (statusFilter === 'all') return all;
+  return all.filter(m => m.status === statusFilter);
 }
 
 // ─── GET /api/match-results ──────────────────────────────────
@@ -149,16 +151,23 @@ function getMockResults(): MatchResultAPI[] {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const limit = Math.min(Number(searchParams.get('limit') || '20'), 50);
+  const statusFilter = searchParams.get('status') || 'finished';
 
   try {
     const supabase = createServerSupabaseClient();
 
-    const { data, error, count } = await supabase
+    let query = supabase
       .from('match_results')
       .select('*', { count: 'exact' })
-      .eq('status', 'finished')
       .order('match_date', { ascending: false })
       .limit(limit);
+
+    // Status filter: 'all' = no filter, specific status = .eq()
+    if (statusFilter !== 'all') {
+      query = query.eq('status', statusFilter);
+    }
+
+    const { data, error, count } = await query;
 
     if (error) {
       // Jika tabel belum ada atau RLS blokir, fallback ke mock
@@ -166,8 +175,8 @@ export async function GET(request: NextRequest) {
         console.warn(`[match-results] Table/RLS issue (${error.code}), using mock data`);
         return NextResponse.json({
           success: true,
-          matches: getMockResults(),
-          total: getMockResults().length,
+          matches: getMockResults(statusFilter),
+          total: getMockResults(statusFilter).length,
           source: 'mock',
         });
       }
@@ -180,8 +189,8 @@ export async function GET(request: NextRequest) {
     if (matches.length === 0) {
       return NextResponse.json({
         success: true,
-        matches: getMockResults(),
-        total: getMockResults().length,
+        matches: getMockResults(statusFilter),
+        total: getMockResults(statusFilter).length,
         source: 'mock',
       });
     }
@@ -196,8 +205,8 @@ export async function GET(request: NextRequest) {
     console.error('[match-results GET Error]', error.message);
     return NextResponse.json({
       success: true,
-      matches: getMockResults(),
-      total: getMockResults().length,
+      matches: getMockResults(statusFilter),
+      total: getMockResults(statusFilter).length,
       source: 'mock',
       error: error.message,
     });
