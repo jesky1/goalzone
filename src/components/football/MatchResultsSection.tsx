@@ -502,7 +502,8 @@ function FinishedCard({
         <div className={`relative rounded-2xl overflow-hidden border transition-all duration-300
           ${result.border}
           glass-card glass-hover
-          hover:shadow-[0_0_30px_-5px_var(--c-neon-glow)]`}>
+          hover:cursor-pointer hover:border-cyan-500
+          hover:shadow-[0_0_15px_rgba(0,255,255,0.3)]`}>
           {/* Top gradient */}
           <div className={`absolute inset-x-0 top-0 h-[2px] opacity-60
             ${match.homeScore > match.awayScore ? 'bg-gradient-to-r from-transparent via-emerald-500 to-transparent' :
@@ -621,7 +622,8 @@ function UpcomingCard({
         <div className={`relative rounded-2xl overflow-hidden border transition-all duration-300
           border-blue-500/15
           glass-card glass-hover
-          hover:shadow-[0_0_30px_-5px_rgba(59,130,246,0.15)]`}>
+          hover:cursor-pointer hover:border-cyan-500
+          hover:shadow-[0_0_15px_rgba(0,255,255,0.3)]`}>
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-60" />
 
           <div className="p-4 sm:p-5">
