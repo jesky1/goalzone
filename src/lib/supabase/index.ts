@@ -12,6 +12,9 @@
 
 export { supabase, createServerSupabaseClient, type Tables } from './client'
 
+// Stats helpers
+export { getDashboardStats, type DashboardStats } from './stats'
+
 // Upload helpers (re-exported for convenience)
 export {
   uploadNewsImage,

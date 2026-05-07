@@ -38,6 +38,7 @@ import {
   Layers,
   Sparkles,
   ArrowUpRight,
+  Trophy,
 } from 'lucide-react';
 import Link from 'next/link';
 import NewsEnginePanel from '@/components/admin/NewsEnginePanel';
@@ -949,7 +950,7 @@ function Dashboard({
           </div>
         ) : (
           <>
-            {activeTab === 'overview' && data && <OverviewTab data={data} />}
+            {activeTab === 'overview' && data && <OverviewTab data={data} token={token} />}
             {activeTab === 'news-engine' && <NewsEnginePanel />}
             {activeTab === 'articles' && data && (
               <ArticlesTab data={data} token={token} onRefresh={loadData} onDelete={(id) => setDeleteId(id)} />
