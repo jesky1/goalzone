@@ -17,35 +17,39 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/lib/auth-context';
 
-// ─── Login Form (must be inside AuthProvider + Suspense) ─────
+// ─── Login Form ──────────────────────────────────────────────
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect') || '/admin';
 
-  const { signIn, isAuthenticated } = useAuth();
+  const { signIn, isAuthenticated, loading: authLoading } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
 
-  // Prevent hydration mismatch — only run client-side logic after mount
+  // Redirect if already authenticated
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // If already authenticated, redirect via useEffect (not during render)
-  useEffect(() => {
-    if (isAuthenticated && mounted) {
+    if (isAuthenticated) {
       router.replace(redirectPath);
     }
-  }, [isAuthenticated, mounted, router, redirectPath]);
+  }, [isAuthenticated, router, redirectPath]);
 
-  if (isAuthenticated && mounted) {
-    return null;
+  // While checking auth session or redirecting, show loader
+  if (authLoading || isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#0a0a12] flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mx-auto mb-4" />
+          <p className="text-sm text-gray-400">
+            {isAuthenticated ? 'Mengalihkan...' : 'Memeriksa sesi...'}
+          </p>
+        </div>
+      </div>
+    );
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,16 +77,14 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-deep-900 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Subtle background gradient */}
+    <div className="min-h-screen bg-[#0a0a12] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-blue-500/5 blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-cyan-500/3 blur-3xl" />
       </div>
 
-      <div
-        className={`relative z-10 w-full max-w-md transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}
-      >
+      <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 mb-4">
@@ -218,7 +220,7 @@ function LoginForm() {
   );
 }
 
-// ─── Suspense wrapper for useSearchParams ─────────────────────
+// ─── Suspense wrapper ────────────────────────────────────────
 
 function LoginContent() {
   return (
