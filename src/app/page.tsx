@@ -11,6 +11,7 @@ import Footer from '@/components/football/Footer';
 import PitchView from '@/components/football/PitchView';
 import RefereeModal from '@/components/football/RefereeModal';
 import type { RefereeData } from '@/components/football/RefereeModal';
+import StadiumName from '@/components/football/StadiumName';
 import TransferFeed from '@/components/football/TransferFeed';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -70,7 +71,7 @@ interface TeamLineup {
 interface MatchDetail {
   fixture: {
     id: number; date: string; status: string; elapsed: number | null;
-    referee: string | null; venue: string | null;
+    referee: string | null; venue: string | null; venueCity?: string | null; venueCapacity?: number | null;
     homeTeam: string; awayTeam: string; homeLogo: string; awayLogo: string;
     homeScore: number | null; awayScore: number | null;
     homeWinner: boolean | null; awayWinner: boolean | null;
@@ -545,9 +546,9 @@ function MatchDetailModal({ match, open, onClose, onRefereeClick }: { match: Mat
               </div>
 
               {/* Match Info */}
-              <div className="flex items-center justify-center gap-4 mt-4 text-[11px] text-gray-400 dark:text-gray-500">
+              <div className="flex items-center justify-center gap-4 mt-4 text-[11px] text-gray-400 dark:text-gray-500 flex-wrap">
                 {f?.venue && (
-                  <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{f.venue}</span>
+                  <StadiumName name={f.venue} city={f.venueCity || undefined} />
                 )}
                 {f?.referee && (
                   <button
