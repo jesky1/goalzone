@@ -69,3 +69,32 @@ Stage Summary:
 - Formation mapping (4-3-3, 4-4-2, etc.) accurately positioned on grid using API-Football grid data
 - Dark/light theme aware via CSS variables for pitch lines
 - Default match detail tab changed to show tactics/pitch first
+
+---
+Task ID: 9
+Agent: main
+Task: Fix player photos not showing and improve team separation on pitch
+
+Work Log:
+- Analyzed screenshot showing colored dots instead of photos and teams not visually separated
+- Root cause: Mock data in fixtures API had empty photo URLs (`photo: ''`)
+- Added real API-Football player photo URLs to mock data using `https://media.api-sports.io/football/players/{id}.png` pattern
+- Updated all 24 players in mock data with real player IDs and photo URLs
+- Rewrote PitchView with team-colored approach:
+  - Home team uses RED color (#ef4444), away team uses BLUE (#3b82f6)
+  - Player borders and number badges use team colors (not position colors)
+  - Pitch split into two halves with subtle blue/red tint overlays
+  - Center line has accent styling as divider
+- Improved Y-position mapping for clear team separation:
+  - Away team: GK at 8%, DEF at 22%, MID at 34%, FWD at 42% (top half only)
+  - Home team: GK at 92%, DEF at 78%, MID at 66%, FWD at 58% (bottom half only)
+  - No overlap between teams (center gap from 42%-58%)
+- Added team-colored formation badges in header (blue for away, red for home)
+- Player nodes now show photo or initials on team-colored background
+- Lint passes with 0 errors, dev server compiles successfully
+
+Stage Summary:
+- Player photos now display using real API-Football media CDN URLs
+- Clear visual separation: away team (top/blue) vs home team (bottom/red)
+- Formation mapping compressed to each half with no center overlap
+- Team colors used for borders, badges, hover effects, and pitch tint

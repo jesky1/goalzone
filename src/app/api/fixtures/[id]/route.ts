@@ -10,7 +10,7 @@ interface Player {
   name: string
   number: number
   position: string
-  grid: string | null // formation position like "4:3"
+  grid: string | null
   rating: number | null
   photo: string
   events: {
@@ -170,6 +170,8 @@ function extractMatchEvents(events: any[], teamId: number) {
 }
 
 function getMockFixtureDetail(id: string) {
+  const pp = (pid: number) => `https://media.api-sports.io/football/players/${pid}.png`
+
   return {
     fixture: {
       id: parseInt(id) || 0,
@@ -217,46 +219,46 @@ function getMockFixtureDetail(id: string) {
     },
     homeLineup: {
       team: { id: 42, name: 'Arsenal', logo: 'https://media.api-sports.io/football/teams/42.png' },
-      coach: { id: 1, name: 'Mikel Arteta', photo: '' },
+      coach: { id: 1, name: 'Mikel Arteta', photo: 'https://media.api-sports.io/football/coachs/1.png' },
       formation: '4-3-3',
       startXI: [
-        { id: 1, name: 'D. Raya', number: 22, position: 'G', grid: '1:1', rating: 7.2, photo: '', events: [] },
-        { id: 2, name: 'B. White', number: 4, position: 'D', grid: '2:1', rating: 7.0, photo: '', events: [] },
-        { id: 3, name: 'G. Saliba', number: 2, position: 'D', grid: '2:2', rating: 7.5, photo: '', events: [] },
-        { id: 4, name: 'W. Saliba', number: 6, position: 'D', grid: '2:3', rating: 7.3, photo: '', events: [] },
-        { id: 5, name: 'O. Zinchenko', number: 35, position: 'D', grid: '2:4', rating: 6.8, photo: '', events: [] },
-        { id: 6, name: 'M. Rice', number: 41, position: 'M', grid: '3:2', rating: 7.6, photo: '', events: [{ type: 'card', detail: 'Yellow Card', time: 34 }] },
-        { id: 7, name: 'M. Ødegaard', number: 8, position: 'M', grid: '3:3', rating: 8.1, photo: '', events: [] },
-        { id: 8, name: 'T. Partey', number: 5, position: 'M', grid: '3:1', rating: 6.9, photo: '', events: [] },
-        { id: 9, name: 'B. Saka', number: 7, position: 'F', grid: '4:1', rating: 8.5, photo: '', events: [{ type: 'goal', detail: 'Normal Goal', time: 12 }] },
-        { id: 10, name: 'K. Havertz', number: 29, position: 'F', grid: '4:2', rating: 7.8, photo: '', events: [{ type: 'goal', detail: 'Normal Goal', time: 45 }] },
-        { id: 11, name: 'G. Martinelli', number: 11, position: 'F', grid: '4:3', rating: 6.7, photo: '', events: [] },
+        { id: 154, name: 'D. Raya', number: 22, position: 'G', grid: '1:1', rating: 7.2, photo: pp(154), events: [] },
+        { id: 514, name: 'B. White', number: 4, position: 'D', grid: '2:1', rating: 7.0, photo: pp(514), events: [] },
+        { id: 2930, name: 'G. Saliba', number: 2, position: 'D', grid: '2:2', rating: 7.5, photo: pp(2930), events: [] },
+        { id: 2932, name: 'W. Saliba', number: 6, position: 'D', grid: '2:3', rating: 7.3, photo: pp(2932), events: [] },
+        { id: 883, name: 'O. Zinchenko', number: 35, position: 'D', grid: '2:4', rating: 6.8, photo: pp(883), events: [] },
+        { id: 289, name: 'M. Rice', number: 41, position: 'M', grid: '3:2', rating: 7.6, photo: pp(289), events: [{ type: 'card', detail: 'Yellow Card', time: 34 }] },
+        { id: 882, name: 'M. Ødegaard', number: 8, position: 'M', grid: '3:3', rating: 8.1, photo: pp(882), events: [] },
+        { id: 475, name: 'T. Partey', number: 5, position: 'M', grid: '3:1', rating: 6.9, photo: pp(475), events: [] },
+        { id: 873, name: 'B. Saka', number: 7, position: 'F', grid: '4:1', rating: 8.5, photo: pp(873), events: [{ type: 'goal', detail: 'Normal Goal', time: 12 }] },
+        { id: 860, name: 'K. Havertz', number: 29, position: 'F', grid: '4:2', rating: 7.8, photo: pp(860), events: [{ type: 'goal', detail: 'Normal Goal', time: 45 }] },
+        { id: 874, name: 'G. Martinelli', number: 11, position: 'F', grid: '4:3', rating: 6.7, photo: pp(874), events: [] },
       ],
       substitutes: [
-        { id: 12, name: 'L. Trossard', number: 19, position: 'SUB', grid: null, rating: 7.0, photo: '', events: [] },
-        { id: 13, name: 'J. Vieira', number: 10, position: 'SUB', grid: null, rating: 6.5, photo: '', events: [] },
+        { id: 884, name: 'L. Trossard', number: 19, position: 'SUB', grid: null, rating: 7.0, photo: pp(884), events: [] },
+        { id: 19310, name: 'E. Nwaneri', number: 53, position: 'SUB', grid: null, rating: 6.5, photo: pp(19310), events: [] },
       ],
     },
     awayLineup: {
       team: { id: 50, name: 'Manchester City', logo: 'https://media.api-sports.io/football/teams/50.png' },
-      coach: { id: 2, name: 'Pep Guardiola', photo: '' },
+      coach: { id: 2, name: 'Pep Guardiola', photo: 'https://media.api-sports.io/football/coachs/2.png' },
       formation: '4-3-3',
       startXI: [
-        { id: 20, name: 'E. Ederson', number: 31, position: 'G', grid: '1:1', rating: 6.5, photo: '', events: [] },
-        { id: 21, name: 'K. Walker', number: 2, position: 'D', grid: '2:1', rating: 6.3, photo: '', events: [] },
-        { id: 22, name: 'R. Dias', number: 3, position: 'D', grid: '2:2', rating: 6.8, photo: '', events: [] },
-        { id: 23, name: 'M. Akanji', number: 25, position: 'D', grid: '2:3', rating: 6.6, photo: '', events: [] },
-        { id: 24, name: 'N. Aké', number: 6, position: 'D', grid: '2:4', rating: 6.4, photo: '', events: [] },
-        { id: 25, name: 'R. De Bruyne', number: 17, position: 'M', grid: '3:2', rating: 7.2, photo: '', events: [] },
-        { id: 26, name: 'B. Silva', number: 20, position: 'M', grid: '3:3', rating: 7.0, photo: '', events: [] },
-        { id: 27, name: 'R. Lewis', number: 82, position: 'M', grid: '3:1', rating: 6.5, photo: '', events: [] },
-        { id: 28, name: 'P. Foden', number: 47, position: 'F', grid: '4:2', rating: 6.9, photo: '', events: [] },
-        { id: 29, name: 'J. Álvarez', number: 9, position: 'F', grid: '4:1', rating: 6.7, photo: '', events: [] },
-        { id: 30, name: 'E. Haaland', number: 9, position: 'F', grid: '4:3', rating: 7.9, photo: '', events: [{ type: 'goal', detail: 'Normal Goal', time: 38 }] },
+        { id: 694, name: 'E. Ederson', number: 31, position: 'G', grid: '1:1', rating: 6.5, photo: pp(694), events: [] },
+        { id: 300, name: 'K. Walker', number: 2, position: 'D', grid: '2:1', rating: 6.3, photo: pp(300), events: [] },
+        { id: 302, name: 'R. Dias', number: 3, position: 'D', grid: '2:2', rating: 6.8, photo: pp(302), events: [] },
+        { id: 20919, name: 'M. Akanji', number: 25, position: 'D', grid: '2:3', rating: 6.6, photo: pp(20919), events: [] },
+        { id: 862, name: 'N. Aké', number: 6, position: 'D', grid: '2:4', rating: 6.4, photo: pp(862), events: [] },
+        { id: 92, name: 'R. De Bruyne', number: 17, position: 'M', grid: '3:2', rating: 7.2, photo: pp(92), events: [] },
+        { id: 866, name: 'B. Silva', number: 20, position: 'M', grid: '3:3', rating: 7.0, photo: pp(866), events: [] },
+        { id: 47731, name: 'R. Lewis', number: 82, position: 'M', grid: '3:1', rating: 6.5, photo: pp(47731), events: [] },
+        { id: 304, name: 'P. Foden', number: 47, position: 'F', grid: '4:2', rating: 6.9, photo: pp(304), events: [] },
+        { id: 469, name: 'M. Grealish', number: 10, position: 'F', grid: '4:1', rating: 6.7, photo: pp(469), events: [] },
+        { id: 882, name: 'E. Haaland', number: 9, position: 'F', grid: '4:3', rating: 7.9, photo: pp(882), events: [{ type: 'goal', detail: 'Normal Goal', time: 38 }] },
       ],
       substitutes: [
-        { id: 31, name: 'J. Grealish', number: 10, position: 'SUB', grid: null, rating: 6.2, photo: '', events: [] },
-        { id: 32, name: 'Doku', number: 11, position: 'SUB', grid: null, rating: 6.0, photo: '', events: [] },
+        { id: 284682, name: 'J. Doku', number: 11, position: 'SUB', grid: null, rating: 6.2, photo: pp(284682), events: [] },
+        { id: 9282, name: 'O. Bobb', number: 52, position: 'SUB', grid: null, rating: 6.0, photo: pp(9282), events: [] },
       ],
     },
     source: 'mock',
