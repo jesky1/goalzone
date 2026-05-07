@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Dialog,
@@ -44,6 +45,7 @@ import {
   AlertCircle,
   CheckCircle2,
   RefreshCw,
+  ExternalLink,
 } from 'lucide-react';
 
 // ============================================================
@@ -385,17 +387,24 @@ function OverviewTab({ data }: { data: DashboardData }) {
         </h3>
         <div className="space-y-2">
           {topArticles.map((article, i) => (
-            <div key={article.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/3 transition-colors">
-              <span className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold shrink-0 ${i === 0 ? 'bg-amber-500/20 text-amber-400' : 'bg-white/5 text-muted-foreground'}`}>{i + 1}</span>
+            <Link
+              key={article.id}
+              href={`/admin/articles/${article.id}`}
+              className="group/art flex items-center gap-3 p-2.5 rounded-lg border border-transparent transition-all duration-200 hover:border-amber-500/20 hover:bg-amber-500/5 opacity-80 hover:opacity-100"
+            >
+              <span className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold shrink-0 transition-colors duration-200 ${i === 0 ? 'bg-amber-500/20 text-amber-400 group-hover/art:bg-amber-500/30' : 'bg-white/5 text-muted-foreground group-hover/art:bg-white/10 group-hover/art:text-white'}`}>
+                {i + 1}
+              </span>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-white truncate">{article.title}</p>
-                <p className="text-[10px] text-muted-foreground">{article.categoryName}</p>
+                <p className="text-xs font-medium text-white truncate transition-colors duration-200 group-hover/art:text-amber-300">{article.title}</p>
+                <p className="text-[10px] text-muted-foreground transition-colors duration-200 group-hover/art:text-amber-400/70">{article.categoryName}</p>
               </div>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0 transition-colors duration-200 group-hover/art:text-amber-400">
                 <EyeIcon className="w-3 h-3" />
                 {article.viewCount}
               </div>
-            </div>
+              <ExternalLink className="w-3 h-3 text-transparent group-hover/art:text-amber-400/50 transition-all duration-200 shrink-0" />
+            </Link>
           ))}
           {topArticles.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">Belum ada artikel</p>}
         </div>
@@ -409,10 +418,14 @@ function OverviewTab({ data }: { data: DashboardData }) {
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {(data.categories || []).map((cat: any) => (
-            <div key={cat.id} className="flex items-center justify-between p-2.5 rounded-lg bg-white/3 border border-white/5">
-              <span className="text-xs text-white">{cat.name}</span>
-              <Badge variant="secondary" className="text-[10px] bg-white/5 text-muted-foreground">{cat.articleCount || 0}</Badge>
-            </div>
+            <Link
+              key={cat.id}
+              href={`/admin/category/${cat.slug || cat.id}`}
+              className="group/cat flex items-center justify-between p-2.5 rounded-lg bg-white/3 border border-white/5 transition-all duration-200 hover:border-neon/25 hover:bg-neon/5 opacity-80 hover:opacity-100"
+            >
+              <span className="text-xs text-white transition-colors duration-200 group-hover/cat:text-neon">{cat.name}</span>
+              <Badge variant="secondary" className="text-[10px] bg-white/5 text-muted-foreground transition-colors duration-200 group-hover/cat:bg-neon/10 group-hover/cat:text-neon">{cat.articleCount || 0}</Badge>
+            </Link>
           ))}
         </div>
       </div>
