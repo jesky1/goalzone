@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -32,9 +32,14 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // If already authenticated, redirect
+  // If already authenticated, redirect via useEffect (not during render)
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace(redirectPath);
+    }
+  }, [isAuthenticated, router, redirectPath]);
+
   if (isAuthenticated) {
-    router.replace(redirectPath);
     return null;
   }
 
