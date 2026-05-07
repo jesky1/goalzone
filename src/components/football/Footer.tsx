@@ -4,28 +4,41 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Zap, Twitter, Youtube, Instagram, Shield } from 'lucide-react';
 
-const quickLinks = {
-  Liga: [
-    { label: 'Premier League', href: '#' },
-    { label: 'La Liga', href: '#' },
-    { label: 'Serie A', href: '#' },
-    { label: 'Bundesliga', href: '#' },
-    { label: 'Ligue 1', href: '#' },
-  ],
-  Tim: [
-    { label: 'Manchester City', href: '/teams/manchester-city' },
-    { label: 'Real Madrid', href: '/teams/real-madrid' },
-    { label: 'Barcelona', href: '/teams/barcelona' },
-    { label: 'Bayern Munich', href: '/teams/bayern-munich' },
-    { label: 'PSG', href: '/teams/psg' },
-  ],
-  Media: [
-    { label: 'Berita', href: '#home' },
-    { label: 'Live Score', href: '#live' },
-    { label: 'Klasemen', href: '#standings' },
-    { label: 'Transfer', href: '#transfer' },
-  ],
-};
+type FooterLink = { label: string; href: string; type: 'internal' | 'anchor' };
+
+type FooterSection = { title: string; links: FooterLink[] };
+
+const footerSections: FooterSection[] = [
+  {
+    title: 'Liga',
+    links: [
+      { label: 'Premier League', href: '/leagues/premier-league', type: 'internal' },
+      { label: 'La Liga', href: '/leagues/la-liga', type: 'internal' },
+      { label: 'Serie A', href: '/leagues/serie-a', type: 'internal' },
+      { label: 'Bundesliga', href: '/leagues/bundesliga', type: 'internal' },
+      { label: 'Ligue 1', href: '/leagues/ligue-1', type: 'internal' },
+    ],
+  },
+  {
+    title: 'Tim',
+    links: [
+      { label: 'Manchester City', href: '/teams/manchester-city', type: 'internal' },
+      { label: 'Real Madrid', href: '/teams/real-madrid', type: 'internal' },
+      { label: 'Barcelona', href: '/teams/barcelona', type: 'internal' },
+      { label: 'Bayern Munich', href: '/teams/bayern-munich', type: 'internal' },
+      { label: 'PSG', href: '/teams/psg', type: 'internal' },
+    ],
+  },
+  {
+    title: 'Media',
+    links: [
+      { label: 'Berita', href: '#home', type: 'anchor' },
+      { label: 'Live Score', href: '#live', type: 'anchor' },
+      { label: 'Klasemen', href: '#standings', type: 'anchor' },
+      { label: 'Transfer', href: '#transfer', type: 'anchor' },
+    ],
+  },
+];
 
 const socialLinks = [
   { icon: Twitter, href: '#', label: 'Twitter' },
@@ -73,32 +86,29 @@ export default function Footer() {
             </div>
 
             {/* Quick Links */}
-            {Object.entries(quickLinks).map(([title, links]) => (
+            {footerSections.map(({ title, links }) => (
               <div key={title}>
                 <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4">{title}</h4>
                 <ul className="space-y-2.5">
-                  {links.map((link) => {
-                    const isTeamLink = link.href.startsWith('/teams/');
-                    return (
-                      <li key={link.label}>
-                        {isTeamLink ? (
-                          <Link
-                            href={link.href}
-                            className="text-sm text-muted-foreground hover:text-cyan-400 transition-colors duration-200 cursor-pointer"
-                          >
-                            {link.label}
-                          </Link>
-                        ) : (
-                          <a
-                            href={link.href}
-                            className="text-sm text-muted-foreground hover:text-neon transition-colors duration-200"
-                          >
-                            {link.label}
-                          </a>
-                        )}
-                      </li>
-                    );
-                  })}
+                  {links.map(({ label, href, type }) => (
+                    <li key={label}>
+                      {type === 'internal' ? (
+                        <Link
+                          href={href}
+                          className="text-sm text-muted-foreground hover:text-cyan-400 transition-all duration-200 cursor-pointer"
+                        >
+                          {label}
+                        </Link>
+                      ) : (
+                        <a
+                          href={href}
+                          className="text-sm text-muted-foreground hover:text-neon transition-colors duration-200"
+                        >
+                          {label}
+                        </a>
+                      )}
+                    </li>
+                  ))}
                 </ul>
               </div>
             ))}
