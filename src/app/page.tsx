@@ -7,6 +7,7 @@ import LiveScoreTicker from '@/components/football/LiveScoreTicker';
 import StandingsWidget from '@/components/football/StandingsWidget';
 import TopScorersWidget from '@/components/football/TopScorersWidget';
 import FanTokenWidget from '@/components/football/FanTokenWidget';
+import PopularArticles from '@/components/football/PopularArticles';
 import Footer from '@/components/football/Footer';
 import PitchView from '@/components/football/PitchView';
 import RefereeModal from '@/components/football/RefereeModal';
@@ -939,7 +940,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Berita Section */}
+        {/* Berita Section + Artikel Populer Sidebar */}
         <section id="berita" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -948,7 +949,16 @@ export default function Home() {
             </h2>
             <p className="text-sm text-muted-foreground mt-1">Berita bola terbaru dari GOALZONE</p>
           </motion.div>
-          <NewsSection onArticleClick={handleArticleClick} />
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-3">
+              <NewsSection onArticleClick={handleArticleClick} />
+            </div>
+            <div className="lg:col-span-1">
+              <div className="sticky top-24">
+                <PopularArticles onArticleClick={(a) => { setSelectedArticle(a as any); setModalOpen(true); }} />
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* Transfer Feed */}
