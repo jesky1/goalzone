@@ -538,7 +538,7 @@ export default function PitchView({
           {/* Home team */}
           <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
             <div className="text-right">
-              <p className="text-white text-xs sm:text-sm font-bold leading-tight truncate max-w-[100px] sm:max-w-[180px]">
+              <p className="text-gray-900 dark:text-white text-xs sm:text-sm font-bold leading-tight truncate max-w-[100px] sm:max-w-[180px]">
                 {homeTeam}
               </p>
               <FormationBadge formation={homeLineup.formation} />
@@ -556,13 +556,13 @@ export default function PitchView({
 
           {/* Score */}
           <div className="flex items-center gap-2 sm:gap-3 mx-2 sm:mx-4 flex-shrink-0">
-            <span className="text-white text-xl sm:text-2xl lg:text-3xl font-black tabular-nums">
+            <span className="text-gray-900 dark:text-white text-xl sm:text-2xl lg:text-3xl font-black tabular-nums">
               {homeScore}
             </span>
-            <span className="text-gray-500 text-sm sm:text-lg font-light">
+            <span className="text-gray-400 dark:text-gray-500 text-sm sm:text-lg font-light">
               –
             </span>
-            <span className="text-white text-xl sm:text-2xl lg:text-3xl font-black tabular-nums">
+            <span className="text-gray-900 dark:text-white text-xl sm:text-2xl lg:text-3xl font-black tabular-nums">
               {awayScore}
             </span>
           </div>
@@ -579,7 +579,7 @@ export default function PitchView({
               />
             </div>
             <div>
-              <p className="text-white text-xs sm:text-sm font-bold leading-tight truncate max-w-[100px] sm:max-w-[180px]">
+              <p className="text-gray-900 dark:text-white text-xs sm:text-sm font-bold leading-tight truncate max-w-[100px] sm:max-w-[180px]">
                 {awayTeam}
               </p>
               <FormationBadge formation={awayLineup.formation} />
@@ -655,7 +655,7 @@ export default function PitchView({
         <div className="flex items-center justify-between px-2 sm:px-4 mt-3 sm:mt-4">
           <div className="flex items-center gap-1.5 sm:gap-2">
             <svg
-              className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500"
+              className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 dark:text-gray-500"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -667,19 +667,19 @@ export default function PitchView({
                 d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
               />
             </svg>
-            <span className="text-gray-500 text-[10px] sm:text-xs font-medium">
+            <span className="text-gray-400 dark:text-gray-500 text-[10px] sm:text-xs font-medium">
               {homeLineup.coach.name}
             </span>
           </div>
-          <span className="text-gray-600 text-[9px] sm:text-[10px] uppercase tracking-widest font-mono">
+          <span className="text-gray-300 dark:text-gray-600 text-[9px] sm:text-[10px] uppercase tracking-widest font-mono">
             Manager
           </span>
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <span className="text-gray-500 text-[10px] sm:text-xs font-medium">
+            <span className="text-gray-400 dark:text-gray-500 text-[10px] sm:text-xs font-medium">
               {awayLineup.coach.name}
             </span>
             <svg
-              className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500"
+              className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 dark:text-gray-500"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

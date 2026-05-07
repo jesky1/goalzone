@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Menu, Zap } from 'lucide-react';
+import ThemeToggle from '@/components/football/ThemeToggle';
 import {
   Sheet,
   SheetContent,
@@ -45,15 +46,19 @@ export default function Navbar() {
               <a
                 key={link.href}
                 href={link.href}
-                className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-neon hover:bg-white/5 transition-all duration-300"
+                className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-neon hover:bg-white/5 dark:hover:bg-white/5 transition-all duration-300"
               >
                 {link.label}
               </a>
             ))}
+            <div className="ml-2 pl-2 border-l border-gray-200 dark:border-white/10">
+              <ThemeToggle />
+            </div>
           </div>
 
           {/* Mobile Menu */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <button className="p-2 rounded-lg hover:bg-white/5 transition-colors">
@@ -62,7 +67,7 @@ export default function Navbar() {
               </SheetTrigger>
               <SheetContent
                 side="right"
-                className="w-72 bg-deep-800/95 backdrop-blur-xl border-white/10 p-0"
+                className="w-72 bg-deep-800/95 dark:bg-deep-800/95 backdrop-blur-xl border-white/10 p-0"
               >
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                 <div className="flex flex-col p-6">

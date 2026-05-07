@@ -141,7 +141,7 @@ export default function FanTokenWidget() {
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <Coins className="w-5 h-5 text-neon" />
-          <h3 className="text-lg font-bold text-white">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
             Fan <span className="neon-text">Tokens</span>
           </h3>
         </div>
@@ -156,7 +156,7 @@ export default function FanTokenWidget() {
           <button
             onClick={loadTokens}
             disabled={refreshing}
-            className="p-1.5 rounded-lg hover:bg-white/5 transition-colors disabled:opacity-40"
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors disabled:opacity-40"
             aria-label="Refresh token prices"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-muted-foreground ${refreshing ? 'animate-spin' : ''}`} />
@@ -169,7 +169,7 @@ export default function FanTokenWidget() {
 
       {/* Summary Bar */}
       {summary && !loading && (
-        <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-white/5 border border-white/5">
+        <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/5">
           <div className="flex items-center gap-1 text-xs">
             <TrendingUp className="w-3 h-3 text-green-400" />
             <span className="text-green-400 font-medium">{summary.gainers}</span>
@@ -190,14 +190,14 @@ export default function FanTokenWidget() {
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex items-center gap-3 p-2">
-                <div className="w-8 h-8 rounded-lg bg-white/5 animate-pulse" />
+                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-white/5 animate-pulse" />
                 <div className="flex-1 space-y-1.5">
-                  <div className="h-3 w-16 bg-white/5 rounded animate-pulse" />
-                  <div className="h-2 w-12 bg-white/5 rounded animate-pulse" />
+                  <div className="h-3 w-16 bg-gray-100 dark:bg-white/5 rounded animate-pulse" />
+                  <div className="h-2 w-12 bg-gray-100 dark:bg-white/5 rounded animate-pulse" />
                 </div>
                 <div className="text-right space-y-1.5">
-                  <div className="h-3 w-12 bg-white/5 rounded animate-pulse ml-auto" />
-                  <div className="h-2 w-10 bg-white/5 rounded animate-pulse ml-auto" />
+                  <div className="h-3 w-12 bg-gray-100 dark:bg-white/5 rounded animate-pulse ml-auto" />
+                  <div className="h-2 w-10 bg-gray-100 dark:bg-white/5 rounded animate-pulse ml-auto" />
                 </div>
               </div>
             ))}
@@ -213,11 +213,11 @@ export default function FanTokenWidget() {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.25, delay: index * 0.04 }}
-              className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-all duration-200 group cursor-pointer"
+              className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-all duration-200 group cursor-pointer"
             >
               {/* Token Icon - Show real image if available */}
               <div
-                className="w-9 h-9 rounded-lg flex items-center justify-center text-base shrink-0 border border-white/10 overflow-hidden"
+                className="w-9 h-9 rounded-lg flex items-center justify-center text-base shrink-0 border border-gray-200 dark:border-white/10 overflow-hidden"
                 style={{ backgroundColor: `${token.color}20` }}
               >
                 {token.image ? (
@@ -230,7 +230,7 @@ export default function FanTokenWidget() {
               {/* Token Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-bold text-white">
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">
                     ${token.symbol}
                   </span>
                   <span className="text-[10px] text-muted-foreground font-medium">
@@ -247,7 +247,7 @@ export default function FanTokenWidget() {
                 {token.sparkline && token.sparkline.length > 0 ? (
                   <RealSparkline data={token.sparkline} positive={isPositive} />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-[8px] text-gray-600">—</div>
+                  <div className="w-full h-full flex items-center justify-center text-[8px] text-gray-300 dark:text-gray-600">—</div>
                 )}
               </div>
 
@@ -255,7 +255,7 @@ export default function FanTokenWidget() {
               <div className="text-right shrink-0">
                 {token.price > 0 ? (
                   <>
-                    <div className="text-sm font-bold text-white tabular-nums">
+                    <div className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">
                       {formatPrice(token.price)}
                     </div>
                     <div
@@ -273,7 +273,7 @@ export default function FanTokenWidget() {
                     </div>
                   </>
                 ) : (
-                  <div className="text-xs text-gray-600">N/A</div>
+                  <div className="text-xs text-gray-300 dark:text-gray-600">N/A</div>
                 )}
               </div>
             </motion.div>
@@ -289,7 +289,7 @@ export default function FanTokenWidget() {
 
       {/* Footer */}
       {!loading && tokens.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">
+        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-white/5 flex items-center justify-between">
           <div className="text-[10px] text-muted-foreground">
             {lastUpdated &&
               `Update: ${lastUpdated.toLocaleTimeString('id-ID', {

@@ -71,7 +71,7 @@ export default function TransferFeed() {
     if (lower.includes('def') || lower.includes('back')) return 'bg-blue-500/15 text-blue-400';
     if (lower.includes('mid') || lower.includes('midfielder')) return 'bg-green-500/15 text-green-400';
     if (lower.includes('att') || lower.includes('forward') || lower.includes('striker') || lower.includes('winger')) return 'bg-red-500/15 text-red-400';
-    return 'bg-white/5 text-gray-400';
+    return 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400';
   }
 
   function getPositionShort(pos: string): string {
@@ -95,7 +95,7 @@ export default function TransferFeed() {
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <ArrowRightLeft className="w-5 h-5 text-neon" />
-          <h3 className="text-lg font-bold text-white">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
             Transfer <span className="neon-text">Terbaru</span>
           </h3>
         </div>
@@ -110,7 +110,7 @@ export default function TransferFeed() {
           <button
             onClick={loadTransfers}
             disabled={refreshing}
-            className="p-1.5 rounded-lg hover:bg-white/5 transition-colors disabled:opacity-40"
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors disabled:opacity-40"
             aria-label="Refresh"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-muted-foreground ${refreshing ? 'animate-spin' : ''}`} />
@@ -127,10 +127,10 @@ export default function TransferFeed() {
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map(i => (
               <div key={i} className="flex items-center gap-3 p-3">
-                <div className="w-8 h-8 rounded-full bg-white/5 animate-pulse" />
+                <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/5 animate-pulse" />
                 <div className="flex-1 space-y-1.5">
-                  <div className="h-3 w-24 bg-white/5 rounded animate-pulse" />
-                  <div className="h-2 w-40 bg-white/5 rounded animate-pulse" />
+                  <div className="h-3 w-24 bg-gray-100 dark:bg-white/5 rounded animate-pulse" />
+                  <div className="h-2 w-40 bg-gray-100 dark:bg-white/5 rounded animate-pulse" />
                 </div>
               </div>
             ))}
@@ -144,14 +144,14 @@ export default function TransferFeed() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.25, delay: index * 0.03 }}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/[0.03] transition-colors group"
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/[0.03] transition-colors group"
           >
             {/* Player Photo */}
-            <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 bg-white/5 border border-white/10">
+            <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
               {transfer.playerPhoto ? (
                 <img src={transfer.playerPhoto} alt={transfer.playerName} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-sm text-gray-600">
+                <div className="w-full h-full flex items-center justify-center text-sm text-gray-300 dark:text-gray-600">
                   {transfer.playerName.charAt(0)}
                 </div>
               )}
@@ -160,7 +160,7 @@ export default function TransferFeed() {
             {/* Player Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-sm font-semibold text-white truncate group-hover:text-neon transition-colors">
+                <span className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-neon transition-colors">
                   {transfer.playerName}
                 </span>
                 <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold shrink-0 ${getPositionColor(transfer.position)}`}>
@@ -182,7 +182,7 @@ export default function TransferFeed() {
                   {transfer.to.logo && (
                     <img src={transfer.to.logo} alt="" className="w-3 h-3 rounded-full object-contain shrink-0" />
                   )}
-                  <span className="truncate font-medium text-white/80">{transfer.to.name}</span>
+                  <span className="truncate font-medium text-gray-700 dark:text-white/80">{transfer.to.name}</span>
                 </div>
               </div>
             </div>
@@ -198,7 +198,7 @@ export default function TransferFeed() {
                   {transfer.type.includes('Loan') ? 'LOAN' : 'FREE'}
                 </div>
               )}
-              <div className="text-[10px] text-gray-600 mt-0.5">{formatDate(transfer.date)}</div>
+              <div className="text-[10px] text-gray-300 dark:text-gray-600 mt-0.5">{formatDate(transfer.date)}</div>
             </div>
           </motion.div>
         ))}
@@ -212,7 +212,7 @@ export default function TransferFeed() {
 
       {/* Show More / Footer */}
       {!loading && transfers.length > 8 && (
-        <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">
+        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-white/5 flex items-center justify-between">
           <span className="text-[10px] text-muted-foreground">
             {transfers.length} transfer terbaru
           </span>

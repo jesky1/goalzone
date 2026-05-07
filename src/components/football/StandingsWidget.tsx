@@ -83,13 +83,13 @@ export default function StandingsWidget() {
       className="glass-card p-4 sm:p-5"
     >
       <div className="flex items-center justify-between mb-1">
-        <h3 className="text-lg font-bold text-white">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white">
           Klasemen <span className="neon-text">2025/26</span>
         </h3>
         <button
           onClick={() => loadStandings(activeLeague)}
           disabled={refreshing}
-          className="p-1.5 rounded-lg hover:bg-white/5 transition-colors disabled:opacity-40"
+          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors disabled:opacity-40"
           aria-label="Refresh"
         >
           <RefreshCw className={`w-3.5 h-3.5 text-muted-foreground ${refreshing ? 'animate-spin' : ''}`} />
@@ -106,7 +106,7 @@ export default function StandingsWidget() {
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium whitespace-nowrap transition-all shrink-0 ${
                 activeLeague === league.slug
                   ? 'bg-neon/10 text-neon border border-neon/20'
-                  : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-300 border border-transparent'
+                  : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-500 dark:hover:text-gray-300 border border-transparent'
               }`}
             >
               {league.logo && <img src={league.logo} alt="" className="w-3.5 h-3.5 rounded-sm object-contain" />}
@@ -122,7 +122,7 @@ export default function StandingsWidget() {
       <div className="max-h-80 overflow-y-auto custom-scrollbar rounded-lg">
         <Table>
           <TableHeader>
-            <TableRow className="border-white/5 hover:bg-transparent">
+            <TableRow className="border-gray-200 dark:border-white/5 hover:bg-transparent">
               <TableHead className="w-8 text-center text-xs">#</TableHead>
               <TableHead className="text-xs">Tim</TableHead>
               <TableHead className="w-7 text-center text-xs hidden sm:table-cell">P</TableHead>
@@ -149,7 +149,7 @@ export default function StandingsWidget() {
               return (
                 <TableRow
                   key={row.position}
-                  className={`border-white/5 hover:bg-white/5 transition-colors ${zoneClass}`}
+                  className={`border-gray-200 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors ${zoneClass}`}
                 >
                   <TableCell className="text-center text-xs font-bold text-muted-foreground">
                     <span
@@ -166,7 +166,7 @@ export default function StandingsWidget() {
                       {row.position}
                     </span>
                   </TableCell>
-                  <TableCell className="text-sm font-medium text-white">
+                  <TableCell className="text-sm font-medium text-gray-900 dark:text-white">
                     <div className="flex items-center gap-1.5">
                       {row.teamLogo && (
                         <img src={row.teamLogo} alt={row.team} className="w-4 h-4 rounded-full object-contain shrink-0" />
@@ -212,7 +212,7 @@ export default function StandingsWidget() {
       </div>
 
       {/* Zone Legend */}
-      <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/5 text-[10px] text-muted-foreground flex-wrap">
+      <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-200 dark:border-white/5 text-[10px] text-muted-foreground flex-wrap">
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-sm bg-green-500/30 border border-green-500/30" />
           Champions League

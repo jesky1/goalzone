@@ -107,11 +107,11 @@ function HeroSection({ articles, onArticleClick }: { articles: Article[]; onArti
         <div className="relative h-full flex flex-col justify-end p-6 sm:p-8 md:p-12 max-w-7xl mx-auto">
           <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
             <Badge className="bg-neon/10 text-neon border border-neon/20 text-xs font-bold mb-4">{article.category.name}</Badge>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-3 max-w-3xl cursor-pointer hover:text-neon transition-colors" onClick={() => onArticleClick?.(article)}>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight mb-3 max-w-3xl cursor-pointer hover:text-neon transition-colors" onClick={() => onArticleClick?.(article)}>
               {article.title}
             </h1>
-            {article.summary && <p className="text-sm sm:text-base text-gray-300 max-w-2xl mb-4 line-clamp-2">{article.summary}</p>}
-            <div className="flex items-center gap-2 text-xs text-gray-400">
+            {article.summary && <p className="text-sm sm:text-base text-gray-500 dark:text-gray-300 max-w-2xl mb-4 line-clamp-2">{article.summary}</p>}
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               <Clock className="w-3.5 h-3.5" /><span>{article.readTime} menit baca</span>
             </div>
           </motion.div>
@@ -121,7 +121,7 @@ function HeroSection({ articles, onArticleClick }: { articles: Article[]; onArti
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
           {articles.map((_, i) => (
             <button key={i} onClick={() => setCurrent(i)}
-              className={`h-2.5 rounded-full transition-all duration-300 ${i === current ? 'bg-neon w-8' : 'bg-white/20 w-2.5 hover:bg-white/40'}`}
+              className={`h-2.5 rounded-full transition-all duration-300 ${i === current ? 'bg-neon w-8' : 'bg-gray-300 dark:bg-white/20 w-2.5 hover:bg-gray-400 dark:hover:bg-white/40'}`}
               aria-label={`Slide ${i + 1}`} />
           ))}
         </div>
@@ -142,7 +142,7 @@ function SimpleNewsCard({ article, onClick }: { article: Article; onClick?: (a: 
           <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-deep-700 to-deep-900 flex items-center justify-center">
-            <span className="text-4xl text-white/10">⚽</span>
+            <span className="text-4xl text-gray-300 dark:text-white/10">⚽</span>
           </div>
         )}
         <div className="absolute top-3 left-3">
@@ -150,10 +150,10 @@ function SimpleNewsCard({ article, onClick }: { article: Article; onClick?: (a: 
         </div>
       </div>
       <div className="flex flex-col flex-1 p-4">
-        <h3 className="text-base font-bold text-white mb-2 line-clamp-2 leading-snug">{article.title}</h3>
-        {article.summary && <p className="text-sm text-gray-400 mb-3 line-clamp-2 flex-1">{article.summary}</p>}
-        <div className="flex items-center justify-between text-xs text-gray-500 mt-auto pt-3 border-t border-white/5">
-          <span className="font-medium text-gray-300">{article.author.username}</span>
+        <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 leading-snug">{article.title}</h3>
+        {article.summary && <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2 flex-1">{article.summary}</p>}
+        <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 mt-auto pt-3 border-t border-gray-200 dark:border-white/5">
+          <span className="font-medium text-gray-500 dark:text-gray-300">{article.author.username}</span>
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{timeAgo}</span>
             <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{article.viewCount}</span>
@@ -215,23 +215,23 @@ function MatchStatusBadge({ status, minute }: { status: string; minute: number |
     </div>
   );
   if (status === 'HT') return <span className="px-2 py-0.5 rounded bg-amber-500/20 text-[11px] font-bold text-amber-400">HT</span>;
-  if (status === 'FT') return <span className="px-2 py-0.5 rounded bg-white/10 text-[11px] font-bold text-gray-400">FT</span>;
-  return <span className="px-2 py-0.5 rounded bg-white/5 text-[11px] font-bold text-gray-500">{minute ? `${minute}'` : 'NS'}</span>;
+  if (status === 'FT') return <span className="px-2 py-0.5 rounded bg-gray-200 dark:bg-white/10 text-[11px] font-bold text-gray-500 dark:text-gray-400">FT</span>;
+  return <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-white/5 text-[11px] font-bold text-gray-400 dark:text-gray-500">{minute ? `${minute}'` : 'NS'}</span>;
 }
 
 // --- Team Logo ---
 function TeamLogo({ src, name, size = 24 }: { src?: string; name: string; size?: number }) {
-  if (!src) return <div className="rounded-full bg-white/10 flex items-center justify-center shrink-0" style={{ width: size, height: size }}><span className="text-[10px] text-white/30">⚽</span></div>;
+  if (!src) return <div className="rounded-full bg-gray-200 dark:bg-white/10 flex items-center justify-center shrink-0" style={{ width: size, height: size }}><span className="text-[10px] text-gray-400 dark:text-white/30">⚽</span></div>;
   return <img src={src} alt={name} className="rounded-full shrink-0" style={{ width: size, height: size }} loading="lazy" />;
 }
 
 // --- League Group Header ---
 function LeagueHeader({ name, logo, matchCount }: { name: string; logo?: string; matchCount: number }) {
   return (
-    <div className="flex items-center gap-2.5 py-2.5 px-1 border-b border-white/5">
-      {logo ? <img src={logo} alt={name} className="w-5 h-5 rounded-sm object-contain" loading="lazy" /> : <div className="w-5 h-5 rounded-sm bg-white/10" />}
-      <span className="text-sm font-semibold text-gray-200">{name}</span>
-      <span className="text-[11px] text-gray-500 ml-auto">{matchCount} match{matchCount > 1 ? 'es' : ''}</span>
+    <div className="flex items-center gap-2.5 py-2.5 px-1 border-b border-gray-200 dark:border-white/5">
+      {logo ? <img src={logo} alt={name} className="w-5 h-5 rounded-sm object-contain" loading="lazy" /> : <div className="w-5 h-5 rounded-sm bg-gray-200 dark:bg-white/10" />}
+      <span className="text-sm font-semibold text-gray-600 dark:text-gray-200">{name}</span>
+      <span className="text-[11px] text-gray-400 dark:text-gray-500 ml-auto">{matchCount} match{matchCount > 1 ? 'es' : ''}</span>
     </div>
   );
 }
@@ -239,33 +239,33 @@ function LeagueHeader({ name, logo, matchCount }: { name: string; logo?: string;
 // --- Match Row (Clickable) ---
 function MatchRow({ match, onClick }: { match: Match; onClick?: () => void }) {
   return (
-    <div onClick={onClick} className="flex items-center gap-2 py-2.5 px-1 hover:bg-white/[0.04] rounded transition-colors cursor-pointer group">
+    <div onClick={onClick} className="flex items-center gap-2 py-2.5 px-1 hover:bg-gray-100 dark:hover:bg-white/[0.04] rounded transition-colors cursor-pointer group">
       {/* Status */}
       <div className="w-10 shrink-0 text-center">
         <MatchStatusBadge status={match.status} minute={match.minute} />
       </div>
       {/* Time / Score */}
       <div className="w-12 shrink-0 text-center">
-        <span className={`text-sm font-bold tabular-nums ${match.status === 'LIVE' ? 'text-white' : match.status === 'FT' ? 'text-gray-300' : 'text-gray-400'}`}>{match.homeScore} - {match.awayScore}</span>
+        <span className={`text-sm font-bold tabular-nums ${match.status === 'LIVE' ? 'text-gray-900 dark:text-white' : match.status === 'FT' ? 'text-gray-500 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400'}`}>{match.homeScore} - {match.awayScore}</span>
       </div>
       {/* Home Team */}
       <div className="flex items-center gap-2 flex-1 min-w-0">
         <TeamLogo src={match.homeLogo} name={match.homeTeam} size={20} />
-        <span className={`text-sm truncate ${match.status === 'LIVE' ? 'text-white font-medium' : 'text-gray-300'}`}>{match.homeTeam}</span>
+        <span className={`text-sm truncate ${match.status === 'LIVE' ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-500 dark:text-gray-300'}`}>{match.homeTeam}</span>
       </div>
       {/* Away Team */}
       <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-        <span className={`text-sm truncate text-right ${match.status === 'LIVE' ? 'text-white font-medium' : 'text-gray-300'}`}>{match.awayTeam}</span>
+        <span className={`text-sm truncate text-right ${match.status === 'LIVE' ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-500 dark:text-gray-300'}`}>{match.awayTeam}</span>
         <TeamLogo src={match.awayLogo} name={match.awayTeam} size={20} />
       </div>
       {/* Goal Events */}
       {(match.homeEvents?.filter(e => e.type === 'goal').length || match.awayEvents?.filter(e => e.type === 'goal').length) ? (
         <div className="w-6 shrink-0">
-          <span className="text-[10px] text-gray-500">⚽</span>
+          <span className="text-[10px] text-gray-400 dark:text-gray-500">⚽</span>
         </div>
       ) : <div className="w-6 shrink-0" />}
       {/* Click indicator */}
-      <ChevronRight className="w-3.5 h-3.5 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+      <ChevronRight className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
     </div>
   );
 }
@@ -316,7 +316,7 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
       F: 'bg-red-500/20 text-red-400 border-red-500/30',
       SUB: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
     };
-    return colors[pos] || 'bg-white/5 text-gray-400 border-white/10';
+    return colors[pos] || 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10';
   };
 
   const renderPlayerRow = (player: LineupPlayer, isHome: boolean) => {
@@ -325,7 +325,7 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
     const hasRed = player.events.some(e => e.type === 'card' && e.detail?.includes('Red'));
 
     return (
-      <div key={player.id} className={`flex items-center gap-2 py-1.5 px-2 rounded hover:bg-white/[0.03] transition-colors ${isHome ? '' : 'flex-row-reverse text-right'}`}>
+      <div key={player.id} className={`flex items-center gap-2 py-1.5 px-2 rounded hover:bg-gray-100 dark:hover:bg-white/[0.03] transition-colors ${isHome ? '' : 'flex-row-reverse text-right'}`}>
         {/* Rating */}
         <div className="w-8 shrink-0 text-center">
           {player.rating ? (
@@ -333,14 +333,14 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
               {player.rating.toFixed(1)}
             </span>
           ) : (
-            <span className="text-[11px] text-gray-600">-</span>
+            <span className="text-[11px] text-gray-300 dark:text-gray-600">-</span>
           )}
         </div>
         {/* Player Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-gray-500 w-4 shrink-0 tabular-nums">{player.number}</span>
-            <span className="text-[13px] text-white truncate">{player.name}</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500 w-4 shrink-0 tabular-nums">{player.number}</span>
+            <span className="text-[13px] text-gray-900 dark:text-white truncate">{player.name}</span>
             <span className={`text-[9px] px-1.5 py-0.5 rounded border font-bold shrink-0 ${getPositionColor(player.position)}`}>
               {getPositionLabel(player.position)}
             </span>
@@ -362,8 +362,8 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
         <div className={`flex items-center gap-2 mb-3 ${isHome ? '' : 'flex-row-reverse'}`}>
           <img src={lineup.team.logo} alt={lineup.team.name} className="w-6 h-6 rounded-full" />
           <div className={isHome ? '' : 'text-right'}>
-            <span className="text-sm font-bold text-white">{lineup.team.name}</span>
-            <div className="flex items-center gap-2 text-[11px] text-gray-400">
+            <span className="text-sm font-bold text-gray-900 dark:text-white">{lineup.team.name}</span>
+            <div className="flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400">
               <span className="bg-neon/10 text-neon px-2 py-0.5 rounded font-mono text-[10px] font-bold">{lineup.formation}</span>
               {lineup.coach.name && (
                 <span className="flex items-center gap-1">
@@ -380,7 +380,7 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
           {lineup.startXI.length > 0 ? (
             lineup.startXI.map(p => renderPlayerRow(p, isHome))
           ) : (
-            <div className="text-[11px] text-gray-600 text-center py-4">Lineup belum tersedia</div>
+            <div className="text-[11px] text-gray-300 dark:text-gray-600 text-center py-4">Lineup belum tersedia</div>
           )}
         </div>
 
@@ -389,7 +389,7 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
           <>
             <button
               onClick={() => setShowSubs(prev => ({ ...prev, [side]: !prev[side] }))}
-              className={`flex items-center gap-1 text-[11px] text-gray-400 hover:text-neon transition-colors py-2 ${isHome ? '' : 'ml-auto w-fit flex-row-reverse'}`}
+              className={`flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400 hover:text-neon transition-colors py-2 ${isHome ? '' : 'ml-auto w-fit flex-row-reverse'}`}
             >
               <span>Pemain Pengganti ({lineup.substitutes.length})</span>
               {showSubs[side] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -443,9 +443,9 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
           return (
             <div key={stat.type} className="space-y-1">
               <div className="flex items-center justify-between text-[11px]">
-                <span className="text-white font-medium w-16 text-right">{stat.home}</span>
-                <span className="text-gray-500 flex-1 text-center">{stat.type}</span>
-                <span className="text-white font-medium w-16">{stat.away}</span>
+                <span className="text-gray-900 dark:text-white font-medium w-16 text-right">{stat.home}</span>
+                <span className="text-gray-400 dark:text-gray-500 flex-1 text-center">{stat.type}</span>
+                <span className="text-gray-900 dark:text-white font-medium w-16">{stat.away}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="flex-1 flex justify-end">
@@ -453,13 +453,13 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
                 </div>
                 <div className="w-2 h-2" />
                 <div className="flex-1">
-                  <div className="h-1.5 bg-white/30 rounded-full transition-all" style={{ width: `${(stat.awayVal / max) * 100}%` }} />
+                  <div className="h-1.5 bg-gray-300 dark:bg-white/30 rounded-full transition-all" style={{ width: `${(stat.awayVal / max) * 100}%` }} />
                 </div>
               </div>
             </div>
           );
         })}
-        {stats.length === 0 && <div className="text-center text-[11px] text-gray-600 py-6">Statistik belum tersedia</div>}
+        {stats.length === 0 && <div className="text-center text-[11px] text-gray-300 dark:text-gray-600 py-6">Statistik belum tersedia</div>}
       </div>
     );
   };
@@ -475,7 +475,7 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
       <div className="space-y-1.5">
         {allEvents.map((e, i) => (
           <div key={i} className={`flex items-center gap-2 py-1.5 px-2 rounded text-[12px] ${e.side === 'home' ? '' : 'flex-row-reverse'}`}>
-            <span className="text-gray-500 tabular-nums w-8 shrink-0">{e.minute}&apos;</span>
+            <span className="text-gray-400 dark:text-gray-500 tabular-nums w-8 shrink-0">{e.minute}&apos;</span>
             {e.type === 'goal' ? (
               <span className="text-[11px]">⚽</span>
             ) : e.card === 'red' ? (
@@ -483,23 +483,23 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
             ) : (
               <span className="w-2.5 h-3 rounded-sm bg-yellow-500 shrink-0" />
             )}
-            <span className="text-white">{e.player}</span>
-            {e.detail && <span className="text-gray-500 text-[10px]">({e.detail})</span>}
+            <span className="text-gray-900 dark:text-white">{e.player}</span>
+            {e.detail && <span className="text-gray-400 dark:text-gray-500 text-[10px]">({e.detail})</span>}
           </div>
         ))}
-        {allEvents.length === 0 && <div className="text-center text-[11px] text-gray-600 py-6">Belum ada event</div>}
+        {allEvents.length === 0 && <div className="text-center text-[11px] text-gray-300 dark:text-gray-600 py-6">Belum ada event</div>}
       </div>
     );
   };
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto custom-scrollbar bg-deep-800 border-white/10 p-0" showCloseButton={false}>
+      <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto custom-scrollbar bg-deep-800 border-gray-200 dark:border-white/10 p-0" showCloseButton={false}>
         <DialogTitle className="sr-only">{match.homeTeam} vs {match.awayTeam} - Detail Pertandingan</DialogTitle>
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <Loader2 className="w-6 h-6 text-neon animate-spin" />
-            <span className="text-sm text-gray-400">Memuat detail pertandingan...</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">Memuat detail pertandingan...</span>
           </div>
         ) : (
           <>
@@ -507,16 +507,16 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
             <div className="bg-gradient-to-b from-deep-700 to-deep-800 p-5">
               {/* Close Button */}
               <div className="flex justify-end mb-2">
-                <button onClick={onClose} className="p-1 rounded-lg hover:bg-white/10 transition-colors">
-                  <X className="w-4 h-4 text-gray-400" />
+                <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
+                  <X className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 </button>
               </div>
 
               {/* League Info */}
               <div className="flex items-center justify-center gap-2 mb-4">
                 {f?.league.logo && <img src={f.league.logo} alt="" className="w-4 h-4 rounded-sm" />}
-                <span className="text-[11px] text-gray-400 font-medium">{f?.league.name}</span>
-                {f?.league.round && <span className="text-[10px] text-gray-600">· {f.league.round}</span>}
+                <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">{f?.league.name}</span>
+                {f?.league.round && <span className="text-[10px] text-gray-300 dark:text-gray-600">· {f.league.round}</span>}
               </div>
 
               {/* Teams + Score */}
@@ -524,13 +524,13 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
                 {/* Home Team */}
                 <div className="flex flex-col items-center gap-2 flex-1">
                   <img src={f?.homeLogo || match.homeLogo} alt="" className="w-14 h-14 sm:w-16 sm:h-16 rounded-full" />
-                  <span className="text-sm font-bold text-white text-center">{f?.homeTeam || match.homeTeam}</span>
+                  <span className="text-sm font-bold text-gray-900 dark:text-white text-center">{f?.homeTeam || match.homeTeam}</span>
                 </div>
 
                 {/* Score */}
                 <div className="flex flex-col items-center">
                   <MatchStatusBadge status={f?.status || match.status} minute={f?.elapsed || match.minute} />
-                  <div className="text-3xl sm:text-4xl font-black text-white tabular-nums mt-2">
+                  <div className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white tabular-nums mt-2">
                     {f?.homeScore ?? match.homeScore} - {f?.awayScore ?? match.awayScore}
                   </div>
                 </div>
@@ -538,12 +538,12 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
                 {/* Away Team */}
                 <div className="flex flex-col items-center gap-2 flex-1">
                   <img src={f?.awayLogo || match.awayLogo} alt="" className="w-14 h-14 sm:w-16 sm:h-16 rounded-full" />
-                  <span className="text-sm font-bold text-white text-center">{f?.awayTeam || match.awayTeam}</span>
+                  <span className="text-sm font-bold text-gray-900 dark:text-white text-center">{f?.awayTeam || match.awayTeam}</span>
                 </div>
               </div>
 
               {/* Match Info */}
-              <div className="flex items-center justify-center gap-4 mt-4 text-[11px] text-gray-500">
+              <div className="flex items-center justify-center gap-4 mt-4 text-[11px] text-gray-400 dark:text-gray-500">
                 {f?.venue && (
                   <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{f.venue}</span>
                 )}
@@ -554,13 +554,13 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-white/5 px-2">
+            <div className="flex border-b border-gray-200 dark:border-white/5 px-2">
               {(['pitch', 'lineups', 'stats', 'events'] as const).map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`flex-1 py-3 text-xs font-semibold transition-colors relative ${
-                    activeTab === tab ? 'text-neon' : 'text-gray-500 hover:text-gray-300'
+                    activeTab === tab ? 'text-neon' : 'text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300'
                   }`}
                 >
                   {tab === 'pitch' ? 'Taktik' : tab === 'lineups' ? 'Lineup' : tab === 'stats' ? 'Statistik' : 'Events'}
@@ -591,7 +591,7 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
               {activeTab === 'lineups' && hl && al && (
                 <div className="flex gap-4 sm:gap-6">
                   {renderTeamLineup(hl, 'home')}
-                  <div className="w-px bg-white/5 shrink-0" />
+                  <div className="w-px bg-gray-100 dark:bg-white/5 shrink-0" />
                   {renderTeamLineup(al, 'away')}
                 </div>
               )}
@@ -650,14 +650,14 @@ function ArticleModalView({ article, open, onClose }: { article: Article | null;
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto custom-scrollbar bg-deep-800 border-white/10 p-0">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto custom-scrollbar bg-deep-800 border-gray-200 dark:border-white/10 p-0">
         {display && (
           <>
             <div className="relative w-full h-64 sm:h-80">
               {display.imageUrl ? (
                 <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${display.imageUrl})` }} />
               ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-deep-700 to-deep-900 flex items-center justify-center"><span className="text-6xl text-white/10">⚽</span></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-deep-700 to-deep-900 flex items-center justify-center"><span className="text-6xl text-gray-300 dark:text-white/10">⚽</span></div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-deep-800 via-transparent to-transparent" />
             </div>
@@ -665,9 +665,9 @@ function ArticleModalView({ article, open, onClose }: { article: Article | null;
               <DialogHeader className="mb-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Badge className="bg-neon/10 text-neon border-neon/20 text-xs font-bold">{display.category.name}</Badge>
-                  <Badge variant="secondary" className="bg-white/5 text-muted-foreground text-xs"><Eye className="w-3 h-3 mr-1" />{display.viewCount} views</Badge>
+                  <Badge variant="secondary" className="bg-gray-100 dark:bg-white/5 text-muted-foreground text-xs"><Eye className="w-3 h-3 mr-1" />{display.viewCount} views</Badge>
                 </div>
-                <DialogTitle className="text-xl sm:text-2xl font-bold text-white leading-tight">{display.title}</DialogTitle>
+                <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white leading-tight">{display.title}</DialogTitle>
               </DialogHeader>
               <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mb-5">
                 <span className="flex items-center gap-1"><User className="w-3 h-3" />{display.author.username}</span>
@@ -678,23 +678,23 @@ function ArticleModalView({ article, open, onClose }: { article: Article | null;
               {display.summary && (
                 <div className="glass-card p-4 mb-6 border-neon/10">
                   <div className="flex items-center gap-2 mb-2"><Sparkles className="w-4 h-4 text-neon" /><span className="text-xs font-bold neon-text">AI Summary</span></div>
-                  <p className="text-sm text-gray-300 leading-relaxed">{display.summary}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-300 leading-relaxed">{display.summary}</p>
                 </div>
               )}
 
               {(fullArticle?.content || display.content) && (
                 <div
-                  className="mb-6 text-sm sm:text-base text-gray-300 leading-relaxed [&_p]:mb-4"
+                  className="mb-6 text-sm sm:text-base text-gray-500 dark:text-gray-300 leading-relaxed [&_p]:mb-4"
                   dangerouslySetInnerHTML={{ __html: fullArticle?.content || display.content || '' }}
                 />
               )}
 
-              <Separator className="bg-white/5 my-6" />
+              <Separator className="bg-gray-100 dark:bg-white/5 my-6" />
               <div>
-                <h4 className="text-base font-bold text-white mb-4">Komentar ({comments.length})</h4>
+                <h4 className="text-base font-bold text-gray-900 dark:text-white mb-4">Komentar ({comments.length})</h4>
                 <div className="flex gap-3 mb-6">
                   <Textarea value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Tulis komentar..."
-                    className="min-h-[80px] bg-white/5 border-white/10 text-sm placeholder:text-muted-foreground focus:border-neon/30 focus:ring-neon/20 resize-none" rows={3} />
+                    className="min-h-[80px] bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-sm placeholder:text-muted-foreground focus:border-neon/30 focus:ring-neon/20 resize-none" rows={3} />
                   <button onClick={handleSubmit} disabled={!commentText.trim() || submitting}
                     className="self-end bg-neon/10 text-neon hover:bg-neon/20 border border-neon/20 p-2.5 rounded-lg shrink-0 disabled:opacity-40">
                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
@@ -704,10 +704,10 @@ function ArticleModalView({ article, open, onClose }: { article: Article | null;
                   {comments.map((c) => (
                     <div key={c.id} className="glass p-3 rounded-lg">
                       <div className="flex items-center gap-2 mb-1.5">
-                        <span className="text-sm font-medium text-white">{c.user.username}</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">{c.user.username}</span>
                         <span className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(c.createdAt), { addSuffix: true, locale: localeId })}</span>
                       </div>
-                      <p className="text-sm text-gray-300">{c.text}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-300">{c.text}</p>
                     </div>
                   ))}
                   {comments.length === 0 && <p className="text-center text-xs text-muted-foreground py-6">Belum ada komentar. Jadilah yang pertama berkomentar!</p>}
@@ -791,13 +791,13 @@ export default function Home() {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-6">
             <div className="flex items-center gap-3 mb-1">
               <div className="w-2 h-2 rounded-full bg-red-500 live-pulse" />
-              <h2 className="text-xl sm:text-2xl font-bold text-white">Live <span className="neon-text">Score</span></h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Live <span className="neon-text">Score</span></h2>
             </div>
             <p className="text-xs text-muted-foreground">Klik pertandingan untuk lihat lineup & statistik</p>
           </motion.div>
           {matchesLoading ? (
             <div className="glass-card p-4 space-y-4">
-              {[1,2,3].map(i => <div key={i} className="flex items-center gap-2 py-2"><Skeleton className="h-4 w-10 bg-white/5" /><Skeleton className="h-4 w-12 bg-white/5" /><Skeleton className="h-4 w-32 bg-white/5" /><Skeleton className="h-4 w-32 bg-white/5" /></div>)}
+              {[1,2,3].map(i => <div key={i} className="flex items-center gap-2 py-2"><Skeleton className="h-4 w-10 bg-gray-100 dark:bg-white/5" /><Skeleton className="h-4 w-12 bg-gray-100 dark:bg-white/5" /><Skeleton className="h-4 w-32 bg-gray-100 dark:bg-white/5" /><Skeleton className="h-4 w-32 bg-gray-100 dark:bg-white/5" /></div>)}
             </div>
           ) : (() => {
             // Group matches by league
@@ -820,7 +820,7 @@ export default function Home() {
                 {leagues.map((league) => (
                   <motion.div key={league.league} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="glass-card overflow-hidden">
                     <LeagueHeader name={league.league} logo={league.logo} matchCount={league.matches.length} />
-                    <div className="divide-y divide-white/[0.03]">
+                    <div className="divide-y divide-gray-200 dark:divide-white/[0.03]">
                       {league.matches.map((match) => (
                         <MatchRow key={match.id} match={match} onClick={() => handleMatchClick(match)} />
                       ))}
@@ -831,7 +831,7 @@ export default function Home() {
                   <div className="glass-card p-8 text-center">
                     <div className="text-3xl mb-3 opacity-20">⚽</div>
                     <p className="text-sm text-muted-foreground">Tidak ada pertandingan hari ini</p>
-                    <p className="text-xs text-gray-600 mt-1">Data akan otomatis update ketika ada pertandingan</p>
+                    <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">Data akan otomatis update ketika ada pertandingan</p>
                   </div>
                 )}
               </div>
@@ -865,7 +865,7 @@ export default function Home() {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-6">
             <div className="flex items-center gap-3 mb-1">
               <div className="w-2 h-2 rounded-full bg-neon" />
-              <h2 className="text-xl sm:text-2xl font-bold text-white">Berita <span className="neon-text">Transfer</span></h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Berita <span className="neon-text">Transfer</span></h2>
             </div>
             <p className="text-xs text-muted-foreground">Update transfer terbaru dari klub-club top Eropa musim 2025/26</p>
           </motion.div>

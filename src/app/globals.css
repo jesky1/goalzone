@@ -41,57 +41,98 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --color-neon: #00f0ff;
-  --color-neon-dim: #0891b2;
-  --color-neon-glow: #00f0ff40;
-  --color-deep-900: #0a0a12;
-  --color-deep-800: #0f0f1a;
-  --color-deep-700: #161625;
-  --color-deep-600: #1e1e30;
-  --color-deep-500: #2a2a40;
-  --color-surface-glass: rgba(255, 255, 255, 0.03);
-  --color-surface-glass-hover: rgba(255, 255, 255, 0.06);
-  --color-surface-glass-border: rgba(255, 255, 255, 0.08);
   --color-live-red: #ef4444;
   --color-live-green: #22c55e;
+
+  /* Theme-aware custom colors via CSS variables */
+  --color-neon: var(--c-neon);
+  --color-neon-dim: var(--c-neon-dim);
+  --color-neon-glow: var(--c-neon-glow);
+  --color-deep-900: var(--c-deep-900);
+  --color-deep-800: var(--c-deep-800);
+  --color-deep-700: var(--c-deep-700);
+  --color-deep-600: var(--c-deep-600);
+  --color-deep-500: var(--c-deep-500);
 }
 
+/* ============================================
+   LIGHT THEME (default / :root)
+   ============================================ */
 :root {
   --radius: 0.75rem;
-  --background: oklch(0.08 0.01 270);
-  --foreground: oklch(0.95 0 0);
-  --card: oklch(0.12 0.01 270);
-  --card-foreground: oklch(0.95 0 0);
-  --popover: oklch(0.12 0.01 270);
-  --popover-foreground: oklch(0.95 0 0);
-  --primary: oklch(0.8 0.15 195);
-  --primary-foreground: oklch(0.08 0.01 270);
-  --secondary: oklch(0.16 0.01 270);
-  --secondary-foreground: oklch(0.9 0 0);
-  --muted: oklch(0.18 0.01 270);
-  --muted-foreground: oklch(0.65 0 0);
-  --accent: oklch(0.16 0.01 270);
-  --accent-foreground: oklch(0.95 0 0);
-  --destructive: oklch(0.65 0.22 25);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.8 0.15 195);
-  --chart-1: oklch(0.8 0.15 195);
-  --chart-2: oklch(0.7 0.18 150);
-  --chart-3: oklch(0.65 0.2 310);
-  --chart-4: oklch(0.75 0.15 60);
-  --chart-5: oklch(0.6 0.22 25);
-  --sidebar: oklch(0.1 0.01 270);
-  --sidebar-foreground: oklch(0.95 0 0);
-  --sidebar-primary: oklch(0.8 0.15 195);
-  --sidebar-primary-foreground: oklch(0.08 0.01 270);
-  --sidebar-accent: oklch(0.16 0.01 270);
-  --sidebar-accent-foreground: oklch(0.95 0 0);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.8 0.15 195);
+  color-scheme: light;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #0369a1;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #dc2626;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #0369a1;
+  --chart-1: #0369a1;
+  --chart-2: #059669;
+  --chart-3: #d97706;
+  --chart-4: #7c3aed;
+  --chart-5: #dc2626;
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #0369a1;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #0369a1;
+
+  /* Custom theme colors - Light */
+  --c-neon: #0369a1;
+  --c-neon-dim: #075985;
+  --c-neon-glow: rgba(3, 105, 161, 0.15);
+  --c-deep-900: #f8fafc;
+  --c-deep-800: #ffffff;
+  --c-deep-700: #f1f5f9;
+  --c-deep-600: #e2e8f0;
+  --c-deep-500: #94a3b8;
+
+  /* Glass effect variables - Light */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-strong: rgba(255, 255, 255, 0.85);
+  --glass-bg-card: rgba(255, 255, 255, 0.75);
+  --glass-bg-hover: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-border-strong: rgba(0, 0, 0, 0.1);
+  --glass-border-card: rgba(0, 0, 0, 0.08);
+  --glass-border-hover: rgba(3, 105, 161, 0.3);
+  --glass-shadow-hover: 0 0 30px rgba(3, 105, 161, 0.08), inset 0 0 30px rgba(3, 105, 161, 0.03);
+  --neon-text-shadow: 0 0 10px rgba(3, 105, 161, 0.3), 0 0 20px rgba(3, 105, 161, 0.15);
+  --neon-box-shadow: 0 0 15px rgba(3, 105, 161, 0.1);
+  --neon-box-shadow-strong: 0 0 20px rgba(3, 105, 161, 0.15), 0 0 40px rgba(3, 105, 161, 0.05);
+  --cyber-grid-line: rgba(3, 105, 161, 0.06);
+  --body-bg-image:
+    radial-gradient(ellipse at 20% 50%, rgba(3, 105, 161, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(3, 105, 161, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(7, 89, 133, 0.03) 0%, transparent 50%);
+  --scrollbar-track: rgba(0, 0, 0, 0.03);
+  --scrollbar-thumb: rgba(3, 105, 161, 0.2);
+  --scrollbar-thumb-hover: rgba(3, 105, 161, 0.4);
+  --pitch-line-color: rgba(0, 0, 0, 0.25);
+  --pitch-line-accent: rgba(0, 0, 0, 0.4);
 }
 
+/* ============================================
+   DARK THEME (.dark)
+   ============================================ */
 .dark {
+  color-scheme: dark;
   --background: oklch(0.06 0.01 270);
   --foreground: oklch(0.95 0 0);
   --card: oklch(0.1 0.01 270);
@@ -123,6 +164,40 @@
   --sidebar-accent-foreground: oklch(0.95 0 0);
   --sidebar-border: oklch(1 0 0 / 6%);
   --sidebar-ring: oklch(0.8 0.15 195);
+
+  /* Custom theme colors - Dark */
+  --c-neon: #00f0ff;
+  --c-neon-dim: #0891b2;
+  --c-neon-glow: #00f0ff40;
+  --c-deep-900: #0a0a12;
+  --c-deep-800: #0f0f1a;
+  --c-deep-700: #161625;
+  --c-deep-600: #1e1e30;
+  --c-deep-500: #2a2a40;
+
+  /* Glass effect variables - Dark */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-bg-strong: rgba(255, 255, 255, 0.06);
+  --glass-bg-card: rgba(255, 255, 255, 0.04);
+  --glass-bg-hover: rgba(255, 255, 255, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-border-strong: rgba(255, 255, 255, 0.1);
+  --glass-border-card: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(0, 240, 255, 0.2);
+  --glass-shadow-hover: 0 0 30px rgba(0, 240, 255, 0.05), inset 0 0 30px rgba(0, 240, 255, 0.02);
+  --neon-text-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.3), 0 0 40px rgba(0, 240, 255, 0.1);
+  --neon-box-shadow: 0 0 15px rgba(0, 240, 255, 0.15), 0 0 30px rgba(0, 240, 255, 0.05);
+  --neon-box-shadow-strong: 0 0 20px rgba(0, 240, 255, 0.3), 0 0 40px rgba(0, 240, 255, 0.1), 0 0 60px rgba(0, 240, 255, 0.05);
+  --cyber-grid-line: rgba(0, 240, 255, 0.03);
+  --body-bg-image:
+    radial-gradient(ellipse at 20% 50%, rgba(0, 240, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(0, 240, 255, 0.02) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(139, 92, 246, 0.02) 0%, transparent 50%);
+  --scrollbar-track: rgba(255, 255, 255, 0.02);
+  --scrollbar-thumb: rgba(0, 240, 255, 0.2);
+  --scrollbar-thumb-hover: rgba(0, 240, 255, 0.4);
+  --pitch-line-color: rgba(255, 255, 255, 0.35);
+  --pitch-line-accent: rgba(255, 255, 255, 0.5);
 }
 
 @layer base {
@@ -131,33 +206,32 @@
   }
   body {
     @apply bg-deep-900 text-foreground font-sans;
-    background-image: 
-      radial-gradient(ellipse at 20% 50%, rgba(0, 240, 255, 0.03) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, rgba(0, 240, 255, 0.02) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 80%, rgba(139, 92, 246, 0.02) 0%, transparent 50%);
+    background-image: var(--body-bg-image);
   }
 }
 
-/* Glassmorphism Utilities */
+/* ============================================
+   Glassmorphism Utilities (Theme-Aware)
+   ============================================ */
 .glass {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
 }
 
 .glass-strong {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass-bg-strong);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border-strong);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-bg-card);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border-card);
   border-radius: 1rem;
 }
 
@@ -166,31 +240,35 @@
 }
 
 .glass-hover:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(0, 240, 255, 0.2);
-  box-shadow: 0 0 30px rgba(0, 240, 255, 0.05), inset 0 0 30px rgba(0, 240, 255, 0.02);
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-shadow-hover);
 }
 
-/* Neon Glow Effects */
+/* ============================================
+   Neon Glow Effects (Theme-Aware)
+   ============================================ */
 .neon-text {
-  color: #00f0ff;
-  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.3), 0 0 40px rgba(0, 240, 255, 0.1);
+  color: var(--c-neon);
+  text-shadow: var(--neon-text-shadow);
 }
 
 .neon-border {
-  border-color: rgba(0, 240, 255, 0.3);
-  box-shadow: 0 0 10px rgba(0, 240, 255, 0.1), inset 0 0 10px rgba(0, 240, 255, 0.05);
+  border-color: rgba(var(--c-neon), 0.3);
+  box-shadow: 0 0 10px var(--c-neon-glow), inset 0 0 10px rgba(0,0,0,0.02);
 }
 
 .neon-glow {
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.15), 0 0 30px rgba(0, 240, 255, 0.05);
+  box-shadow: var(--neon-box-shadow);
 }
 
 .neon-glow-strong {
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.3), 0 0 40px rgba(0, 240, 255, 0.1), 0 0 60px rgba(0, 240, 255, 0.05);
+  box-shadow: var(--neon-box-shadow-strong);
 }
 
-/* Live Pulse Animation */
+/* ============================================
+   Live Pulse Animation
+   ============================================ */
 @keyframes live-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
@@ -225,31 +303,31 @@
   animation: gradient-shift 8s ease infinite;
 }
 
-/* Cyber Grid Background */
+/* Cyber Grid Background (Theme-Aware) */
 .cyber-grid {
   background-image: 
-    linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(var(--cyber-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cyber-grid-line) 1px, transparent 1px);
   background-size: 60px 60px;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar (Theme-Aware) */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--scrollbar-track);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(0, 240, 255, 0.2);
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 240, 255, 0.4);
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Scanline Effect */
@@ -294,7 +372,46 @@
 }
 
 .shimmer {
-  background: linear-gradient(90deg, transparent 0%, rgba(0, 240, 255, 0.05) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(3, 105, 161, 0.05) 50%, transparent 100%);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
+}
+
+/* ============================================
+   Theme-aware inline overrides
+   These handle rgba color classes that can't
+   use CSS variables directly in Tailwind.
+   ============================================ */
+
+/* Light mode overrides for white/ opacity classes */
+:root:not(.dark) {
+  --tw-white-5: rgba(0, 0, 0, 0.05);
+  --tw-white-10: rgba(0, 0, 0, 0.08);
+  --tw-white-20: rgba(0, 0, 0, 0.12);
+  --tw-white-30: rgba(0, 0, 0, 0.18);
+  --tw-white-03: rgba(0, 0, 0, 0.03);
+  --tw-white-04: rgba(0, 0, 0, 0.04);
+  --tw-white-06: rgba(0, 0, 0, 0.06);
+  --tw-white-60: rgba(0, 0, 0, 0.4);
+  --tw-border-white: rgba(0, 0, 0, 0.08);
+  --tw-border-white-5: rgba(0, 0, 0, 0.05);
+  --tw-hero-gradient-from: #e2e8f0;
+  --tw-hero-gradient-via: rgba(248, 250, 252, 0.6);
+  --tw-hero-gradient-to: rgba(248, 250, 252, 0.2);
+}
+
+.dark {
+  --tw-white-5: rgba(255, 255, 255, 0.05);
+  --tw-white-10: rgba(255, 255, 255, 0.1);
+  --tw-white-20: rgba(255, 255, 255, 0.2);
+  --tw-white-30: rgba(255, 255, 255, 0.3);
+  --tw-white-03: rgba(255, 255, 255, 0.03);
+  --tw-white-04: rgba(255, 255, 255, 0.04);
+  --tw-white-06: rgba(255, 255, 255, 0.06);
+  --tw-white-60: rgba(255, 255, 255, 0.6);
+  --tw-border-white: rgba(255, 255, 255, 0.08);
+  --tw-border-white-5: rgba(255, 255, 255, 0.05);
+  --tw-hero-gradient-from: #0a0a12;
+  --tw-hero-gradient-via: rgba(10, 10, 18, 0.6);
+  --tw-hero-gradient-to: rgba(10, 10, 18, 0.2);
 }

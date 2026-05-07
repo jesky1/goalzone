@@ -62,7 +62,7 @@ export default function TopScorersWidget() {
       case 1: return 'text-amber-400 bg-amber-400/10 border-amber-400/20';
       case 2: return 'text-gray-300 bg-gray-300/10 border-gray-300/20';
       case 3: return 'text-orange-400 bg-orange-400/10 border-orange-400/20';
-      default: return 'text-muted-foreground bg-white/5 border-white/10';
+      default: return 'text-muted-foreground bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10';
     }
   }
 
@@ -86,14 +86,14 @@ export default function TopScorersWidget() {
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <Trophy className="w-5 h-5 text-neon" />
-          <h3 className="text-lg font-bold text-white">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
             Top <span className="neon-text">Skor</span>
           </h3>
         </div>
         <button
           onClick={() => loadScorers(activeLeague)}
           disabled={refreshing}
-          className="p-1.5 rounded-lg hover:bg-white/5 transition-colors disabled:opacity-40"
+          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors disabled:opacity-40"
           aria-label="Refresh"
         >
           <RefreshCw className={`w-3.5 h-3.5 text-muted-foreground ${refreshing ? 'animate-spin' : ''}`} />
@@ -110,7 +110,7 @@ export default function TopScorersWidget() {
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium whitespace-nowrap transition-all shrink-0 ${
                 activeLeague === league.slug
                   ? 'bg-neon/10 text-neon border border-neon/20'
-                  : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-300 border border-transparent'
+                  : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-500 dark:hover:text-gray-300 border border-transparent'
               }`}
             >
               {league.logo && <img src={league.logo} alt="" className="w-3.5 h-3.5 rounded-sm object-contain" />}
@@ -134,7 +134,7 @@ export default function TopScorersWidget() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-white/5 transition-colors group"
+              className="flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors group"
             >
               {/* Rank */}
               <div
@@ -144,18 +144,18 @@ export default function TopScorersWidget() {
               </div>
 
               {/* Player Photo */}
-              <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-white/5 border border-white/10">
+              <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
                 {scorer.photo ? (
                   <img src={scorer.photo} alt={scorer.name} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-600">?</div>
+                  <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-300 dark:text-gray-600">?</div>
                 )}
               </div>
 
               {/* Player Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1">
-                  <span className="text-sm font-semibold text-white truncate group-hover:text-neon transition-colors">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-neon transition-colors">
                     {scorer.name}
                   </span>
                 </div>
@@ -166,7 +166,7 @@ export default function TopScorersWidget() {
                   <span className="truncate">{scorer.team}</span>
                 </div>
                 {/* Progress Bar */}
-                <div className="mt-1 h-1 bg-white/5 rounded-full overflow-hidden">
+                <div className="mt-1 h-1 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     whileInView={{ width: `${progressWidth}%` }}
@@ -186,7 +186,7 @@ export default function TopScorersWidget() {
                   <div className="text-[10px] text-muted-foreground">GOL</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-medium text-gray-300 tabular-nums">
+                  <div className="text-sm font-medium text-gray-500 dark:text-gray-300 tabular-nums">
                     {scorer.assists}
                   </div>
                   <div className="text-[10px] text-muted-foreground">ASS</div>

@@ -42,7 +42,7 @@ export default function Footer() {
       transition={{ duration: 0.6 }}
       className="mt-auto"
     >
-      <div className="glass-strong border-t border-white/5">
+      <div className="glass-strong border-t border-gray-200 dark:border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
             {/* Brand */}
@@ -75,7 +75,7 @@ export default function Footer() {
             {/* Quick Links */}
             {Object.entries(quickLinks).map(([title, links]) => (
               <div key={title}>
-                <h4 className="text-sm font-bold text-white mb-4">{title}</h4>
+                <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4">{title}</h4>
                 <ul className="space-y-2.5">
                   {links.map((link) => (
                     <li key={link.label}>
@@ -93,7 +93,7 @@ export default function Footer() {
           </div>
 
           {/* Bottom */}
-          <div className="mt-10 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="mt-10 pt-6 border-t border-gray-200 dark:border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-xs text-muted-foreground">
               © {new Date().getFullYear()} Goalzone. Semua hak dilindungi.
             </p>
