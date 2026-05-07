@@ -64,9 +64,6 @@ export default function Navbar() {
             >
               <Search className="w-3.5 h-3.5 text-gray-500 group-hover:text-neon transition-colors" />
               <span className="text-xs">Cari artikel, tim...</span>
-              <kbd className="ml-auto hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/[0.08] font-mono text-[9px] text-gray-500">
-                ⌘K
-              </kbd>
             </button>
             <div className="ml-1 pl-2 border-l border-gray-200 dark:border-white/10">
               <ThemeToggle />
