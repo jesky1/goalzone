@@ -44,7 +44,8 @@ interface Article {
 interface MatchEvent { type: string; minute: number; player: string; }
 
 interface Match {
-  id: string; league: string; homeTeam: string; awayTeam: string;
+  id: string; league: string; leagueLogo?: string;
+  homeTeam: string; awayTeam: string; homeLogo?: string; awayLogo?: string;
   homeScore: number; awayScore: number; status: string; minute: number | null;
   homeEvents: MatchEvent[]; awayEvents: MatchEvent[];
 }
@@ -173,47 +174,65 @@ function NewsSection({ onArticleClick }: { onArticleClick?: (a: Article) => void
   );
 }
 
-// --- Live Match Card ---
-function LiveMatchCard({ match, index }: { match: Match; index: number }) {
+// --- Status Badge ---
+function MatchStatusBadge({ status, minute }: { status: string; minute: number | null }) {
+  if (status === 'LIVE') return (
+    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-red-500/20">
+      <span className="w-1.5 h-1.5 rounded-full bg-red-500 live-pulse" />
+      <span className="text-[11px] font-bold text-red-400 tabular-nums">{minute ? `${minute}'` : 'LIVE'}</span>
+    </div>
+  );
+  if (status === 'HT') return <span className="px-2 py-0.5 rounded bg-amber-500/20 text-[11px] font-bold text-amber-400">HT</span>;
+  if (status === 'FT') return <span className="px-2 py-0.5 rounded bg-white/10 text-[11px] font-bold text-gray-400">FT</span>;
+  return <span className="px-2 py-0.5 rounded bg-white/5 text-[11px] font-bold text-gray-500">{minute ? `${minute}'` : 'NS'}</span>;
+}
+
+// --- Team Logo ---
+function TeamLogo({ src, name, size = 24 }: { src?: string; name: string; size?: number }) {
+  if (!src) return <div className="rounded-full bg-white/10 flex items-center justify-center shrink-0" style={{ width: size, height: size }}><span className="text-[10px] text-white/30">⚽</span></div>;
+  return <img src={src} alt={name} className="rounded-full shrink-0" style={{ width: size, height: size }} loading="lazy" />;
+}
+
+// --- League Group Header ---
+function LeagueHeader({ name, logo, matchCount }: { name: string; logo?: string; matchCount: number }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-      transition={{ duration: 0.4, delay: index * 0.08 }} whileHover={{ scale: 1.01 }} className="glass-card glass-hover p-4">
-      <div className="text-xs text-muted-foreground font-medium mb-3">{match.league}</div>
-      <div className="flex justify-center mb-3">
-        {match.status === 'LIVE' && (
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/20 border border-red-500/20">
-            <span className="w-2 h-2 rounded-full bg-red-500 live-pulse" />
-            <span className="text-xs font-bold text-red-400">{match.minute ? `${match.minute}'` : 'LIVE'}</span>
-          </div>
-        )}
-        {match.status === 'HT' && <span className="px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/20 text-xs font-bold text-amber-400">HT</span>}
-        {match.status === 'FT' && <span className="px-2.5 py-1 rounded-full bg-green-500/20 border border-green-500/20 text-xs font-bold text-green-400">FT</span>}
-        {match.status === 'NS' && <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-gray-400">NS</span>}
+    <div className="flex items-center gap-2.5 py-2.5 px-1 border-b border-white/5">
+      {logo ? <img src={logo} alt={name} className="w-5 h-5 rounded-sm object-contain" loading="lazy" /> : <div className="w-5 h-5 rounded-sm bg-white/10" />}
+      <span className="text-sm font-semibold text-gray-200">{name}</span>
+      <span className="text-[11px] text-gray-500 ml-auto">{matchCount} match{matchCount > 1 ? 'es' : ''}</span>
+    </div>
+  );
+}
+
+// --- Match Row (LiveScore style) ---
+function MatchRow({ match }: { match: Match }) {
+  return (
+    <div className="flex items-center gap-2 py-2.5 px-1 hover:bg-white/[0.02] rounded transition-colors">
+      {/* Status */}
+      <div className="w-10 shrink-0 text-center">
+        <MatchStatusBadge status={match.status} minute={match.minute} />
       </div>
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex-1 text-right">
-          <div className="font-bold text-sm sm:text-base text-white">{match.homeTeam}</div>
-          <div className="flex flex-wrap gap-1 mt-1.5 justify-end">
-            {match.homeEvents?.filter((e) => e.type === 'goal').map((e, i) => (
-              <span key={i} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-neon/10 text-xs text-neon">{e.minute}&apos; <span className="text-gray-300">{e.player}</span></span>
-            ))}
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-2xl sm:text-3xl font-bold neon-text tabular-nums">{match.homeScore}</span>
-          <span className="text-lg text-gray-500">-</span>
-          <span className="text-2xl sm:text-3xl font-bold neon-text tabular-nums">{match.awayScore}</span>
-        </div>
-        <div className="flex-1 text-left">
-          <div className="font-bold text-sm sm:text-base text-white">{match.awayTeam}</div>
-          <div className="flex flex-wrap gap-1 mt-1.5">
-            {match.awayEvents?.filter((e) => e.type === 'goal').map((e, i) => (
-              <span key={i} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-neon/10 text-xs text-neon">{e.minute}&apos; <span className="text-gray-300">{e.player}</span></span>
-            ))}
-          </div>
-        </div>
+      {/* Time / Score */}
+      <div className="w-12 shrink-0 text-center">
+        <span className={`text-sm font-bold tabular-nums ${match.status === 'LIVE' ? 'text-white' : match.status === 'FT' ? 'text-gray-300' : 'text-gray-400'}`}>{match.homeScore} - {match.awayScore}</span>
       </div>
-    </motion.div>
+      {/* Home Team */}
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <TeamLogo src={match.homeLogo} name={match.homeTeam} size={20} />
+        <span className={`text-sm truncate ${match.status === 'LIVE' ? 'text-white font-medium' : 'text-gray-300'}`}>{match.homeTeam}</span>
+      </div>
+      {/* Away Team */}
+      <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
+        <span className={`text-sm truncate text-right ${match.status === 'LIVE' ? 'text-white font-medium' : 'text-gray-300'}`}>{match.awayTeam}</span>
+        <TeamLogo src={match.awayLogo} name={match.awayTeam} size={20} />
+      </div>
+      {/* Goal Events */}
+      {(match.homeEvents?.filter(e => e.type === 'goal').length || match.awayEvents?.filter(e => e.type === 'goal').length) ? (
+        <div className="w-6 shrink-0">
+          <span className="text-[10px] text-gray-500">⚽</span>
+        </div>
+      ) : <div className="w-6 shrink-0" />}
+    </div>
   );
 }
 
@@ -295,11 +314,10 @@ function ArticleModalView({ article, open, onClose }: { article: Article | null;
               )}
 
               {(fullArticle?.content || display.content) && (
-                <div className="mb-6">
-                  {(fullArticle?.content || display.content || '').split('\n\n').map((p, i) => (
-                    <p key={i} className="text-sm sm:text-base text-gray-300 leading-relaxed mb-4">{p}</p>
-                  ))}
-                </div>
+                <div
+                  className="mb-6 text-sm sm:text-base text-gray-300 leading-relaxed [&_p]:mb-4"
+                  dangerouslySetInnerHTML={{ __html: fullArticle?.content || display.content || '' }}
+                />
               )}
 
               <Separator className="bg-white/5 my-6" />
@@ -405,19 +423,45 @@ export default function Home() {
             <p className="text-xs text-muted-foreground">Pertandingan yang sedang berlangsung dari berbagai liga</p>
           </motion.div>
           {matchesLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[1,2,3].map(i => (
-                <div key={i} className="glass-card p-4">
-                  <Skeleton className="h-4 w-24 mb-3 bg-white/5" />
-                  <div className="flex justify-center gap-2"><Skeleton className="h-8 w-20 bg-white/5" /><Skeleton className="h-8 w-6 bg-white/5" /><Skeleton className="h-8 w-20 bg-white/5" /></div>
-                </div>
-              ))}
+            <div className="glass-card p-4 space-y-4">
+              {[1,2,3].map(i => <div key={i} className="flex items-center gap-2 py-2"><Skeleton className="h-4 w-10 bg-white/5" /><Skeleton className="h-4 w-12 bg-white/5" /><Skeleton className="h-4 w-32 bg-white/5" /><Skeleton className="h-4 w-32 bg-white/5" /></div>)}
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {liveMatches.map((match, index) => <LiveMatchCard key={match.id} match={match} index={index} />)}
-            </div>
-          )}
+          ) : (() => {
+            // Group matches by league
+            const leagueMap = new Map<string, { league: string; logo?: string; matches: Match[] }>();
+            liveMatches.forEach(m => {
+              if (!leagueMap.has(m.league)) leagueMap.set(m.league, { league: m.league, logo: m.leagueLogo, matches: [] });
+              leagueMap.get(m.league)!.matches.push(m);
+            });
+            const leagues = [...leagueMap.values()];
+            // Sort leagues: ones with LIVE matches first
+            leagues.sort((a, b) => {
+              const aLive = a.matches.some(m => m.status === 'LIVE');
+              const bLive = b.matches.some(m => m.status === 'LIVE');
+              if (aLive && !bLive) return -1;
+              if (!aLive && bLive) return 1;
+              return 0;
+            });
+            return (
+              <div className="space-y-3">
+                {leagues.map((league) => (
+                  <motion.div key={league.league} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="glass-card overflow-hidden">
+                    <LeagueHeader name={league.league} logo={league.logo} matchCount={league.matches.length} />
+                    <div className="divide-y divide-white/[0.03]">
+                      {league.matches.map((match) => <MatchRow key={match.id} match={match} />)}
+                    </div>
+                  </motion.div>
+                ))}
+                {liveMatches.length === 0 && (
+                  <div className="glass-card p-8 text-center">
+                    <div className="text-3xl mb-3 opacity-20">⚽</div>
+                    <p className="text-sm text-muted-foreground">Tidak ada pertandingan hari ini</p>
+                    <p className="text-xs text-gray-600 mt-1">Data akan otomatis update ketika ada pertandingan</p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </section>
 
         {/* News + Sidebar */}

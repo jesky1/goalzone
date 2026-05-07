@@ -1,13 +1,16 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 interface LiveMatch {
   id: string;
   league: string;
+  leagueLogo?: string;
   homeTeam: string;
   awayTeam: string;
+  homeLogo?: string;
+  awayLogo?: string;
   homeScore: number;
   awayScore: number;
   status: string;
@@ -18,29 +21,17 @@ function StatusBadge({ status, minute }: { status: string; minute: number | null
   switch (status) {
     case 'LIVE':
       return (
-        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-xs font-bold">
-          <span className="w-1.5 h-1.5 rounded-full bg-red-500 live-pulse" />
+        <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 text-[10px] font-bold">
+          <span className="w-1 h-1 rounded-full bg-red-500 live-pulse" />
           {minute ? `${minute}'` : 'LIVE'}
         </span>
       );
     case 'HT':
-      return (
-        <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 text-xs font-bold">
-          HT
-        </span>
-      );
+      return <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[10px] font-bold">HT</span>;
     case 'FT':
-      return (
-        <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs font-bold">
-          FT
-        </span>
-      );
+      return <span className="px-1.5 py-0.5 rounded bg-green-500/20 text-green-400 text-[10px] font-bold">FT</span>;
     default:
-      return (
-        <span className="px-2 py-0.5 rounded-full bg-white/5 text-gray-400 text-xs font-bold">
-          NS
-        </span>
-      );
+      return null;
   }
 }
 
@@ -56,51 +47,21 @@ export default function LiveScoreTicker() {
         if (res.ok && !cancelled) {
           const data = await res.json();
           const list = data.matches || [];
-          if (Array.isArray(list)) {
-            setMatches(list);
-          }
+          if (Array.isArray(list)) setMatches(list);
         }
-      } catch {
-        // silently fail, keep previous data
-      }
+      } catch { /* silent */ }
     };
 
     load();
     const interval = setInterval(load, 60000);
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
+    return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
   if (matches.length === 0) return null;
 
-  const tickerContent = (
-    <div className="flex">
-      {[...matches, ...matches].map((match, index) => (
-        <div
-          key={`${match.id}-${index}`}
-          className="flex items-center gap-3 px-4 py-2 whitespace-nowrap shrink-0 border-r border-white/5"
-        >
-          <span className="text-xs text-muted-foreground font-medium">
-            {match.league}
-          </span>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-foreground">
-              {match.homeTeam}
-            </span>
-            <span className="text-sm font-bold neon-text">
-              {match.homeScore} - {match.awayScore}
-            </span>
-            <span className="text-sm font-semibold text-foreground">
-              {match.awayTeam}
-            </span>
-          </div>
-          <StatusBadge status={match.status} minute={match.minute} />
-        </div>
-      ))}
-    </div>
-  );
+  // Only show LIVE and HT matches in ticker
+  const activeMatches = matches.filter(m => m.status === 'LIVE' || m.status === 'HT');
+  if (activeMatches.length === 0) return null;
 
   return (
     <motion.div
@@ -109,7 +70,35 @@ export default function LiveScoreTicker() {
       transition={{ duration: 0.5, delay: 0.2 }}
       className="fixed top-16 left-0 right-0 z-40 glass overflow-hidden"
     >
-      <div className="ticker-scroll">{tickerContent}</div>
+      <div className="ticker-scroll">
+        <div className="flex">
+          {[...activeMatches, ...activeMatches].map((match, index) => (
+            <div
+              key={`${match.id}-${index}`}
+              className="flex items-center gap-2 px-4 py-2 whitespace-nowrap shrink-0 border-r border-white/5"
+            >
+              {/* League logo */}
+              {match.leagueLogo && (
+                <img src={match.leagueLogo} alt="" className="w-4 h-4 rounded-sm object-contain shrink-0" loading="lazy" />
+              )}
+              <span className="text-[10px] text-muted-foreground font-medium">{match.league}</span>
+              {/* Home team */}
+              {match.homeLogo ? (
+                <img src={match.homeLogo} alt="" className="w-4 h-4 rounded-full shrink-0" loading="lazy" />
+              ) : null}
+              <span className="text-xs font-semibold text-foreground">{match.homeTeam}</span>
+              {/* Score */}
+              <span className="text-xs font-bold neon-text tabular-nums">{match.homeScore}-{match.awayScore}</span>
+              {/* Away team */}
+              <span className="text-xs font-semibold text-foreground">{match.awayTeam}</span>
+              {match.awayLogo ? (
+                <img src={match.awayLogo} alt="" className="w-4 h-4 rounded-full shrink-0" loading="lazy" />
+              ) : null}
+              <StatusBadge status={match.status} minute={match.minute} />
+            </div>
+          ))}
+        </div>
+      </div>
     </motion.div>
   );
 }
