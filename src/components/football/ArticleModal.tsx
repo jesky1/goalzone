@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
+import GoogleNewsSchema from '@/components/football/GoogleNewsSchema';
 
 interface Article {
   id: string;
@@ -134,8 +135,29 @@ export default function ArticleModal({
 
   const displayArticle = fullArticle || article;
 
+  // Build schema-extended article for Google News JSON-LD
+  const schemaArticle = displayArticle
+    ? {
+        title: displayArticle.title,
+        slug: displayArticle.slug,
+        content: fullArticle?.content || displayArticle.content,
+        summary: displayArticle.summary,
+        imageUrl: displayArticle.imageUrl,
+        categoryName: displayArticle.category.name,
+        authorName: displayArticle.author.username,
+        readTime: displayArticle.readTime,
+        publishedAt: (fullArticle as any)?.publishedAt || displayArticle.createdAt,
+        updatedAt: (fullArticle as any)?.updatedAt,
+        createdAt: displayArticle.createdAt,
+      }
+    : null;
+
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+    <>
+      {/* JSON-LD structured data for Google News & Discover */}
+      <GoogleNewsSchema article={schemaArticle} />
+
+      <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto custom-scrollbar bg-deep-800 border-white/10 p-0">
         <AnimatePresence>
           {displayArticle && (
@@ -305,5 +327,6 @@ export default function ArticleModal({
         </AnimatePresence>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
