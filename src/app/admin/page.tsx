@@ -710,18 +710,18 @@ export default function AdminDashboard() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: idx * 0.03 }}
-                        className="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors group"
+                        className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors group"
                       >
                         {/* Index */}
-                        <div className="w-8 h-8 rounded-lg bg-neon/5 flex items-center justify-center shrink-0">
-                          <span className="text-xs font-bold text-neon/60">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-neon/5 flex items-center justify-center shrink-0">
+                          <span className="text-[11px] sm:text-xs font-bold text-neon/60">
                             {idx + 1}
                           </span>
                         </div>
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
+                          <div className="flex items-center gap-2">
                             <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
                               {article.title}
                             </h4>
@@ -741,7 +741,7 @@ export default function AdminDashboard() {
                             <span className="text-[10px] text-muted-foreground">
                               {article.authorName}
                             </span>
-                            <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                            <span className="text-[10px] text-gray-400 dark:text-gray-500 hidden sm:inline">
                               {timeAgo(article.createdAt)}
                             </span>
                             <span className="text-[10px] text-gray-400 dark:text-gray-500 flex items-center gap-1">
@@ -751,32 +751,34 @@ export default function AdminDashboard() {
                           </div>
                         </div>
 
-                        {/* Status */}
-                        <Badge
-                          variant="outline"
-                          className={`text-[10px] shrink-0 ${
-                            article.status === 'published'
-                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                              : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                          }`}
-                        >
-                          {article.status}
-                        </Badge>
+                        {/* Status + Delete */}
+                        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                          <Badge
+                            variant="outline"
+                            className={`text-[10px] shrink-0 ${
+                              article.status === 'published'
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                            }`}
+                          >
+                            {article.status}
+                          </Badge>
 
-                        {/* Delete */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteArticle(article.id)}
-                          disabled={deletingArticle === article.id}
-                          className="text-muted-foreground hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                        >
-                          {deletingArticle === article.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-4 h-4" />
-                          )}
-                        </Button>
+                          {/* Delete - always visible on mobile, hover on desktop */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteArticle(article.id)}
+                            disabled={deletingArticle === article.id}
+                            className="text-muted-foreground hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0 p-1.5 sm:p-2"
+                          >
+                            {deletingArticle === article.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
                       </motion.div>
                     ))}
                   </div>

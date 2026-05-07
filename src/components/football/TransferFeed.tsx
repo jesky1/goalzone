@@ -144,10 +144,10 @@ export default function TransferFeed() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.25, delay: index * 0.03 }}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/[0.03] transition-colors group"
+            className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/[0.03] transition-colors group"
           >
             {/* Player Photo */}
-            <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden shrink-0 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
               {transfer.playerPhoto ? (
                 <img src={transfer.playerPhoto} alt={transfer.playerName} className="w-full h-full object-cover" />
               ) : (
@@ -160,20 +160,20 @@ export default function TransferFeed() {
             {/* Player Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-neon transition-colors">
+                <span className="text-[13px] sm:text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-neon transition-colors">
                   {transfer.playerName}
                 </span>
                 <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold shrink-0 ${getPositionColor(transfer.position)}`}>
                   {getPositionShort(transfer.position)}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5">
+              <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] text-muted-foreground mt-0.5">
                 {/* From team */}
                 <div className="flex items-center gap-1 min-w-0">
                   {transfer.from.logo && (
                     <img src={transfer.from.logo} alt="" className="w-3 h-3 rounded-full object-contain shrink-0" />
                   )}
-                  <span className="truncate">{transfer.from.name}</span>
+                  <span className="truncate max-w-[80px] sm:max-w-none">{transfer.from.name}</span>
                 </div>
                 {/* Arrow */}
                 <ArrowRightLeft className="w-3 h-3 text-neon/60 shrink-0 rotate-90 sm:rotate-0" />
@@ -182,7 +182,7 @@ export default function TransferFeed() {
                   {transfer.to.logo && (
                     <img src={transfer.to.logo} alt="" className="w-3 h-3 rounded-full object-contain shrink-0" />
                   )}
-                  <span className="truncate font-medium text-gray-700 dark:text-white/80">{transfer.to.name}</span>
+                  <span className="truncate max-w-[80px] sm:max-w-none font-medium text-gray-700 dark:text-white/80">{transfer.to.name}</span>
                 </div>
               </div>
             </div>
@@ -190,15 +190,15 @@ export default function TransferFeed() {
             {/* Amount + Date */}
             <div className="text-right shrink-0">
               {transfer.amount && transfer.amount !== '$0' && transfer.amount !== 'Free' ? (
-                <div className="text-sm font-bold text-neon tabular-nums">{transfer.amount}</div>
+                <div className="text-xs sm:text-sm font-bold text-neon tabular-nums">{transfer.amount}</div>
               ) : (
-                <div className={`text-xs font-bold px-2 py-0.5 rounded ${
+                <div className={`text-[11px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded ${
                   transfer.type.toLowerCase().includes('loan') ? 'bg-blue-500/10 text-blue-400' : 'bg-green-500/10 text-green-400'
                 }`}>
                   {transfer.type.includes('Loan') ? 'LOAN' : 'FREE'}
                 </div>
               )}
-              <div className="text-[10px] text-gray-300 dark:text-gray-600 mt-0.5">{formatDate(transfer.date)}</div>
+              <div className="text-[10px] text-gray-300 dark:text-gray-600 mt-0.5 hidden sm:block">{formatDate(transfer.date)}</div>
             </div>
           </motion.div>
         ))}

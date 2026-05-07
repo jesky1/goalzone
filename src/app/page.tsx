@@ -157,13 +157,18 @@ function SimpleNewsCard({ article, onClick }: { article: Article; onClick?: (a: 
       <div className="flex flex-col flex-1 p-4">
         <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 leading-snug">{article.title}</h3>
         {article.summary && <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2 flex-1">{article.summary}</p>}
-        <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 mt-auto pt-3 border-t border-gray-200 dark:border-white/5">
-          <span className="font-medium text-gray-500 dark:text-gray-300">{article.author.username}</span>
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{timeAgo}</span>
-            <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{article.viewCount}</span>
-            <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{article.readTime}m</span>
+        <div className="mt-auto pt-3 border-t border-gray-200 dark:border-white/5">
+          <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
+            <span className="font-medium text-gray-500 dark:text-gray-300 truncate max-w-[50%]">{article.author.username}</span>
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <span className="hidden sm:flex items-center gap-1"><Calendar className="w-3 h-3" />{timeAgo}</span>
+              <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{article.viewCount}</span>
+              <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{article.readTime}m</span>
+            </div>
           </div>
+          <span className="sm:hidden flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 mt-1">
+            <Calendar className="w-3 h-3" />{timeAgo}
+          </span>
         </div>
       </div>
     </motion.div>
@@ -244,33 +249,33 @@ function LeagueHeader({ name, logo, matchCount }: { name: string; logo?: string;
 // --- Match Row (Clickable) ---
 function MatchRow({ match, onClick }: { match: Match; onClick?: () => void }) {
   return (
-    <div onClick={onClick} className="flex items-center gap-2 py-2.5 px-1 hover:bg-gray-100 dark:hover:bg-white/[0.04] rounded transition-colors cursor-pointer group">
+    <div onClick={onClick} className="flex items-center gap-1.5 sm:gap-2 py-2.5 px-1 hover:bg-gray-100 dark:hover:bg-white/[0.04] rounded transition-colors cursor-pointer group">
       {/* Status */}
       <div className="w-10 shrink-0 text-center">
         <MatchStatusBadge status={match.status} minute={match.minute} />
       </div>
       {/* Time / Score */}
-      <div className="w-12 shrink-0 text-center">
+      <div className="w-10 sm:w-12 shrink-0 text-center">
         <span className={`text-sm font-bold tabular-nums ${match.status === 'LIVE' ? 'text-gray-900 dark:text-white' : match.status === 'FT' ? 'text-gray-500 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400'}`}>{match.homeScore} - {match.awayScore}</span>
       </div>
       {/* Home Team */}
-      <div className="flex items-center gap-2 flex-1 min-w-0">
-        <TeamLogo src={match.homeLogo} name={match.homeTeam} size={20} />
-        <span className={`text-sm truncate ${match.status === 'LIVE' ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-500 dark:text-gray-300'}`}>{match.homeTeam}</span>
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+        <TeamLogo src={match.homeLogo} name={match.homeTeam} size={18} />
+        <span className={`text-xs sm:text-sm truncate ${match.status === 'LIVE' ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-500 dark:text-gray-300'}`}>{match.homeTeam}</span>
       </div>
       {/* Away Team */}
-      <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-        <span className={`text-sm truncate text-right ${match.status === 'LIVE' ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-500 dark:text-gray-300'}`}>{match.awayTeam}</span>
-        <TeamLogo src={match.awayLogo} name={match.awayTeam} size={20} />
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0 justify-end">
+        <span className={`text-xs sm:text-sm truncate text-right ${match.status === 'LIVE' ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-500 dark:text-gray-300'}`}>{match.awayTeam}</span>
+        <TeamLogo src={match.awayLogo} name={match.awayTeam} size={18} />
       </div>
       {/* Goal Events */}
       {(match.homeEvents?.filter(e => e.type === 'goal').length || match.awayEvents?.filter(e => e.type === 'goal').length) ? (
-        <div className="w-6 shrink-0">
+        <div className="w-5 sm:w-6 shrink-0">
           <span className="text-[10px] text-gray-400 dark:text-gray-500">⚽</span>
         </div>
-      ) : <div className="w-6 shrink-0" />}
+      ) : <div className="w-5 sm:w-6 shrink-0" />}
       {/* Click indicator */}
-      <ChevronRight className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+      <ChevronRight className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hidden sm:block" />
     </div>
   );
 }
@@ -634,9 +639,10 @@ function MatchDetailModal({ match, open, onClose, onRefereeClick }: { match: Mat
                 <div className="text-center py-8 text-sm text-muted-foreground">Data taktik belum tersedia</div>
               )}
               {activeTab === 'lineups' && hl && al && (
-                <div className="flex gap-4 sm:gap-6">
+                <div className="flex flex-col md:flex-row gap-4 md:gap-6">
                   {renderTeamLineup(hl, 'home')}
-                  <div className="w-px bg-gray-100 dark:bg-white/5 shrink-0" />
+                  <div className="hidden md:block w-px bg-gray-100 dark:bg-white/5 shrink-0" />
+                  <div className="md:hidden h-px bg-gray-100 dark:bg-white/5" />
                   {renderTeamLineup(al, 'away')}
                 </div>
               )}
@@ -737,11 +743,11 @@ function ArticleModalView({ article, open, onClose }: { article: Article | null;
               <Separator className="bg-gray-100 dark:bg-white/5 my-6" />
               <div>
                 <h4 className="text-base font-bold text-gray-900 dark:text-white mb-4">Komentar ({comments.length})</h4>
-                <div className="flex gap-3 mb-6">
+                <div className="flex flex-col sm:flex-row gap-3 mb-6">
                   <Textarea value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Tulis komentar..."
                     className="min-h-[80px] bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-sm placeholder:text-muted-foreground focus:border-neon/30 focus:ring-neon/20 resize-none" rows={3} />
                   <button onClick={handleSubmit} disabled={!commentText.trim() || submitting}
-                    className="self-end bg-neon/10 text-neon hover:bg-neon/20 border border-neon/20 p-2.5 rounded-lg shrink-0 disabled:opacity-40">
+                    className="self-end sm:self-end bg-neon/10 text-neon hover:bg-neon/20 border border-neon/20 p-2.5 rounded-lg shrink-0 disabled:opacity-40">
                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   </button>
                 </div>

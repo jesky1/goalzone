@@ -185,7 +185,7 @@ export default function TopScorersWidget() {
                   </div>
                   <div className="text-[10px] text-muted-foreground">GOL</div>
                 </div>
-                <div className="text-right">
+                <div className="text-right hidden sm:block">
                   <div className="text-sm font-medium text-gray-500 dark:text-gray-300 tabular-nums">
                     {scorer.assists}
                   </div>

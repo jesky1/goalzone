@@ -312,12 +312,12 @@ export default function FanTokenWidget() {
       {/* Top Gainer Banner */}
       {!loading && summary && summary.topGainer && summary.topGainer.changePercent24h !== 0 && (
         <div className="mt-3 p-2.5 rounded-lg bg-green-500/5 border border-green-500/10">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-bold text-green-400">Top Gainer</span>
             <span className="text-xs text-white font-semibold">
               ${summary.topGainer.symbol}
             </span>
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-[10px] text-muted-foreground truncate">
               {summary.topGainer.team}
             </span>
             <span className="ml-auto text-xs font-bold text-green-400 tabular-nums">
