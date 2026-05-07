@@ -884,7 +884,7 @@ export default function Home() {
       <Navbar />
       <LiveScoreTicker />
 
-      <main className="flex-1 pt-[104px]">
+      <main className="flex-1">
         {/* Hero Slider */}
         <ErrorBoundary fallback={<div className="h-[400px] bg-deep-800" />}>
           <HeroSection articles={featuredArticles} onArticleClick={handleArticleClick} />
