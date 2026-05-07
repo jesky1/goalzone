@@ -300,15 +300,10 @@ function BloggerFeedSection() {
                   LIVE
                 </Badge>
               )}
-              {data?.source === 'mock' && (
-                <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-[9px] px-1.5 py-0">
-                  DEMO
-                </Badge>
-              )}
+    
             </h3>
             <p className="text-[10px] text-muted-foreground">
               5 postingan terbaru dari blog
-              {data?.source === 'mock' && ' (set BLOGGER_BLOG_ID & BLOGGER_API_KEY di .env)'}
             </p>
           </div>
         </div>
