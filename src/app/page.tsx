@@ -494,7 +494,8 @@ function MatchDetailModal({ match, open, onClose }: { match: Match | null; open:
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto custom-scrollbar bg-deep-800 border-white/10 p-0">
+      <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto custom-scrollbar bg-deep-800 border-white/10 p-0" showCloseButton={false}>
+        <DialogTitle className="sr-only">{match.homeTeam} vs {match.awayTeam} - Detail Pertandingan</DialogTitle>
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <Loader2 className="w-6 h-6 text-neon animate-spin" />
