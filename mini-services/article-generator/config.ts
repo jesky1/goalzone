@@ -2,6 +2,29 @@
 // GOALZONE Article Generator — Configuration
 // ============================================================
 
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
+
+// Load .env.local from project root (bun --hot doesn't auto-load .env.local)
+try {
+  const envPath = resolve(import.meta.dirname, '../../.env.local')
+  const envContent = readFileSync(envPath, 'utf-8')
+  for (const line of envContent.split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const eqIdx = trimmed.indexOf('=')
+    if (eqIdx === -1) continue
+    const key = trimmed.substring(0, eqIdx).trim()
+    const value = trimmed.substring(eqIdx + 1).trim()
+    // Don't override already-set env vars
+    if (!(key in process.env)) {
+      process.env[key] = value
+    }
+  }
+} catch {
+  // .env.local not found — will use env vars from shell
+}
+
 export const config = {
   // Server
   port: Number(process.env.ARTICLE_GEN_PORT) || 3005,
