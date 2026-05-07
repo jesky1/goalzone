@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
 
-// ─── Login Form (must be inside AuthProvider) ───────────────
+// ─── Login Form (must be inside AuthProvider + Suspense) ─────
 
 function LoginForm() {
   const router = useRouter();
@@ -225,12 +225,29 @@ function LoginForm() {
   );
 }
 
+// ─── Suspense wrapper for useSearchParams ─────────────────────
+
+function LoginContent() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-deep-900 cyber-grid flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-neon animate-spin mx-auto mb-4" />
+          <p className="text-sm text-muted-foreground">Memuat...</p>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
 // ─── Page (wraps with AuthProvider) ─────────────────────────
 
 export default function AdminLoginPage() {
   return (
     <AuthProvider>
-      <LoginForm />
+      <LoginContent />
     </AuthProvider>
   );
 }
