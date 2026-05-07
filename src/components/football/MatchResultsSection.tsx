@@ -448,7 +448,7 @@ function MatchDetailModal({
 
             {/* ─── Link to full detail page ────────────────── */}
             <Link
-              href={`/match/${match.id}`}
+              href={`/matches/${match.id}`}
               onClick={onClose}
               className="mt-4 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium
                 bg-neon/[0.06] text-neon border border-neon/20
