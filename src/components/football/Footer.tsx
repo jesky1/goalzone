@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Zap, Twitter, Youtube, Instagram } from 'lucide-react';
+import { Zap, Twitter, Youtube, Instagram, Shield } from 'lucide-react';
 
 const quickLinks = {
   Liga: [
@@ -107,6 +107,14 @@ export default function Footer() {
               <a href="#" className="hover:text-neon transition-colors">
                 Kontak
               </a>
+              <Link
+                href="/admin"
+                className="flex items-center gap-1 hover:text-neon transition-colors"
+                aria-label="Admin Dashboard"
+              >
+                <Shield className="w-3 h-3" />
+                <span>Admin</span>
+              </Link>
             </div>
           </div>
         </div>

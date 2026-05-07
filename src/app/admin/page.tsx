@@ -155,7 +155,7 @@ function LoginForm({ onLogin }: { onLogin: (token: string, user: AdminUser) => v
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-deep-900 cyber-grid">
+    <div className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
@@ -865,7 +865,7 @@ function Dashboard({
 
   if (error && !data) {
     return (
-      <div className="min-h-screen bg-deep-900 cyber-grid flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center py-16 px-6">
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
           <p className="text-sm text-red-400 mb-2">{error}</p>
@@ -878,7 +878,7 @@ function Dashboard({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-deep-900 cyber-grid">
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-deep-800/95 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
