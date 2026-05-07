@@ -600,11 +600,15 @@ export default function SearchDialog() {
                       <X className="w-4 h-4 text-gray-400" />
                     </motion.button>
                   )}
-                  <div className="hidden sm:flex items-center gap-1 text-[10px] text-gray-600">
-                    <kbd className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono">
-                      ESC
-                    </kbd>
-                  </div>
+                  {/* Modern close button */}
+                  <button
+                    onClick={handleClose}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-gray-500 hover:text-gray-300 transition-all text-[11px]"
+                    aria-label="Close search"
+                  >
+                    <X className="w-3 h-3" />
+                    <span className="hidden sm:inline">Close</span>
+                  </button>
                 </div>
 
                 {/* Results Body */}
