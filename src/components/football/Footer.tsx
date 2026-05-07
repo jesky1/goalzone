@@ -13,11 +13,11 @@ const quickLinks = {
     { label: 'Ligue 1', href: '#' },
   ],
   Tim: [
-    { label: 'Manchester City', href: '#' },
-    { label: 'Real Madrid', href: '#' },
-    { label: 'Barcelona', href: '#' },
-    { label: 'Bayern Munich', href: '#' },
-    { label: 'PSG', href: '#' },
+    { label: 'Manchester City', href: '/teams/manchester-city' },
+    { label: 'Real Madrid', href: '/teams/real-madrid' },
+    { label: 'Barcelona', href: '/teams/barcelona' },
+    { label: 'Bayern Munich', href: '/teams/bayern-munich' },
+    { label: 'PSG', href: '/teams/psg' },
   ],
   Media: [
     { label: 'Berita', href: '#home' },
@@ -77,16 +77,28 @@ export default function Footer() {
               <div key={title}>
                 <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4">{title}</h4>
                 <ul className="space-y-2.5">
-                  {links.map((link) => (
-                    <li key={link.label}>
-                      <a
-                        href={link.href}
-                        className="text-sm text-muted-foreground hover:text-neon transition-colors duration-200"
-                      >
-                        {link.label}
-                      </a>
-                    </li>
-                  ))}
+                  {links.map((link) => {
+                    const isTeamLink = link.href.startsWith('/teams/');
+                    return (
+                      <li key={link.label}>
+                        {isTeamLink ? (
+                          <Link
+                            href={link.href}
+                            className="text-sm text-muted-foreground hover:text-cyan-400 transition-colors duration-200 cursor-pointer"
+                          >
+                            {link.label}
+                          </Link>
+                        ) : (
+                          <a
+                            href={link.href}
+                            className="text-sm text-muted-foreground hover:text-neon transition-colors duration-200"
+                          >
+                            {link.label}
+                          </a>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ))}

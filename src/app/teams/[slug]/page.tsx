@@ -4,59 +4,71 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-  ArrowLeft, MapPin, Calendar, Trophy, Users, Hash, ChevronRight,
-  Shield, Swords, Target, RefreshCw, AlertTriangle, Star, Clock,
-  CircleDot, TrendingUp,
+  ArrowLeft, Calendar, MapPin, Trophy, Users, Swords, Shield,
+  ChevronRight, RefreshCw, AlertTriangle, Star, Hash, Target,
+  TrendingUp, Footprints, Clock, User, Zap, Flag,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 
 // ─── Types ──────────────────────────────────────────────────
 
-interface TeamColors {
-  primary: string;
-  secondary: string;
-  accent: string;
-}
-
-interface TeamInfo {
-  id: string; name: string; slug: string; logo: string;
-  country: string; founded: number | null; venue: string | null;
-  venueCapacity: number | null; league: string | null;
-}
-
-interface TeamStats {
-  standing: number | null; played: number; won: number; drawn: number; lost: number;
-  goalsFor: number; goalsAgainst: number; points: number; form: ('W' | 'D' | 'L')[];
-}
-
 interface SquadPlayer {
-  name: string; number: number | null; position: string; age: number;
-  nationality: string; photo: string | null;
+  id: number;
+  name: string;
+  number: number;
+  position: string;
+  nationality: string;
+  age: number;
+  photo: string | null;
 }
 
-interface RecentMatch {
-  id: string; homeTeam: string; awayTeam: string; homeScore: number; awayScore: number;
-  date: string; status: string; league: string | null;
-  homeLogo: string | null; awayLogo: string | null; isHome: boolean;
-}
-
-interface LineupPlayer {
-  name: string; number: number | null; position: string; photo: string | null;
-  gridX: string; gridY: string;
-}
-
-interface TeamData {
-  team: TeamInfo;
-  stats: TeamStats;
-  squad: SquadPlayer[];
-  recentMatches: RecentMatch[];
-  lineup: LineupPlayer[];
+interface TeamLineup {
   formation: string;
-  colors: TeamColors;
-  source: string;
+  players: { name: string; number: number; position: string; gridArea: string }[];
+}
+
+interface TeamMatchResult {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeScore: number;
+  awayScore: number;
+  matchDate: string;
+  league: string | null;
+  status: string;
+  homeTeamLogoUrl: string | null;
+  awayTeamLogoUrl: string | null;
+  venue: string | null;
+  matchWeek: number | null;
+}
+
+interface TeamProfile {
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  founded: number | null;
+  stadium: string | null;
+  stadiumCapacity: number | null;
+  coach: string | null;
+  league: string | null;
+  country: string | null;
+  season: number;
+  primaryColor: string;
+  secondaryColor: string;
+  rank: number | null;
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  points: number;
+  squad: SquadPlayer[];
+  lastLineup: TeamLineup | null;
+  recentMatches: TeamMatchResult[];
 }
 
 // ─── Helpers ────────────────────────────────────────────────
@@ -64,165 +76,459 @@ interface TeamData {
 function formatDate(dateStr: string): string {
   try {
     const d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    return d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
   } catch { return dateStr; }
 }
 
+function getRelativeDay(dateStr: string): string {
+  try {
+    const target = new Date(dateStr + 'T00:00:00');
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const diff = Math.ceil((target.getTime() - today.getTime()) / 86400000);
+    if (diff < 0) return `${Math.abs(diff)} hari lalu`;
+    if (diff === 0) return 'Hari ini';
+    if (diff === 1) return 'Besok';
+    return `${diff} hari lagi`;
+  } catch { return ''; }
+}
+
 function getPositionLabel(pos: string) {
-  const labels: Record<string, string> = { G: 'GK', D: 'DEF', M: 'MID', F: 'FWD' };
-  return labels[pos] || pos || 'N/A';
+  const labels: Record<string, string> = { GK: 'GK', DEF: 'DEF', MID: 'MID', FWD: 'FWD' };
+  return labels[pos] || pos;
 }
 
 function getPositionColor(pos: string) {
   const colors: Record<string, string> = {
-    G: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-    D: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    M: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-    F: 'bg-red-500/20 text-red-400 border-red-500/30',
+    GK: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+    DEF: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    MID: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    FWD: 'bg-red-500/20 text-red-400 border-red-500/30',
   };
-  return colors[pos] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+  return colors[pos] || 'bg-white/5 text-gray-400 border-white/10';
 }
 
-function getMatchResult(isHome: boolean, homeScore: number, awayScore: number): { label: string; color: string } {
-  const myScore = isHome ? homeScore : awayScore;
-  const oppScore = isHome ? awayScore : homeScore;
-  if (myScore > oppScore) return { label: 'W', color: 'bg-emerald-500 text-white' };
-  if (myScore < oppScore) return { label: 'L', color: 'bg-red-500 text-white' };
-  return { label: 'D', color: 'bg-amber-500 text-white' };
+function getMatchResult(team: string, match: TeamMatchResult): { label: string; color: string } {
+  const isHome = match.homeTeam === team;
+  const homeGoals = match.homeScore;
+  const awayGoals = match.awayScore;
+  if (match.status !== 'finished') return { label: 'VS', color: 'text-blue-400' };
+  if (isHome) {
+    if (homeGoals > awayGoals) return { label: 'W', color: 'text-emerald-400' };
+    if (homeGoals === awayGoals) return { label: 'D', color: 'text-amber-400' };
+    return { label: 'L', color: 'text-red-400' };
+  } else {
+    if (awayGoals > homeGoals) return { label: 'W', color: 'text-emerald-400' };
+    if (awayGoals === homeGoals) return { label: 'D', color: 'text-amber-400' };
+    return { label: 'L', color: 'text-red-400' };
+  }
 }
 
-// ─── Page Skeleton ──────────────────────────────────────────
+// ─── Team Logo Component ────────────────────────────────────
+
+function TeamHeroLogo({ src, alt, accentColor }: { src: string | null; alt: string; accentColor: string }) {
+  if (!src) {
+    return (
+      <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-3xl overflow-hidden flex items-center justify-center bg-white/[0.04] border border-white/[0.08]">
+        <span className="text-3xl font-black text-muted-foreground/30">{alt.slice(0, 2).toUpperCase()}</span>
+      </div>
+    );
+  }
+  return (
+    <motion.div
+      className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-3xl overflow-hidden"
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+    >
+      {/* Outer glow rings */}
+      <div
+        className="absolute -inset-4 rounded-[2rem] pointer-events-none animate-pulse"
+        style={{
+          boxShadow: `0 0 40px 8px ${accentColor}30, 0 0 80px 16px ${accentColor}15, 0 0 120px 24px ${accentColor}08`,
+        }}
+      />
+      <div
+        className="absolute -inset-2 rounded-[1.5rem] pointer-events-none"
+        style={{
+          boxShadow: `0 0 20px 4px ${accentColor}40`,
+        }}
+      />
+      {/* Glass background */}
+      <div className="absolute inset-0 rounded-3xl bg-white/[0.05] backdrop-blur-xl border border-white/[0.1]" />
+      {/* Logo */}
+      <Image src={src} alt={alt} width={144} height={144} className="relative z-10 object-contain p-4 sm:p-5" unoptimized />
+    </motion.div>
+  );
+}
+
+// ─── Stat Card ──────────────────────────────────────────────
+
+function StatCard({ icon: Icon, label, value, color, delay = 0 }: { icon: React.ElementType; label: string; value: string | number; color?: string; delay?: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay }}
+      className="glass-card p-3 sm:p-4 flex flex-col items-center gap-1.5 text-center"
+    >
+      <Icon className="w-4 h-4 text-muted-foreground/40" />
+      <span className={`text-xl sm:text-2xl font-black tabular-nums ${color || 'neon-text'}`}>{value}</span>
+      <span className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider">{label}</span>
+    </motion.div>
+  );
+}
+
+// ─── Form Mini Badges (W/D/L) ───────────────────────────────
+
+function FormBadges({ teamName, matches }: { teamName: string; matches: TeamMatchResult[] }) {
+  const recent = matches.slice(0, 5);
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-[10px] text-muted-foreground/40 uppercase tracking-wider mr-1">Form</span>
+      {recent.map((m) => {
+        const r = getMatchResult(teamName, m);
+        const bg = r.label === 'W' ? 'bg-emerald-500/20 border-emerald-500/30' :
+                   r.label === 'D' ? 'bg-amber-500/20 border-amber-500/30' :
+                   r.label === 'L' ? 'bg-red-500/20 border-red-500/30' :
+                   'bg-blue-500/20 border-blue-500/30';
+        return (
+          <span key={m.id} className={`w-6 h-6 rounded-md border flex items-center justify-center text-[10px] font-bold ${r.color} ${bg}`}>
+            {r.label}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Lineup Football Field ──────────────────────────────────
+
+function LineupField({ lineup, accentColor }: { lineup: TeamLineup; accentColor: string }) {
+  const { formation, players } = lineup;
+
+  // Grid template areas for different formations
+  const gridAreas: Record<string, string> = {
+    '4-3-3': `
+      ". . gk . ."
+      ". rb rcb lcb lb"
+      ". . rcm lcm ."
+      ". cdm cdm cdm cdm"
+      ". . . . ."
+      "rw . st . lw"
+    `,
+    '4-2-3-1': `
+      ". . gk . ."
+      ". rb rcb lcb lb"
+      ". rcm lcm . ."
+      ". ram cam lam"
+      ". . . . ."
+      ". . st . ."
+    `,
+    '4-4-2': `
+      ". . gk . ."
+      ". rb rcb lcb lb"
+      "rm rcm lcm lm"
+      ". . . . ."
+      ". . . . ."
+      ". st st . ."
+    `,
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2 }}
+      className="relative"
+    >
+      {/* Formation badge */}
+      <div className="flex items-center gap-2 mb-3">
+        <div className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+          <Footprints className="w-3.5 h-3.5 text-emerald-400" />
+        </div>
+        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Formasi Terakhir</h3>
+        <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold px-2 py-0">
+          {formation}
+        </Badge>
+      </div>
+
+      {/* Field */}
+      <div className="relative rounded-2xl overflow-hidden border border-white/[0.06]">
+        {/* Glassmorphism field with accent color */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{ background: `linear-gradient(135deg, ${accentColor}, transparent 60%)` }}
+        />
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-md" />
+
+        {/* Pitch lines (CSS) */}
+        <div className="relative w-full aspect-[3/4] sm:aspect-[5/7] max-w-md mx-auto">
+          {/* Grass texture gradient */}
+          <div className="absolute inset-0" style={{
+            background: `repeating-linear-gradient(
+              0deg,
+              rgba(34,197,94,0.03) 0px,
+              rgba(34,197,94,0.06) 2px,
+              transparent 2px,
+              transparent 24px
+            )`
+          }} />
+
+          {/* Pitch markings */}
+          <div className="absolute inset-2 sm:inset-4 border border-white/[0.08] rounded-lg">
+            {/* Center line */}
+            <div className="absolute top-1/2 left-0 right-0 h-px bg-white/[0.08]" />
+            {/* Center circle */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-white/[0.08]" />
+            {/* Center dot */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-white/[0.15]" />
+            {/* Top penalty area */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[45%] h-[18%] border-b border-l border-r border-white/[0.06]" />
+            {/* Bottom penalty area */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[45%] h-[18%] border-t border-l border-r border-white/[0.06]" />
+            {/* Top goal area */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[22%] h-[8%] border-b border-l border-r border-white/[0.06]" />
+            {/* Bottom goal area */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[22%] h-[8%] border-t border-l border-r border-white/[0.06]" />
+
+            {/* Player Grid */}
+            <div
+              className="absolute inset-0 grid gap-x-2 gap-y-1 sm:gap-x-3 sm:gap-y-2"
+              style={{
+                gridTemplateColumns: 'repeat(5, 1fr)',
+                gridTemplateRows: 'repeat(6, 1fr)',
+                gridTemplateAreas: gridAreas[formation] || gridAreas['4-3-3'],
+                padding: '8px',
+              }}
+            >
+              {players.map((player, idx) => (
+                <motion.div
+                  key={player.gridArea}
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 + idx * 0.04, type: 'spring', stiffness: 300, damping: 20 }}
+                  className="flex flex-col items-center justify-center"
+                  style={{ gridArea: player.gridArea }}
+                >
+                  {/* Player circle */}
+                  <div
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-[9px] sm:text-[10px] font-bold backdrop-blur-md border transition-all duration-200 hover:scale-110 cursor-default"
+                    style={{
+                      backgroundColor: `${accentColor}20`,
+                      borderColor: `${accentColor}50`,
+                      color: accentColor,
+                      boxShadow: `0 0 12px ${accentColor}25`,
+                    }}
+                  >
+                    {player.number}
+                  </div>
+                  {/* Name */}
+                  <span className="text-[8px] sm:text-[9px] font-semibold text-white/80 mt-0.5 text-center leading-tight truncate max-w-[60px] sm:max-w-[70px] drop-shadow-md">
+                    {player.name}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Squad Table ────────────────────────────────────────────
+
+function SquadTable({ squad, accentColor }: { squad: SquadPlayer[]; accentColor: string }) {
+  const [posFilter, setPosFilter] = useState<string>('all');
+
+  const filtered = posFilter === 'all' ? squad : squad.filter(p => p.position === posFilter);
+  const groupedByPosition = {
+    GK: filtered.filter(p => p.position === 'GK'),
+    DEF: filtered.filter(p => p.position === 'DEF'),
+    MID: filtered.filter(p => p.position === 'MID'),
+    FWD: filtered.filter(p => p.position === 'FWD'),
+  };
+
+  const posFilters = [
+    { id: 'all', label: 'Semua', count: squad.length },
+    { id: 'GK', label: 'GK', count: squad.filter(p => p.position === 'GK').length },
+    { id: 'DEF', label: 'DEF', count: squad.filter(p => p.position === 'DEF').length },
+    { id: 'MID', label: 'MID', count: squad.filter(p => p.position === 'MID').length },
+    { id: 'FWD', label: 'FWD', count: squad.filter(p => p.position === 'FWD').length },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1 }}
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <div className="p-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
+          <Users className="w-3.5 h-3.5 text-blue-400" />
+        </div>
+        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Squad</h3>
+        <span className="text-[10px] text-muted-foreground/40 ml-auto">{squad.length} pemain</span>
+      </div>
+
+      {/* Position filter pills */}
+      <div className="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1">
+        {posFilters.map(f => (
+          <button
+            key={f.id}
+            onClick={() => setPosFilter(f.id)}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border whitespace-nowrap transition-all duration-200
+              ${posFilter === f.id
+                ? 'bg-neon/10 text-neon border-neon/20'
+                : 'text-muted-foreground/60 bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04]'}`}
+          >
+            {f.label}
+            <span className="ml-0.5 text-[9px] opacity-60">{f.count}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Grouped players */}
+      <div className="space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar pr-1">
+        {(['GK', 'DEF', 'MID', 'FWD'] as const).map(pos => {
+          const players = groupedByPosition[pos];
+          if (!players || players.length === 0) return null;
+          return (
+            <div key={pos}>
+              <div className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <span className={`w-1.5 h-1.5 rounded-full ${pos === 'GK' ? 'bg-amber-400' : pos === 'DEF' ? 'bg-blue-400' : pos === 'MID' ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                {pos === 'GK' ? 'Penjaga Gawang' : pos === 'DEF' ? 'Bertahan' : pos === 'MID' ? 'Tengah' : 'Penyerang'} ({players.length})
+              </div>
+              <div className="space-y-1">
+                {players.map((player, idx) => (
+                  <motion.div
+                    key={player.id}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.02 * idx }}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.03] hover:bg-white/[0.04] hover:border-white/[0.06] transition-all duration-200 group"
+                  >
+                    <span
+                      className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0"
+                      style={{
+                        backgroundColor: `${accentColor}15`,
+                        color: accentColor,
+                        border: `1px solid ${accentColor}30`,
+                      }}
+                    >
+                      {player.number}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-xs sm:text-sm font-medium text-white truncate block">{player.name}</span>
+                      <span className="text-[10px] text-muted-foreground/40">{player.nationality} · {player.age} thn</span>
+                    </div>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded border font-bold shrink-0 ${getPositionColor(player.position)}`}>
+                      {getPositionLabel(player.position)}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Recent Match Card ──────────────────────────────────────
+
+function RecentMatchCard({ match, teamName, accentColor, index }: { match: TeamMatchResult; teamName: string; accentColor: string; index: number }) {
+  const result = getMatchResult(teamName, match);
+  const isHome = match.homeTeam === teamName;
+  const opponent = isHome ? match.awayTeam : match.homeTeam;
+  const opponentLogo = isHome ? match.awayTeamLogoUrl : match.homeTeamLogoUrl;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.05 * index }}
+    >
+      <Link
+        href={`/matches/${match.id}`}
+        className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.03] hover:bg-white/[0.04] hover:border-white/[0.06] transition-all duration-200 group"
+      >
+        {/* Result badge */}
+        <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0 border
+          ${result.label === 'W' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25' :
+            result.label === 'D' ? 'bg-amber-500/15 text-amber-400 border-amber-500/25' :
+            result.label === 'L' ? 'bg-red-500/15 text-red-400 border-red-500/25' :
+            'bg-blue-500/15 text-blue-400 border-blue-500/25'}`}
+        >
+          {match.status === 'finished' ? (isHome ? `${match.homeScore}-${match.awayScore}` : `${match.awayScore}-${match.homeScore}`) : 'VS'}
+        </span>
+
+        {/* Opponent */}
+        <div className="flex-1 min-w-0 flex items-center gap-2">
+          {opponentLogo && (
+            <img src={opponentLogo} alt={opponent} className="w-5 h-5 rounded-full shrink-0" loading="lazy" />
+          )}
+          <div className="min-w-0">
+            <span className="text-xs font-medium text-white truncate block">{opponent}</span>
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/40">
+              <span>{match.league}</span>
+              {match.matchWeek && <span>· MD {match.matchWeek}</span>}
+            </div>
+          </div>
+        </div>
+
+        {/* Date */}
+        <div className="text-right shrink-0">
+          <span className="text-[10px] text-muted-foreground/50 block">{formatDate(match.matchDate)}</span>
+          <span className="text-[9px] text-muted-foreground/30 block">{getRelativeDay(match.matchDate)}</span>
+        </div>
+
+        <ChevronRight className="w-3 h-3 text-muted-foreground/20 group-hover:text-neon/50 transition-colors shrink-0" />
+      </Link>
+    </motion.div>
+  );
+}
+
+// ─── Loading Skeleton ───────────────────────────────────────
 
 function PageSkeleton() {
   return (
     <div className="min-h-screen flex flex-col bg-deep-900">
       <header className="border-b border-white/[0.04] bg-deep-900/70 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center">
-          <Skeleton className="h-4 w-24 bg-white/5" />
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
+          <Skeleton className="h-4 w-20 bg-white/5" />
+          <Skeleton className="h-4 w-16 bg-white/5" />
         </div>
       </header>
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
-        {/* Hero */}
-        <div className="glass-card p-6 sm:p-10 mb-8">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <Skeleton className="w-28 h-28 rounded-full bg-white/5" />
-            <div className="flex-1 text-center md:text-left space-y-3 w-full">
-              <Skeleton className="h-7 w-48 mx-auto md:mx-0 bg-white/5" />
-              <Skeleton className="h-4 w-32 mx-auto md:mx-0 bg-white/5" />
-              <div className="flex gap-3 justify-center md:justify-start">
-                {[1,2,3,4].map(i => <Skeleton key={i} className="h-20 w-20 rounded-xl bg-white/5" />)}
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6">
+        {/* Hero skeleton */}
+        <div className="glass-card p-6 sm:p-8">
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <Skeleton className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl bg-white/5" />
+            <div className="space-y-3 flex-1 text-center sm:text-left">
+              <Skeleton className="h-7 w-48 bg-white/5 mx-auto sm:mx-0" />
+              <Skeleton className="h-4 w-32 bg-white/5 mx-auto sm:mx-0" />
+              <div className="flex gap-3 justify-center sm:justify-start">
+                {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-12 w-16 rounded-xl bg-white/5" />)}
               </div>
             </div>
           </div>
         </div>
+        {/* Content skeleton */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Skeleton className="h-96 glass-card" />
-          <Skeleton className="h-96 glass-card" />
+          <div className="glass-card p-5 space-y-4">
+            <Skeleton className="h-5 w-32 bg-white/5" />
+            {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-10 w-full bg-white/5" />)}
+          </div>
+          <div className="glass-card p-5 space-y-4">
+            <Skeleton className="h-5 w-32 bg-white/5" />
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-14 w-full bg-white/5" />)}
+          </div>
         </div>
+        <Skeleton className="h-80 w-full glass-card" />
       </main>
     </div>
-  );
-}
-
-// ─── Formation Pitch ────────────────────────────────────────
-
-function FormationPitch({
-  lineup,
-  formation,
-  teamName,
-  accentColor,
-}: {
-  lineup: LineupPlayer[];
-  formation: string;
-  teamName: string;
-  accentColor: string;
-}) {
-  if (!lineup || lineup.length === 0) return null;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 0.2 }}
-      className="glass-card overflow-hidden"
-    >
-      <div className="p-4 sm:p-5 border-b border-white/[0.04]">
-        <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4" style={{ color: accentColor }} />
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Formasi Terakhir</h3>
-          <Badge variant="outline" className="ml-auto text-xs font-bold" style={{ borderColor: `${accentColor}40`, color: accentColor }}>
-            {formation}
-          </Badge>
-        </div>
-      </div>
-
-      {/* Pitch */}
-      <div className="relative mx-4 sm:mx-5 mb-4 sm:mb-5 mt-4 rounded-xl overflow-hidden" style={{ paddingBottom: '120%' }}>
-        {/* Background gradient (glass pitch) */}
-        <div
-          className="absolute inset-0 rounded-xl"
-          style={{
-            background: `linear-gradient(180deg, ${accentColor}08 0%, ${accentColor}04 50%, ${accentColor}10 100%)`,
-            backdropFilter: 'blur(12px)',
-            border: `1px solid ${accentColor}20`,
-          }}
-        />
-
-        {/* Pitch lines */}
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          {/* Outline */}
-          <rect x="2" y="2" width="96" height="96" rx="1" fill="none" stroke={`${accentColor}18`} strokeWidth="0.3" />
-          {/* Center line */}
-          <line x1="2" y1="50" x2="98" y2="50" stroke={`${accentColor}18`} strokeWidth="0.3" />
-          {/* Center circle */}
-          <circle cx="50" cy="50" r="12" fill="none" stroke={`${accentColor}18`} strokeWidth="0.3" />
-          {/* Center dot */}
-          <circle cx="50" cy="50" r="1" fill={`${accentColor}30`} />
-          {/* Top penalty area */}
-          <rect x="25" y="2" width="50" height="18" fill="none" stroke={`${accentColor}18`} strokeWidth="0.3" />
-          {/* Top goal area */}
-          <rect x="38" y="2" width="24" height="8" fill="none" stroke={`${accentColor}18`} strokeWidth="0.3" />
-          {/* Bottom penalty area */}
-          <rect x="25" y="80" width="50" height="18" fill="none" stroke={`${accentColor}18`} strokeWidth="0.3" />
-          {/* Bottom goal area */}
-          <rect x="38" y="90" width="24" height="8" fill="none" stroke={`${accentColor}18`} strokeWidth="0.3" />
-          {/* Corner arcs */}
-          <path d="M 2 5 A 3 3 0 0 1 5 2" fill="none" stroke={`${accentColor}15`} strokeWidth="0.2" />
-          <path d="M 95 2 A 3 3 0 0 1 98 5" fill="none" stroke={`${accentColor}15`} strokeWidth="0.2" />
-          <path d="M 2 95 A 3 3 0 0 0 5 98" fill="none" stroke={`${accentColor}15`} strokeWidth="0.2" />
-          <path d="M 95 98 A 3 3 0 0 0 98 95" fill="none" stroke={`${accentColor}15`} strokeWidth="0.2" />
-        </svg>
-
-        {/* Players */}
-        {lineup.map((player, idx) => (
-          <motion.div
-            key={player.name}
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 + idx * 0.05, type: 'spring', stiffness: 300, damping: 20 }}
-            className="absolute flex flex-col items-center gap-0.5 -translate-x-1/2 -translate-y-1/2"
-            style={{ left: `${player.gridX}%`, top: `${player.gridY}%` }}
-          >
-            {/* Player dot */}
-            <div
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[9px] sm:text-[10px] font-bold shadow-lg"
-              style={{
-                backgroundColor: `${accentColor}CC`,
-                color: '#fff',
-                boxShadow: `0 0 12px ${accentColor}50, 0 2px 8px rgba(0,0,0,0.3)`,
-                border: `1.5px solid ${accentColor}`,
-              }}
-            >
-              {player.number || '?'}
-            </div>
-            {/* Name */}
-            <div className="text-[7px] sm:text-[8px] font-semibold text-gray-900 dark:text-white text-center leading-tight max-w-[40px] sm:max-w-[50px] truncate drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-              {player.name.split(' ').pop()}
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </motion.div>
   );
 }
 
@@ -230,9 +536,10 @@ function FormationPitch({
 
 export default function TeamProfilePage() {
   const params = useParams<{ slug: string }>();
-  const [data, setData] = useState<TeamData | null>(null);
+  const [team, setTeam] = useState<TeamProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [source, setSource] = useState('');
 
   const fetchTeam = useCallback(async () => {
     if (!params.slug) return;
@@ -240,12 +547,17 @@ export default function TeamProfilePage() {
     setError(null);
     try {
       const res = await fetch(`/api/teams/${params.slug}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+        setError(err.error || `HTTP ${res.status}`);
+        return;
+      }
       const json = await res.json();
       if (json.success && json.team) {
-        setData(json);
+        setTeam(json.team);
+        setSource(json.source || 'mock');
       } else {
-        setError('Klub tidak ditemukan');
+        setError('Tim tidak ditemukan');
       }
     } catch (err: any) {
       setError(err.message || 'Gagal memuat data');
@@ -257,11 +569,12 @@ export default function TeamProfilePage() {
   useEffect(() => { fetchTeam(); }, [fetchTeam]);
 
   if (loading) return <PageSkeleton />;
-  if (error || !data) {
+
+  if (error || !team) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-deep-900 gap-4 p-4">
         <AlertTriangle className="w-12 h-12 text-amber-400/40" />
-        <p className="text-sm text-muted-foreground">{error || 'Klub tidak ditemukan'}</p>
+        <p className="text-sm text-muted-foreground">{error || 'Tim tidak ditemukan'}</p>
         <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/15 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Kembali ke Beranda
         </Link>
@@ -269,464 +582,249 @@ export default function TeamProfilePage() {
     );
   }
 
-  const { team, stats, squad, recentMatches, lineup, formation, colors, source } = data;
-  const accentColor = colors.accent || '#00f0ff';
-  const primaryColor = colors.primary || '#ffffff';
-  const goalDiff = stats.goalsFor - stats.goalsAgainst;
+  const accentColor = team.primaryColor;
+  const secondaryColor = team.secondaryColor;
+  const goalDiff = team.goalsFor - team.goalsAgainst;
 
   return (
     <div className="min-h-screen flex flex-col bg-deep-900">
-      {/* Decorative background */}
+      {/* Decorative bg */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[400px] rounded-full blur-[150px]" style={{ backgroundColor: `${accentColor}06` }} />
-        <div className="absolute bottom-1/3 right-0 w-[500px] h-[300px] rounded-full blur-[120px]" style={{ backgroundColor: `${primaryColor}04` }} />
+        <div
+          className="absolute top-0 left-1/3 w-[600px] h-[300px] rounded-full blur-[120px] opacity-[0.04]"
+          style={{ background: accentColor }}
+        />
+        <div
+          className="absolute bottom-1/4 right-0 w-[500px] h-[250px] rounded-full blur-[100px] opacity-[0.03]"
+          style={{ background: secondaryColor }}
+        />
       </div>
 
-      {/* ─── Header ───────────────────────────────────────── */}
+      {/* ─── Header ─────────────────────────────────────── */}
       <header className="sticky top-0 z-40 bg-deep-900/70 backdrop-blur-xl border-b border-white/[0.04]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16">
             <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-cyan-400 transition-colors group">
               <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
               <span>Beranda</span>
             </Link>
-            {source === 'mock' && (
-              <Badge variant="outline" className="text-[9px] bg-amber-500/5 text-amber-400/70 border-amber-500/15 px-1.5 py-0">Sample</Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {source === 'mock' && (
+                <Badge variant="outline" className="text-[9px] bg-amber-500/5 text-amber-400/70 border-amber-500/15 px-1.5 py-0">
+                  Sample
+                </Badge>
+              )}
+              {team.league && (
+                <span className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider">
+                  {team.league}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </header>
 
-      {/* ─── Main ─────────────────────────────────────────── */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      {/* ─── Main ───────────────────────────────────────── */}
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
 
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground/40 mb-6">
           <Link href="/" className="hover:text-cyan-400/60 transition-colors">Beranda</Link>
           <ChevronRight className="w-3 h-3" />
-          <span className="text-muted-foreground/60">Klub</span>
-          <ChevronRight className="w-3 h-3" />
-          <span className="text-muted-foreground/80 font-medium">{team.name}</span>
+          <span className="text-muted-foreground/60">{team.name}</span>
         </nav>
 
-        {/* ─── HERO SECTION ──────────────────────────────── */}
+        {/* ─── Hero Section ─────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card overflow-hidden mb-8"
+          className="glass-card overflow-hidden mb-6"
         >
           {/* Top accent line */}
-          <div className="h-[3px]" style={{ background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)` }} />
+          <div className="h-[2px]" style={{ background: `linear-gradient(to right, transparent, ${accentColor}80, transparent)` }} />
 
-          <div className="p-5 sm:p-8 md:p-10">
-            <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-8">
-              {/* Logo with glow */}
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.1 }}
-                className="relative shrink-0"
-              >
-                {/* Outer glow rings */}
-                <div
-                  className="absolute -inset-4 rounded-full animate-pulse"
-                  style={{
-                    background: `conic-gradient(from 0deg, transparent 0%, ${accentColor}25 25%, transparent 50%, ${accentColor}18 75%, transparent 100%)`,
-                    mask: 'radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px))',
-                    WebkitMask: 'radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px))',
-                  }}
-                />
-                {/* Neon glow */}
-                <div
-                  className="absolute -inset-3 rounded-full blur-xl"
-                  style={{ backgroundColor: `${accentColor}20` }}
-                />
-                <div
-                  className="absolute -inset-2 rounded-full blur-md"
-                  style={{ backgroundColor: `${accentColor}15` }}
-                />
-                {/* Logo container */}
-                <div
-                  className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden flex items-center justify-center"
-                  style={{
-                    background: `linear-gradient(135deg, ${primaryColor}10, ${accentColor}08)`,
-                    backdropFilter: 'blur(16px)',
-                    border: `2px solid ${accentColor}30`,
-                    boxShadow: `0 0 30px ${accentColor}15, 0 0 60px ${accentColor}08, inset 0 0 20px ${accentColor}05`,
-                  }}
-                >
-                  <Image
-                    src={team.logo}
-                    alt={team.name}
-                    width={96}
-                    height={96}
-                    className="relative z-10 object-contain p-3"
-                    unoptimized
-                  />
-                </div>
-              </motion.div>
+          <div className="p-5 sm:p-8">
+            <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
+              {/* Logo */}
+              <TeamHeroLogo src={team.logoUrl} alt={team.name} accentColor={accentColor} />
 
-              {/* Team Info */}
-              <div className="flex-1 text-center md:text-left min-w-0">
-                <motion.h1
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                  className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-2"
-                >
-                  {team.name}
-                </motion.h1>
-
-                {/* Meta tags */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-3 mb-5"
-                >
-                  {team.league && (
-                    <span className="flex items-center gap-1 text-xs font-medium" style={{ color: accentColor }}>
-                      <Trophy className="w-3.5 h-3.5" /> {team.league}
-                    </span>
-                  )}
+              {/* Info */}
+              <div className="flex-1 text-center sm:text-left">
+                <div className="flex items-center gap-2 justify-center sm:justify-start mb-1">
                   {team.country && (
-                    <span className="text-xs text-muted-foreground/60">{team.country}</span>
+                    <span className="text-[10px] text-muted-foreground/40 uppercase tracking-wider">{team.country}</span>
                   )}
                   {team.founded && (
-                    <span className="text-xs text-muted-foreground/40">Est. {team.founded}</span>
+                    <>
+                      <span className="w-1 h-1 rounded-full bg-muted-foreground/20" />
+                      <span className="text-[10px] text-muted-foreground/40">{team.founded}</span>
+                    </>
                   )}
-                </motion.div>
+                </div>
 
-                {/* Stats Cards */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.25 }}
-                  className="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-3"
-                >
-                  {stats.standing !== null && (
-                    <div
-                      className="flex flex-col items-center gap-1 px-3 py-3 rounded-xl"
-                      style={{ background: `${accentColor}08`, border: `1px solid ${accentColor}20` }}
-                    >
-                      <Hash className="w-3.5 h-3.5" style={{ color: `${accentColor}80` }} />
-                      <span className="text-xl sm:text-2xl font-black tabular-nums" style={{ color: accentColor }}>
-                        {stats.standing}
-                      </span>
-                      <span className="text-[9px] font-semibold text-muted-foreground/50 uppercase">Ranking</span>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white mb-2" style={{ textShadow: `0 0 40px ${accentColor}30` }}>
+                  {team.name}
+                </h1>
+
+                {/* Info pills */}
+                <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start mb-4">
+                  {team.coach && (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06]">
+                      <User className="w-3 h-3 text-muted-foreground/40" />
+                      <span className="text-[11px] text-muted-foreground/70">{team.coach}</span>
                     </div>
                   )}
-                  <div
-                    className="flex flex-col items-center gap-1 px-3 py-3 rounded-xl"
-                    style={{ background: `${accentColor}08`, border: `1px solid ${accentColor}20` }}
-                  >
-                    <TrendingUp className="w-3.5 h-3.5 text-emerald-400/70" />
-                    <span className="text-xl sm:text-2xl font-black tabular-nums text-emerald-400">{stats.won}</span>
-                    <span className="text-[9px] font-semibold text-muted-foreground/50 uppercase">Menang</span>
-                  </div>
-                  <div
-                    className="flex flex-col items-center gap-1 px-3 py-3 rounded-xl"
-                    style={{ background: `${accentColor}08`, border: `1px solid ${accentColor}20` }}
-                  >
-                    <CircleDot className="w-3.5 h-3.5 text-amber-400/70" />
-                    <span className="text-xl sm:text-2xl font-black tabular-nums text-amber-400">{stats.drawn}</span>
-                    <span className="text-[9px] font-semibold text-muted-foreground/50 uppercase">Seri</span>
-                  </div>
-                  <div
-                    className="flex flex-col items-center gap-1 px-3 py-3 rounded-xl"
-                    style={{ background: `${accentColor}08`, border: `1px solid ${accentColor}20` }}
-                  >
-                    <Shield className="w-3.5 h-3.5 text-red-400/70" />
-                    <span className="text-xl sm:text-2xl font-black tabular-nums text-red-400">{stats.lost}</span>
-                    <span className="text-[9px] font-semibold text-muted-foreground/50 uppercase">Kalah</span>
-                  </div>
-                  <div
-                    className="flex flex-col items-center gap-1 px-3 py-3 rounded-xl"
-                    style={{ background: `${accentColor}08`, border: `1px solid ${accentColor}20` }}
-                  >
-                    <Star className="w-3.5 h-3.5" style={{ color: `${accentColor}80` }} />
-                    <span className="text-xl sm:text-2xl font-black tabular-nums" style={{ color: accentColor }}>
-                      {stats.points}
-                    </span>
-                    <span className="text-[9px] font-semibold text-muted-foreground/50 uppercase">Poin</span>
-                  </div>
-                </motion.div>
+                  {team.stadium && (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06]">
+                      <MapPin className="w-3 h-3 text-muted-foreground/40" />
+                      <span className="text-[11px] text-muted-foreground/70">{team.stadium}</span>
+                      {team.stadiumCapacity && (
+                        <span className="text-[9px] text-muted-foreground/30">({team.stadiumCapacity.toLocaleString()})</span>
+                      )}
+                    </div>
+                  )}
+                  {team.rank && (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06]">
+                      <Trophy className="w-3 h-3 text-muted-foreground/40" />
+                      <span className="text-[11px] text-muted-foreground/70">Peringkat #{team.rank}</span>
+                    </div>
+                  )}
+                </div>
 
-                {/* Form mini */}
-                {stats.form.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="flex items-center gap-2 mt-4 justify-center md:justify-start"
-                  >
-                    <span className="text-[10px] font-semibold text-muted-foreground/40 uppercase tracking-wider mr-1">Form</span>
-                    {stats.form.map((f, i) => (
-                      <span
-                        key={i}
-                        className={`w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center ${
-                          f === 'W' ? 'bg-emerald-500 text-white' : f === 'D' ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'
-                        }`}
-                      >
-                        {f}
-                      </span>
-                    ))}
-                    <span className="ml-2 text-xs text-muted-foreground/40">
-                      {stats.played} main · {stats.goalsFor}/{stats.goalsAgainst} gol · GD {goalDiff > 0 ? '+' : ''}{goalDiff}
-                    </span>
-                  </motion.div>
+                {/* Form badges */}
+                {team.recentMatches.length > 0 && (
+                  <FormBadges teamName={team.name} matches={team.recentMatches} />
                 )}
               </div>
             </div>
 
-            {/* Venue info */}
-            {team.venue && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 }}
-                className="flex items-center gap-2 mt-5 pt-5 border-t border-white/[0.04]"
-              >
-                <MapPin className="w-3.5 h-3.5" style={{ color: `${accentColor}60` }} />
-                <span className="text-xs text-muted-foreground/60">{team.venue}</span>
-                {team.venueCapacity && (
-                  <>
-                    <span className="w-1 h-1 rounded-full bg-muted-foreground/20" />
-                    <span className="text-xs text-muted-foreground/40">{team.venueCapacity.toLocaleString()} kursi</span>
-                  </>
-                )}
-              </motion.div>
-            )}
+            {/* Stat cards row */}
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-6 pt-6 border-t border-white/[0.04]">
+              <StatCard icon={Swords} label="Main" value={team.played} delay={0.1} />
+              <StatCard icon={TrendingUp} label="Menang" value={team.wins} color="text-emerald-400" delay={0.15} />
+              <StatCard icon={Shield} label="Seri" value={team.draws} color="text-amber-400" delay={0.2} />
+              <StatCard icon={Target} label="Kalah" value={team.losses} color="text-red-400" delay={0.25} />
+              <StatCard icon={Star} label="Poin" value={team.points} color="neon-text" delay={0.3} />
+              <StatCard icon={Zap} label="Goal Diff" value={goalDiff > 0 ? `+${goalDiff}` : goalDiff} color={goalDiff >= 0 ? 'text-emerald-400' : 'text-red-400'} delay={0.35} />
+            </div>
           </div>
 
           {/* Bottom accent line */}
-          <div className="h-[2px]" style={{ background: `linear-gradient(90deg, transparent, ${accentColor}40, transparent)` }} />
+          <div className="h-[1px]" style={{ background: `linear-gradient(to right, transparent, ${accentColor}40, transparent)` }} />
         </motion.div>
 
-        {/* ─── LINEUP / FORMATION ─────────────────────────── */}
-        {lineup && lineup.length > 0 && (
-          <div className="mb-8">
-            <FormationPitch
-              lineup={lineup}
-              formation={formation}
-              teamName={team.name}
-              accentColor={accentColor}
-            />
+        {/* ─── Two Column Layout: Squad + Results ───────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Left: Squad */}
+          <div className="glass-card p-4 sm:p-5">
+            <SquadTable squad={team.squad} accentColor={accentColor} />
           </div>
-        )}
 
-        {/* ─── TWO COLUMN: Squad + Recent Matches ─────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-          {/* Left: Squad Table */}
+          {/* Right: Recent Results */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            className="glass-card overflow-hidden"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="glass-card p-4 sm:p-5"
           >
-            <div className="p-4 sm:p-5 border-b border-white/[0.04]">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4" style={{ color: accentColor }} />
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Daftar Pemain</h3>
-                <Badge variant="outline" className="ml-auto text-[10px] px-1.5 py-0 font-semibold text-muted-foreground/50 border-white/[0.08]">
-                  {squad.length} pemain
-                </Badge>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                <Swords className="w-3.5 h-3.5 text-cyan-400" />
               </div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Pertandingan Terakhir</h3>
+              <span className="text-[10px] text-muted-foreground/40 ml-auto">{team.recentMatches.length} pertandingan</span>
             </div>
-            <div className="max-h-[500px] overflow-y-auto custom-scrollbar">
-              <table className="w-full text-sm">
-                <thead className="sticky top-0 z-10">
-                  <tr className="text-[10px] font-semibold text-muted-foreground/40 uppercase tracking-wider" style={{ background: 'rgba(0,0,0,0.4)' }}>
-                    <th className="py-2.5 px-3 text-center w-12">#</th>
-                    <th className="py-2.5 px-3 text-left">Nama</th>
-                    <th className="py-2.5 px-3 text-center w-12">Pos</th>
-                    <th className="py-2.5 px-3 text-center w-10 hidden sm:table-cell">Umur</th>
-                    <th className="py-2.5 px-3 text-right hidden md:table-cell">Negara</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {squad
-                    .sort((a, b) => {
-                      const order: Record<string, number> = { G: 0, D: 1, M: 2, F: 3 };
-                      return (order[a.position] || 4) - (order[b.position] || 4) || (a.number || 99) - (b.number || 99);
-                    })
-                    .map((player, idx) => (
-                    <motion.tr
-                      key={`${player.name}-${idx}`}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.02 * idx + 0.35 }}
-                      className="border-t border-white/[0.03] hover:bg-white/[0.02] transition-colors"
-                    >
-                      <td className="py-2 px-3 text-center">
-                        <span className="text-xs font-bold tabular-nums text-muted-foreground/50">{player.number ?? '-'}</span>
-                      </td>
-                      <td className="py-2 px-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 bg-white/[0.04] flex items-center justify-center">
-                            {player.photo ? (
-                              <Image src={player.photo} alt={player.name} width={24} height={24} className="object-cover w-full h-full" unoptimized />
-                            ) : (
-                              <span className="text-[7px] font-bold text-muted-foreground/30">{player.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</span>
-                            )}
-                          </div>
-                          <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate">{player.name}</span>
-                        </div>
-                      </td>
-                      <td className="py-2 px-3 text-center">
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded border font-bold ${getPositionColor(player.position)}`}>
-                          {getPositionLabel(player.position)}
-                        </span>
-                      </td>
-                      <td className="py-2 px-3 text-center hidden sm:table-cell">
-                        <span className="text-xs text-muted-foreground/40 tabular-nums">{player.age}</span>
-                      </td>
-                      <td className="py-2 px-3 text-right hidden md:table-cell">
-                        <span className="text-[11px] text-muted-foreground/40">{player.nationality}</span>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
-              {squad.length === 0 && (
-                <div className="p-8 text-center text-xs text-muted-foreground/40">Data pemain belum tersedia</div>
-              )}
-            </div>
-          </motion.div>
 
-          {/* Right: Recent Matches */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
-            className="glass-card overflow-hidden"
-          >
-            <div className="p-4 sm:p-5 border-b border-white/[0.04]">
-              <div className="flex items-center gap-2">
-                <Swords className="w-4 h-4" style={{ color: accentColor }} />
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Hasil Terakhir</h3>
+            {team.recentMatches.length > 0 ? (
+              <div className="space-y-2 max-h-[500px] overflow-y-auto custom-scrollbar pr-1">
+                {team.recentMatches.map((match, idx) => (
+                  <RecentMatchCard key={match.id} match={match} teamName={team.name} accentColor={accentColor} index={idx} />
+                ))}
               </div>
-            </div>
-            <div className="max-h-[500px] overflow-y-auto custom-scrollbar p-3 sm:p-4 space-y-2">
-              {recentMatches.map((match, idx) => {
-                const result = getMatchResult(match.isHome, match.homeScore, match.awayScore);
-                const opponent = match.isHome ? match.awayTeam : match.homeTeam;
-                const opponentLogo = match.isHome ? match.awayLogo : match.homeLogo;
-                const myScore = match.isHome ? match.homeScore : match.awayScore;
-                const oppScore = match.isHome ? match.awayScore : match.homeScore;
-
-                return (
-                  <motion.div
-                    key={match.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.04 * idx + 0.45 }}
-                    className="rounded-xl border border-white/[0.04] p-3 sm:p-4 hover:bg-white/[0.02] transition-colors"
-                  >
-                    {/* Result badge + date */}
-                    <div className="flex items-center justify-between mb-2.5">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center ${result.color}`}>
-                          {result.label}
-                        </span>
-                        {match.league && (
-                          <span className="text-[10px] text-muted-foreground/40 truncate max-w-[120px]">{match.league}</span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1 text-[10px] text-muted-foreground/30">
-                        <Calendar className="w-3 h-3" />
-                        {formatDate(match.date)}
-                      </div>
-                    </div>
-
-                    {/* Match row */}
-                    <div className="flex items-center gap-2">
-                      {/* Team logo */}
-                      <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-white/[0.04] flex items-center justify-center">
-                        {opponentLogo ? (
-                          <Image src={opponentLogo} alt={opponent} width={28} height={28} className="object-contain p-0.5 w-full h-full" unoptimized />
-                        ) : (
-                          <span className="text-[8px] font-bold text-muted-foreground/30">{opponent.slice(0, 2)}</span>
-                        )}
-                      </div>
-
-                      {/* Opponent name + score */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-medium text-muted-foreground/50">{match.isHome ? 'vs' : '@'}</span>
-                          <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white truncate">{opponent}</span>
-                        </div>
-                      </div>
-
-                      {/* Score */}
-                      <div
-                        className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg"
-                        style={{
-                          background: `${accentColor}08`,
-                          border: `1px solid ${accentColor}15`,
-                        }}
-                      >
-                        <span className="text-sm font-black tabular-nums" style={{ color: accentColor }}>{myScore}</span>
-                        <span className="w-px h-3 bg-muted-foreground/15" />
-                        <span className="text-sm font-bold tabular-nums text-muted-foreground/50">{oppScore}</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-              {recentMatches.length === 0 && (
-                <div className="p-8 text-center text-xs text-muted-foreground/40">Belum ada hasil pertandingan</div>
-              )}
-            </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Swords className="w-10 h-10 text-muted-foreground/10 mb-3" />
+                <p className="text-sm text-muted-foreground/50">Belum ada pertandingan</p>
+                <p className="text-[10px] text-muted-foreground/30 mt-1">Data akan muncul setelah ditambahkan admin</p>
+              </div>
+            )}
           </motion.div>
         </div>
 
-        {/* ─── Additional Info Cards ───────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8"
-        >
-          <div className="glass-card p-3.5 text-center">
-            <Target className="w-4 h-4 mx-auto mb-1.5 text-emerald-400/60" />
-            <span className="text-xl font-black tabular-nums text-emerald-400 block">{stats.goalsFor}</span>
-            <span className="text-[9px] font-semibold text-muted-foreground/40 uppercase">Gol Dicetak</span>
+        {/* ─── Lineup Section ────────────────────────────── */}
+        {team.lastLineup && (
+          <div className="glass-card p-4 sm:p-5 mb-6">
+            <LineupField lineup={team.lastLineup} accentColor={accentColor} />
           </div>
-          <div className="glass-card p-3.5 text-center">
-            <Shield className="w-4 h-4 mx-auto mb-1.5 text-red-400/60" />
-            <span className="text-xl font-black tabular-nums text-red-400 block">{stats.goalsAgainst}</span>
-            <span className="text-[9px] font-semibold text-muted-foreground/40 uppercase">Gol Kemasukan</span>
-          </div>
-          <div className="glass-card p-3.5 text-center">
-            <TrendingUp className="w-4 h-4 mx-auto mb-1.5" style={{ color: `${accentColor}60` }} />
-            <span className={`text-xl font-black tabular-nums block ${goalDiff > 0 ? 'text-emerald-400' : goalDiff < 0 ? 'text-red-400' : 'text-amber-400'}`}>
-              {goalDiff > 0 ? '+' : ''}{goalDiff}
-            </span>
-            <span className="text-[9px] font-semibold text-muted-foreground/40 uppercase">Goal Difference</span>
-          </div>
-          <div className="glass-card p-3.5 text-center">
-            <Clock className="w-4 h-4 mx-auto mb-1.5" style={{ color: `${accentColor}60` }} />
-            <span className="text-xl font-black tabular-nums block" style={{ color: accentColor }}>{stats.played}</span>
-            <span className="text-[9px] font-semibold text-muted-foreground/40 uppercase">Pertandingan</span>
-          </div>
-        </motion.div>
+        )}
 
-        {/* ─── Actions ─────────────────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.7 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8"
-        >
-          <button
-            onClick={fetchTeam}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-white/[0.03] text-muted-foreground border border-white/[0.06] hover:bg-white/[0.06] hover:text-white transition-all"
+        {/* ─── Goal Stats Bar ────────────────────────────── */}
+        {team.goalsFor > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="glass-card p-4 sm:p-5 mb-6"
           >
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 rounded-lg bg-neon/10 border border-neon/20">
+                <Target className="w-3.5 h-3.5 text-neon" />
+              </div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Statistik Gol</h3>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="px-3 py-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-center">
+                <span className="text-2xl font-black neon-text tabular-nums">{team.goalsFor}</span>
+                <p className="text-[10px] text-muted-foreground/40 uppercase tracking-wider mt-1">Gol Dicetak</p>
+              </div>
+              <div className="px-3 py-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-center">
+                <span className="text-2xl font-black text-red-400 tabular-nums">{team.goalsAgainst}</span>
+                <p className="text-[10px] text-muted-foreground/40 uppercase tracking-wider mt-1">Gol Kemasukan</p>
+              </div>
+              <div className="px-3 py-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-center">
+                <span className="text-2xl font-black tabular-nums" style={{ color: accentColor }}>
+                  {team.played > 0 ? (team.goalsFor / team.played).toFixed(1) : '0.0'}
+                </span>
+                <p className="text-[10px] text-muted-foreground/40 uppercase tracking-wider mt-1">Gol / Pertandingan</p>
+              </div>
+              <div className="px-3 py-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-center">
+                <span className={`text-2xl font-black tabular-nums ${goalDiff >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {goalDiff > 0 ? `+${goalDiff}` : goalDiff}
+                </span>
+                <p className="text-[10px] text-muted-foreground/40 uppercase tracking-wider mt-1">Selisih Gol</p>
+              </div>
+            </div>
+
+            {/* Visual goal bar */}
+            <div className="mt-4">
+              <div className="flex h-3 rounded-full overflow-hidden bg-white/[0.04]">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-emerald-500/60 to-emerald-500/30 rounded-l-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(team.goalsFor / Math.max(team.goalsFor + team.goalsAgainst, 1)) * 100}%` }}
+                  transition={{ duration: 1, ease: 'easeOut', delay: 0.4 }}
+                />
+                <motion.div
+                  className="h-full bg-gradient-to-l from-red-500/60 to-red-500/30 rounded-r-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(team.goalsAgainst / Math.max(team.goalsFor + team.goalsAgainst, 1)) * 100}%` }}
+                  transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }}
+                />
+              </div>
+              <div className="flex items-center justify-between mt-1.5">
+                <span className="text-[10px] text-emerald-400/60">Gol Dicetak ({team.goalsFor})</span>
+                <span className="text-[10px] text-red-400/60">Gol Kemasukan ({team.goalsAgainst})</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ─── Refresh + Back ───────────────────────────── */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button onClick={fetchTeam} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-white/[0.03] text-muted-foreground border border-white/[0.06] hover:bg-white/[0.06] hover:text-white transition-all">
             <RefreshCw className="w-4 h-4" /> Refresh Data
           </button>
-          <Link href="/" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium hover:opacity-90 transition-all text-white" style={{ background: `${accentColor}15`, border: `1px solid ${accentColor}30` }}>
+          <Link href="/" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-cyan-500/[0.06] text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/10 hover:border-cyan-500/30 hover:shadow-[0_0_20px_rgba(0,240,255,0.1)] transition-all duration-300">
             <ArrowLeft className="w-4 h-4" /> Kembali ke Beranda
           </Link>
         </motion.div>
@@ -734,7 +832,7 @@ export default function TeamProfilePage() {
 
       {/* ─── Footer ─────────────────────────────────────── */}
       <footer className="border-t border-white/[0.03] bg-deep-900/50 backdrop-blur-sm mt-auto">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-muted-foreground/30">
             <span>GOALZONE &mdash; Portal Berita Sepak Bola</span>
             <div className="flex items-center gap-3">
