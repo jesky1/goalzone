@@ -212,11 +212,11 @@ function LoginForm() {
             Kembali ke Beranda
           </Link>
 
-          {/* Demo credentials hint */}
+          {/* Security notice */}
           <div className="mx-auto max-w-xs p-3 rounded-lg bg-white/[0.03] border border-white/5">
             <p className="text-[11px] text-muted-foreground text-center">
-              <span className="font-semibold text-neon/70">Demo:</span>{' '}
-              admin / admin123
+              <span className="font-semibold text-neon/70">🔒</span>{' '}
+              Akses terbatas hanya untuk admin yang terotorisasi
             </p>
           </div>
         </div>

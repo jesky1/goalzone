@@ -30,7 +30,11 @@ const prisma = new PrismaClient();
 
 // --- Config ---
 const PORT = 3001;
-const JWT_SECRET = process.env.JWT_SECRET || 'goalzone-admin-secret-key-2025';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('[Admin API] JWT_SECRET is not set in environment variables');
+  process.exit(1);
+}
 const JWT_EXPIRES_IN = '24h';
 
 // --- Express Setup ---
@@ -84,13 +88,14 @@ app.post('/login', async (req: express.Request, res: express.Response) => {
       return;
     }
 
-    // Demo: password "admin123" untuk user "admin"
-    // Production: ganti dengan bcrypt.compare
+    // Verify password using bcrypt
     let isMatch = false;
     if (admin.passwordHash) {
       isMatch = await bcrypt.compare(password, admin.passwordHash);
     } else {
-      isMatch = username === 'admin' && password === 'admin123';
+      // No password hash set — reject login for security
+      res.status(401).json({ success: false, error: 'Password belum dikonfigurasi. Hubungi administrator.' });
+      return;
     }
 
     if (!isMatch) {
@@ -419,7 +424,7 @@ app.listen(PORT, () => {
   ║   DELETE /data/articles/:id  - Hapus artikel      ║
   ║                                                  ║
   ║   Admin Dashboard: http://localhost:${PORT}        ║
-  ║   Demo login: admin / admin123                   ║
+  ║   Auth: JWT (set JWT_SECRET env var)              ║
   ╚══════════════════════════════════════════════════╝
   `);
 });

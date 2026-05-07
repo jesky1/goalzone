@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/client';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'goalzone-admin-secret-2025';
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = '24h';
 
 // ============================================================
@@ -16,9 +16,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Username dan password wajib diisi' }, { status: 400 });
     }
 
-    // Check credentials against env vars with fallbacks
-    const adminUsername = process.env.ADMIN_USERNAME || 'admin';
-    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    // Check credentials from environment variables (NO fallbacks for security)
+    const adminUsername = process.env.ADMIN_USERNAME;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (!adminUsername || !adminPassword || !JWT_SECRET) {
+      console.error('[Admin Auth] ADMIN_USERNAME, ADMIN_PASSWORD, or JWT_SECRET not configured');
+      return NextResponse.json({ success: false, error: 'Server auth belum dikonfigurasi' }, { status: 500 });
+    }
 
     if (username !== adminUsername || password !== adminPassword) {
       return NextResponse.json({ success: false, error: 'Username atau password salah' }, { status: 401 });
@@ -49,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     const token = jwt.sign(
       { id: userId, username, role },
-      JWT_SECRET,
+      JWT_SECRET!,
       { expiresIn: JWT_EXPIRES_IN },
     );
 
