@@ -58,6 +58,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/lib/auth-context';
+import Image from 'next/image';
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -73,6 +74,8 @@ interface MatchResult {
   venue: string | null;
   matchWeek: number | null;
   status: string;
+  homeTeamLogoUrl: string | null;
+  awayTeamLogoUrl: string | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
@@ -89,6 +92,8 @@ interface MatchFormData {
   venue: string;
   matchWeek: string;
   status: string;
+  homeTeamLogoUrl: string;
+  awayTeamLogoUrl: string;
   notes: string;
 }
 
@@ -103,6 +108,8 @@ const emptyForm: MatchFormData = {
   venue: '',
   matchWeek: '',
   status: 'finished',
+  homeTeamLogoUrl: '',
+  awayTeamLogoUrl: '',
   notes: '',
 };
 
@@ -230,6 +237,8 @@ export default function AdminMatchesPage() {
       venue: match.venue || '',
       matchWeek: match.matchWeek?.toString() || '',
       status: match.status,
+      homeTeamLogoUrl: match.homeTeamLogoUrl || '',
+      awayTeamLogoUrl: match.awayTeamLogoUrl || '',
       notes: match.notes || '',
     });
     setFormError(null);
@@ -549,13 +558,35 @@ export default function AdminMatchesPage() {
                             <span className="text-xs text-muted-foreground/50 font-mono w-5 shrink-0">
                               {idx + 1}
                             </span>
+                            {match.homeTeamLogoUrl && (
+                              <Image
+                                src={match.homeTeamLogoUrl}
+                                alt={match.homeTeam}
+                                width={22}
+                                height={22}
+                                className="rounded-full shrink-0"
+                                unoptimized
+                              />
+                            )}
                             <div className="min-w-0">
                               <p className="text-sm font-medium text-white truncate">
                                 {match.homeTeam}
                               </p>
-                              <p className="text-sm text-muted-foreground truncate">
-                                {match.awayTeam}
-                              </p>
+                              <div className="flex items-center gap-1.5">
+                                {match.awayTeamLogoUrl && (
+                                  <Image
+                                    src={match.awayTeamLogoUrl}
+                                    alt={match.awayTeam}
+                                    width={18}
+                                    height={18}
+                                    className="rounded-full shrink-0 mt-0.5"
+                                    unoptimized
+                                  />
+                                )}
+                                <p className="text-sm text-muted-foreground truncate">
+                                  {match.awayTeam}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </TableCell>
@@ -650,10 +681,20 @@ export default function AdminMatchesPage() {
                         {/* Match row */}
                         <div className="flex items-center justify-between gap-2 mb-3">
                           {/* Home */}
-                          <div className="flex-1 min-w-0 text-right">
+                          <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
                             <p className="text-sm font-semibold text-white truncate">
                               {match.homeTeam}
                             </p>
+                            {match.homeTeamLogoUrl && (
+                              <Image
+                                src={match.homeTeamLogoUrl}
+                                alt={match.homeTeam}
+                                width={26}
+                                height={26}
+                                className="rounded-full shrink-0"
+                                unoptimized
+                              />
+                            )}
                           </div>
 
                           {/* Score */}
@@ -668,7 +709,17 @@ export default function AdminMatchesPage() {
                           </div>
 
                           {/* Away */}
-                          <div className="flex-1 min-w-0 text-left">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            {match.awayTeamLogoUrl && (
+                              <Image
+                                src={match.awayTeamLogoUrl}
+                                alt={match.awayTeam}
+                                width={26}
+                                height={26}
+                                className="rounded-full shrink-0"
+                                unoptimized
+                              />
+                            )}
                             <p className="text-sm font-semibold text-white truncate">
                               {match.awayTeam}
                             </p>
@@ -891,6 +942,60 @@ export default function AdminMatchesPage() {
                 onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
                 className="bg-white/[0.03] border-white/10 text-sm h-10 sm:h-11"
               />
+            </div>
+
+            {/* Team Logo URLs */}
+            <div>
+              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                Logo Tim (URL opsional)
+              </Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="relative">
+                  <Input
+                    placeholder="Home Team Logo URL"
+                    value={formData.homeTeamLogoUrl}
+                    onChange={(e) => setFormData({ ...formData, homeTeamLogoUrl: e.target.value })}
+                    className="bg-white/[0.03] border-white/10 text-sm h-10 sm:h-11 pr-10"
+                  />
+                  {formData.homeTeamLogoUrl && (
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                      <Image
+                        src={formData.homeTeamLogoUrl}
+                        alt="Home"
+                        width={24}
+                        height={24}
+                        className="rounded-full"
+                        unoptimized
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="relative">
+                  <Input
+                    placeholder="Away Team Logo URL"
+                    value={formData.awayTeamLogoUrl}
+                    onChange={(e) => setFormData({ ...formData, awayTeamLogoUrl: e.target.value })}
+                    className="bg-white/[0.03] border-white/10 text-sm h-10 sm:h-11 pr-10"
+                  />
+                  {formData.awayTeamLogoUrl && (
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                      <Image
+                        src={formData.awayTeamLogoUrl}
+                        alt="Away"
+                        width={24}
+                        height={24}
+                        className="rounded-full"
+                        unoptimized
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground/40 mt-1.5">
+                Paste URL logo dari API-Football atau sumber lainnya
+              </p>
             </div>
 
             {/* Notes */}

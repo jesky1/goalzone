@@ -18,6 +18,8 @@ interface MatchResultRow {
   venue: string | null;
   match_week: number | null;
   status: string;
+  home_team_logo_url: string | null;
+  away_team_logo_url: string | null;
   notes: string | null;
 }
 
@@ -33,6 +35,8 @@ interface MatchResultAPI {
   venue: string | null;
   matchWeek: number | null;
   status: string;
+  homeTeamLogoUrl: string | null;
+  awayTeamLogoUrl: string | null;
   notes: string | null;
 }
 
@@ -49,11 +53,36 @@ function mapMatch(row: MatchResultRow): MatchResultAPI {
     venue: row.venue,
     matchWeek: row.match_week,
     status: row.status,
+    homeTeamLogoUrl: row.home_team_logo_url,
+    awayTeamLogoUrl: row.away_team_logo_url,
     notes: row.notes,
   };
 }
 
 // ─── Mock Data (fallback jika Supabase belum dikonfigurasi) ──
+
+// Common team logo URLs from API-Football CDN
+const TEAM_LOGOS: Record<string, string> = {
+  'Arsenal': 'https://media.api-sports.io/football/teams/42.png',
+  'Manchester City': 'https://media.api-sports.io/football/teams/50.png',
+  'Liverpool': 'https://media.api-sports.io/football/teams/40.png',
+  'Chelsea': 'https://media.api-sports.io/football/teams/49.png',
+  'Real Madrid': 'https://media.api-sports.io/football/teams/541.png',
+  'Barcelona': 'https://media.api-sports.io/football/teams/529.png',
+  'AC Milan': 'https://media.api-sports.io/football/teams/489.png',
+  'Inter Milan': 'https://media.api-sports.io/football/teams/505.png',
+  'Juventus': 'https://media.api-sports.io/football/teams/496.png',
+  'Napoli': 'https://media.api-sports.io/football/teams/492.png',
+  'Bayern Munich': 'https://media.api-sports.io/football/teams/157.png',
+  'Borussia Dortmund': 'https://media.api-sports.io/football/teams/165.png',
+  'RB Leipzig': 'https://media.api-sports.io/football/teams/173.png',
+  'PSG': 'https://media.api-sports.io/football/teams/85.png',
+  'Marseille': 'https://media.api-sports.io/football/teams/81.png',
+};
+
+function getTeamLogo(teamName: string): string | null {
+  return TEAM_LOGOS[teamName] || null;
+}
 
 function getMockResults(statusFilter: string = 'all'): MatchResultAPI[] {
   const all: MatchResultAPI[] = [
@@ -65,7 +94,10 @@ function getMockResults(statusFilter: string = 'all'): MatchResultAPI[] {
       homeScore: 0, awayScore: 0,
       matchDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
       league: 'Premier League', season: 2025, venue: 'Anfield', matchWeek: 31,
-      status: 'scheduled', notes: 'Big Match',
+      status: 'scheduled',
+      homeTeamLogoUrl: getTeamLogo('Liverpool'),
+      awayTeamLogoUrl: getTeamLogo('Arsenal'),
+      notes: 'Big Match',
     },
     {
       id: 'mock-up2',
@@ -74,7 +106,10 @@ function getMockResults(statusFilter: string = 'all'): MatchResultAPI[] {
       homeScore: 0, awayScore: 0,
       matchDate: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
       league: 'Serie A', season: 2025, venue: 'Allianz Stadium', matchWeek: 30,
-      status: 'scheduled', notes: null,
+      status: 'scheduled',
+      homeTeamLogoUrl: getTeamLogo('Juventus'),
+      awayTeamLogoUrl: getTeamLogo('Napoli'),
+      notes: null,
     },
     {
       id: 'mock-up3',
@@ -83,7 +118,10 @@ function getMockResults(statusFilter: string = 'all'): MatchResultAPI[] {
       homeScore: 0, awayScore: 0,
       matchDate: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
       league: 'Bundesliga', season: 2025, venue: 'Allianz Arena', matchWeek: 27,
-      status: 'scheduled', notes: null,
+      status: 'scheduled',
+      homeTeamLogoUrl: getTeamLogo('Bayern Munich'),
+      awayTeamLogoUrl: getTeamLogo('RB Leipzig'),
+      notes: null,
     },
     // ── Finished ──
     {
@@ -93,7 +131,10 @@ function getMockResults(statusFilter: string = 'all'): MatchResultAPI[] {
       homeScore: 2, awayScore: 1,
       matchDate: new Date().toISOString().split('T')[0],
       league: 'Premier League', season: 2025, venue: 'Emirates Stadium', matchWeek: 28,
-      status: 'finished', notes: null,
+      status: 'finished',
+      homeTeamLogoUrl: getTeamLogo('Arsenal'),
+      awayTeamLogoUrl: getTeamLogo('Manchester City'),
+      notes: null,
     },
     {
       id: 'mock-2',
@@ -102,7 +143,10 @@ function getMockResults(statusFilter: string = 'all'): MatchResultAPI[] {
       homeScore: 3, awayScore: 3,
       matchDate: new Date(Date.now() - 86400000).toISOString().split('T')[0],
       league: 'La Liga', season: 2025, venue: 'Santiago Bernabéu', matchWeek: 30,
-      status: 'finished', notes: 'El Clásico',
+      status: 'finished',
+      homeTeamLogoUrl: getTeamLogo('Real Madrid'),
+      awayTeamLogoUrl: getTeamLogo('Barcelona'),
+      notes: 'El Clásico',
     },
     {
       id: 'mock-3',
@@ -111,7 +155,10 @@ function getMockResults(statusFilter: string = 'all'): MatchResultAPI[] {
       homeScore: 1, awayScore: 2,
       matchDate: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0],
       league: 'Serie A', season: 2025, venue: 'San Siro', matchWeek: 29,
-      status: 'finished', notes: 'Derby della Madonnina',
+      status: 'finished',
+      homeTeamLogoUrl: getTeamLogo('AC Milan'),
+      awayTeamLogoUrl: getTeamLogo('Inter Milan'),
+      notes: 'Derby della Madonnina',
     },
     {
       id: 'mock-4',
@@ -120,7 +167,10 @@ function getMockResults(statusFilter: string = 'all'): MatchResultAPI[] {
       homeScore: 4, awayScore: 2,
       matchDate: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0],
       league: 'Bundesliga', season: 2025, venue: 'Allianz Arena', matchWeek: 26,
-      status: 'finished', notes: null,
+      status: 'finished',
+      homeTeamLogoUrl: getTeamLogo('Bayern Munich'),
+      awayTeamLogoUrl: getTeamLogo('Borussia Dortmund'),
+      notes: null,
     },
     {
       id: 'mock-5',
@@ -129,7 +179,10 @@ function getMockResults(statusFilter: string = 'all'): MatchResultAPI[] {
       homeScore: 0, awayScore: 0,
       matchDate: new Date(Date.now() - 4 * 86400000).toISOString().split('T')[0],
       league: 'Premier League', season: 2025, venue: 'Anfield', matchWeek: 27,
-      status: 'postponed', notes: 'Ditunda karena cuaca buruk',
+      status: 'postponed',
+      homeTeamLogoUrl: getTeamLogo('Liverpool'),
+      awayTeamLogoUrl: getTeamLogo('Chelsea'),
+      notes: 'Ditunda karena cuaca buruk',
     },
     {
       id: 'mock-6',
@@ -138,7 +191,10 @@ function getMockResults(statusFilter: string = 'all'): MatchResultAPI[] {
       homeScore: 2, awayScore: 0,
       matchDate: new Date(Date.now() - 5 * 86400000).toISOString().split('T')[0],
       league: 'Ligue 1', season: 2025, venue: 'Parc des Princes', matchWeek: 25,
-      status: 'finished', notes: 'Le Classique',
+      status: 'finished',
+      homeTeamLogoUrl: getTeamLogo('PSG'),
+      awayTeamLogoUrl: getTeamLogo('Marseille'),
+      notes: 'Le Classique',
     },
   ];
 

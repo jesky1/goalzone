@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, Swords, RefreshCw, Clock, CheckCircle2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -20,6 +21,8 @@ interface MatchResult {
   venue: string | null;
   matchWeek: number | null;
   status: string;
+  homeTeamLogoUrl: string | null;
+  awayTeamLogoUrl: string | null;
   notes: string | null;
 }
 
@@ -37,6 +40,83 @@ const FILTER_TABS: FilterTab[] = [
   { id: 'finished', label: 'Selesai', icon: CheckCircle2, activeClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
   { id: 'scheduled', label: 'Mendatang', icon: Clock, activeClass: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
 ];
+
+// ─── Team Logo Component (Cyan Neon Glow Glassmorphism) ────
+
+function TeamLogo({
+  src,
+  alt,
+  size = 32,
+}: {
+  src: string | null;
+  alt: string;
+  size?: number;
+}) {
+  if (!src) {
+    return (
+      <div
+        className="relative shrink-0 rounded-full overflow-hidden flex items-center justify-center
+          bg-white/[0.04] border border-white/[0.08]"
+        style={{ width: size, height: size }}
+      >
+        <span className="text-[9px] font-bold text-muted-foreground/40">
+          {alt.slice(0, 2).toUpperCase()}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      className="relative shrink-0 rounded-full overflow-hidden group/logo"
+      style={{ width: size, height: size }}
+      whileHover={{ scale: 1.15 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+    >
+      {/* Glassmorphism backdrop ring */}
+      <div
+        className="absolute inset-0 rounded-full
+          bg-white/[0.06] backdrop-blur-md border border-white/[0.1]
+          group-hover/logo:bg-cyan-400/[0.08] group-hover/logo:border-cyan-400/30
+          transition-all duration-300"
+      />
+
+      {/* Cyan neon glow on hover */}
+      <div
+        className="absolute -inset-1 rounded-full opacity-0 group-hover/logo:opacity-100
+          transition-opacity duration-300 pointer-events-none
+          shadow-[0_0_12px_2px_rgba(0,243,255,0.25),0_0_24px_4px_rgba(0,243,255,0.12)]
+          group-hover/logo:shadow-[0_0_14px_3px_rgba(0,243,255,0.35),0_0_30px_6px_rgba(0,243,255,0.18)]"
+      />
+
+      {/* Pulsing outer ring on hover */}
+      <div
+        className="absolute -inset-[3px] rounded-full opacity-0 group-hover/logo:opacity-100
+          transition-opacity duration-500 pointer-events-none
+          animate-pulse"
+        style={{
+          background: 'conic-gradient(from 0deg, transparent 0%, rgba(0,243,255,0.3) 25%, transparent 50%, rgba(0,243,255,0.2) 75%, transparent 100%)',
+          WebkitMask: 'radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px))',
+          mask: 'radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px))',
+        }}
+      />
+
+      {/* The actual logo image */}
+      <Image
+        src={src}
+        alt={alt}
+        width={size}
+        height={size}
+        className="relative z-10 object-contain p-[3px]"
+        unoptimized
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.style.display = 'none';
+        }}
+      />
+    </motion.div>
+  );
+}
 
 // ─── Helpers ────────────────────────────────────────────────
 
@@ -154,11 +234,15 @@ function FinishedCard({ match, index }: { match: MatchResult; index: number }) {
             </Badge>
           </div>
 
-          {/* Score Row */}
-          <div className="flex items-center justify-between gap-3 sm:gap-4 mb-4">
-            <div className="flex-1 min-w-0 text-right">
+          {/* Score Row with Logos */}
+          <div className="flex items-center justify-between gap-2 sm:gap-3 mb-4">
+            {/* Home Team */}
+            <div className="flex items-center gap-2 sm:gap-2.5 flex-1 min-w-0 justify-end">
               <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate">{match.homeTeam}</h3>
+              <TeamLogo src={match.homeTeamLogoUrl} alt={match.homeTeam} size={28} />
             </div>
+
+            {/* Score */}
             <div className="shrink-0">
               <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06] shadow-inner">
                 <span className={`text-xl sm:text-2xl font-black tabular-nums min-w-[1.5rem] text-center ${scoreColor}`}>{match.homeScore}</span>
@@ -169,7 +253,10 @@ function FinishedCard({ match, index }: { match: MatchResult; index: number }) {
                 <span className={`text-xl sm:text-2xl font-black tabular-nums min-w-[1.5rem] text-center ${scoreColor}`}>{match.awayScore}</span>
               </div>
             </div>
-            <div className="flex-1 min-w-0 text-left">
+
+            {/* Away Team */}
+            <div className="flex items-center gap-2 sm:gap-2.5 flex-1 min-w-0">
+              <TeamLogo src={match.awayTeamLogoUrl} alt={match.awayTeam} size={28} />
               <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate">{match.awayTeam}</h3>
             </div>
           </div>
@@ -259,17 +346,24 @@ function UpcomingCard({ match, index }: { match: MatchResult; index: number }) {
             </Badge>
           </div>
 
-          {/* Match Row: Team | vs | Team */}
-          <div className="flex items-center justify-between gap-3 sm:gap-4 mb-4">
-            <div className="flex-1 min-w-0 text-right">
+          {/* Match Row with Logos: Team | vs | Team */}
+          <div className="flex items-center justify-between gap-2 sm:gap-3 mb-4">
+            {/* Home Team */}
+            <div className="flex items-center gap-2 sm:gap-2.5 flex-1 min-w-0 justify-end">
               <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate">{match.homeTeam}</h3>
+              <TeamLogo src={match.homeTeamLogoUrl} alt={match.homeTeam} size={28} />
             </div>
+
+            {/* VS */}
             <div className="shrink-0">
               <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/5 border border-blue-500/10">
                 <span className="text-sm font-bold text-blue-400 uppercase tracking-widest">vs</span>
               </div>
             </div>
-            <div className="flex-1 min-w-0 text-left">
+
+            {/* Away Team */}
+            <div className="flex items-center gap-2 sm:gap-2.5 flex-1 min-w-0">
+              <TeamLogo src={match.awayTeamLogoUrl} alt={match.awayTeam} size={28} />
               <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate">{match.awayTeam}</h3>
             </div>
           </div>
@@ -319,9 +413,15 @@ function ScoreCardSkeleton() {
         <Skeleton className="h-5 w-12 rounded-md bg-gray-200/50 dark:bg-white/5" />
       </div>
       <div className="flex items-center justify-between gap-3 mb-4">
-        <Skeleton className="h-5 w-28 bg-gray-200/50 dark:bg-white/5" />
+        <div className="flex items-center gap-2 flex-1 justify-end">
+          <Skeleton className="h-5 w-28 bg-gray-200/50 dark:bg-white/5" />
+          <Skeleton className="h-7 w-7 rounded-full bg-gray-200/50 dark:bg-white/5" />
+        </div>
         <Skeleton className="h-12 w-20 rounded-xl bg-gray-200/50 dark:bg-white/5" />
-        <Skeleton className="h-5 w-28 bg-gray-200/50 dark:bg-white/5" />
+        <div className="flex items-center gap-2 flex-1">
+          <Skeleton className="h-7 w-7 rounded-full bg-gray-200/50 dark:bg-white/5" />
+          <Skeleton className="h-5 w-28 bg-gray-200/50 dark:bg-white/5" />
+        </div>
       </div>
       <div className="flex justify-center mb-3">
         <Skeleton className="h-4 w-16 rounded-md bg-gray-200/50 dark:bg-white/5" />

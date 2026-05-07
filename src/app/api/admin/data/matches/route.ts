@@ -72,6 +72,8 @@ export async function GET(request: NextRequest) {
           venue: m.venue,
           matchWeek: m.match_week,
           status: m.status,
+          homeTeamLogoUrl: m.home_team_logo_url,
+          awayTeamLogoUrl: m.away_team_logo_url,
           notes: m.notes,
           createdAt: m.created_at,
           updatedAt: m.updated_at,
@@ -96,7 +98,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { homeTeam, awayTeam, homeScore, awayScore, matchDate, league, season, venue, matchWeek, status, notes } = body;
+    const { homeTeam, awayTeam, homeScore, awayScore, matchDate, league, season, venue, matchWeek, status, homeTeamLogoUrl, awayTeamLogoUrl, notes } = body;
 
     if (!homeTeam || !awayTeam || homeScore === undefined || awayScore === undefined || !matchDate) {
       return NextResponse.json({ success: false, error: 'homeTeam, awayTeam, homeScore, awayScore, dan matchDate wajib diisi' }, { status: 400 });
@@ -117,6 +119,8 @@ export async function POST(request: NextRequest) {
         venue: venue || null,
         match_week: matchWeek ? Number(matchWeek) : null,
         status: status || 'finished',
+        home_team_logo_url: homeTeamLogoUrl || null,
+        away_team_logo_url: awayTeamLogoUrl || null,
         notes: notes || null,
       })
       .select('*')

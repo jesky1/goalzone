@@ -175,6 +175,8 @@ CREATE TABLE IF NOT EXISTS public.match_results (
   venue VARCHAR(300),
   match_week INT,
   status VARCHAR(20) DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'finished', 'postponed', 'cancelled', 'abandoned')),
+  home_team_logo_url TEXT,
+  away_team_logo_url TEXT,
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
