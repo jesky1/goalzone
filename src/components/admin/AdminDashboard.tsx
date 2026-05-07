@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   Sheet,
@@ -37,7 +37,10 @@ import {
   Send,
   Loader2,
   FileText,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
+import { getSupabaseClient } from '@/lib/supabase/client';
 
 interface Category {
   id: string;
@@ -69,6 +72,7 @@ export default function AdminDashboard({ open, onClose }: AdminDashboardProps) {
   const [articles, setArticles] = useState<Article[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
@@ -84,39 +88,109 @@ export default function AdminDashboard({ open, onClose }: AdminDashboardProps) {
   const [formIsFeatured, setFormIsFeatured] = useState(false);
   const [formReadTime, setFormReadTime] = useState('5');
 
-  useEffect(() => {
-    if (open) {
-      loadArticles();
-      loadCategories();
-    }
-  }, [open]);
-
-  const loadArticles = async () => {
+  // ─── fetchArticles — direct Supabase client query ──────────
+  // Fetches all articles from Supabase ordered by created_at DESC
+  const fetchArticles = useCallback(async () => {
     setLoading(true);
+    setFetchError(null);
+
     try {
-      const res = await fetch('/api/articles?limit=50');
-      if (res.ok) {
-        const data = await res.json();
-        setArticles(data.articles || []);
+      const supabase = getSupabaseClient();
+
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*, categories(name, slug), profiles(username)')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('[fetchArticles] Supabase error:', JSON.stringify({
+          code: error.code,
+          message: error.message,
+          hint: error.hint,
+          details: error.details,
+        }));
+
+        // Provide user-friendly message for common errors
+        let msg = 'Gagal memuat artikel dari Supabase';
+        if (error.code === '42501' || error.message?.includes('policy')) {
+          msg = 'RLS memblokir akses. Tambahkan policy: CREATE POLICY "anon_read" ON articles FOR SELECT TO anon USING (true);';
+        } else if (error.code === '42P01') {
+          msg = 'Tabel articles belum ada di Supabase. Jalankan migration terlebih dahulu.';
+        }
+        setFetchError(msg);
+        setArticles([]);
+        return;
       }
-    } catch {
-      // silently fail
+
+      // Map Supabase rows (snake_case) to Article interface (camelCase)
+      const mapped: Article[] = (data || []).map((row: any) => ({
+        id: row.id,
+        title: row.title,
+        slug: row.slug,
+        content: row.content,
+        summary: row.summary,
+        imageUrl: row.cover_image,
+        category: {
+          name: row.categories?.name || 'Tanpa Kategori',
+          slug: row.categories?.slug || '',
+        },
+        author: {
+          username: row.profiles?.username || 'Unknown',
+        },
+        viewCount: row.view_count ?? 0,
+        isFeatured: row.is_featured ?? false,
+        readTime: row.read_time ?? 5,
+        createdAt: row.created_at,
+      }));
+
+      setArticles(mapped);
+      console.log(`[fetchArticles] Loaded ${mapped.length} articles from Supabase`);
+    } catch (err: any) {
+      console.error('[fetchArticles] Unexpected error:', err.message);
+      // Supabase client might not be configured
+      if (err.message?.includes('NEXT_PUBLIC_SUPABASE')) {
+        setFetchError('Supabase belum dikonfigurasi. Set NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+      } else {
+        setFetchError(`Gagal memuat artikel: ${err.message}`);
+      }
+      setArticles([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadCategories = async () => {
+  // ─── fetchCategories — direct Supabase client query ────────
+  const fetchCategories = useCallback(async () => {
     try {
-      const res = await fetch('/api/categories');
-      if (res.ok) {
-        const data = await res.json();
-        setCategories(data.categories || []);
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      if (error) {
+        console.error('[fetchCategories] Supabase error:', error.message);
+        return;
       }
-    } catch {
-      // silently fail
+
+      const mapped: Category[] = (data || []).map((row: any) => ({
+        id: row.id,
+        name: row.name,
+        slug: row.slug,
+      }));
+      setCategories(mapped);
+    } catch (err: any) {
+      console.error('[fetchCategories] Error:', err.message);
     }
-  };
+  }, []);
+
+  // ─── Auto-fetch on mount ──────────────────────────────────
+  useEffect(() => {
+    if (open) {
+      fetchArticles();
+      fetchCategories();
+    }
+  }, [open, fetchArticles, fetchCategories]);
 
   const resetForm = () => {
     setFormTitle('');
@@ -154,7 +228,7 @@ export default function AdminDashboard({ open, onClose }: AdminDashboardProps) {
         method: 'DELETE',
       });
       if (res.ok) {
-        loadArticles();
+        fetchArticles();
       }
     } catch {
       // silently fail
@@ -193,7 +267,7 @@ export default function AdminDashboard({ open, onClose }: AdminDashboardProps) {
       if (res.ok) {
         setShowEditor(false);
         resetForm();
-        loadArticles();
+        fetchArticles();
       }
     } catch {
       // silently fail
@@ -244,6 +318,19 @@ export default function AdminDashboard({ open, onClose }: AdminDashboardProps) {
           <div className="p-6">
             <Separator className="bg-white/5 mb-6" />
 
+            {/* Error Banner */}
+            {fetchError && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 mb-4">
+                <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-red-400 break-words">{fetchError}</p>
+                </div>
+                <Button variant="ghost" size="sm" className="shrink-0 text-red-400 hover:text-red-300" onClick={fetchArticles}>
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            )}
+
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3 mb-6">
               <div className="glass-card p-3 text-center">
@@ -269,6 +356,9 @@ export default function AdminDashboard({ open, onClose }: AdminDashboardProps) {
               <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
                 <FileText className="w-4 h-4 text-neon" />
                 Daftar Artikel
+                <Button variant="ghost" size="sm" className="ml-auto h-6 w-6 p-0 text-muted-foreground hover:text-neon" onClick={fetchArticles} disabled={loading}>
+                  <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+                </Button>
               </h3>
 
               {loading ? (

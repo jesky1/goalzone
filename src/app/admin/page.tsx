@@ -177,56 +177,79 @@ export default function AdminDashboard() {
     }
   }, [authLoading, isAuthenticated, router]);
 
-  // ─── Fetch dashboard data ────────────────────────────────
-  const fetchDashboardData = useCallback(async () => {
-    if (!token) return;
-
+  // ─── fetchArticles — direct Supabase client query ──────────
+  // Fetches all articles ordered by created_at DESC
+  const fetchArticles = useCallback(async () => {
     setDataLoading(true);
     setDataError(null);
 
     try {
-      const headers = { Authorization: `Bearer ${token}` };
+      const supabase = getSupabaseClient();
 
-      const [statsRes, dataRes] = await Promise.all([
-        fetch('/api/admin/stats', { headers }),
-        fetch('/api/admin/data', { headers }),
-      ]);
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*, categories(name, slug), profiles(username)')
+        .order('created_at', { ascending: false });
 
-      // Process stats
-      if (statsRes.ok) {
-        const statsJson = await statsRes.json();
-        if (statsJson.success && statsJson.data) {
-          const d = statsJson.data;
-          setStats({
-            totalArticles: d.counts?.totalArticles ?? 0,
-            totalComments: d.counts?.totalComments ?? 0,
-            commentsToday: d.counts?.commentsToday ?? 0,
-            totalViews: d.counts?.totalViews ?? 0,
-            totalCategories: d.counts?.totalCategories ?? 0,
-          });
+      if (error) {
+        console.error('[fetchArticles] Supabase error:', JSON.stringify({
+          code: error.code, message: error.message, hint: error.hint, details: error.details,
+        }));
+
+        let msg = 'Gagal memuat artikel dari Supabase';
+        if (error.code === '42501' || error.message?.includes('policy')) {
+          msg = 'RLS memblokir akses. Tambahkan policy: CREATE POLICY "anon_read" ON articles FOR SELECT TO anon USING (true);';
+        } else if (error.code === '42P01') {
+          msg = 'Tabel articles belum ada. Jalankan migration terlebih dahulu.';
         }
+        setDataError(msg);
+        setArticles([]);
+        return;
       }
 
-      // Process data
-      if (dataRes.ok) {
-        const dataJson = await dataRes.json();
-        if (dataJson.success && dataJson.data) {
-          setArticles(dataJson.data.articles || []);
-          setRecentComments(dataJson.data.recentComments || []);
-        }
+      // Map snake_case rows to Article interface
+      const mapped: Article[] = (data || []).map((row: any) => ({
+        id: row.id,
+        title: row.title,
+        slug: row.slug,
+        status: row.status ?? 'published',
+        viewCount: row.view_count ?? 0,
+        categoryName: row.categories?.name || null,
+        authorName: row.profiles?.username || null,
+        isFeatured: row.is_featured ?? false,
+        createdAt: row.created_at,
+      }));
+
+      setArticles(mapped);
+      console.log(`[fetchArticles] Loaded ${mapped.length} articles from Supabase`);
+
+      // Derive stats from articles
+      setStats(prev => ({
+        totalArticles: mapped.length,
+        totalComments: prev?.totalComments ?? 0,
+        commentsToday: prev?.commentsToday ?? 0,
+        totalViews: mapped.reduce((sum, a) => sum + (a.viewCount || 0), 0),
+        totalCategories: new Set(mapped.map(a => a.categoryName).filter(Boolean)).size,
+      }));
+    } catch (err: any) {
+      console.error('[fetchArticles] Error:', err.message);
+      if (err.message?.includes('NEXT_PUBLIC_SUPABASE')) {
+        setDataError('Supabase belum dikonfigurasi. Set NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+      } else {
+        setDataError(`Gagal memuat artikel: ${err.message}`);
       }
-    } catch {
-      setDataError('Gagal memuat data dashboard');
+      setArticles([]);
     } finally {
       setDataLoading(false);
     }
-  }, [token]);
+  }, []);
 
+  // ─── Auto-fetch on mount ──────────────────────────────────
   useEffect(() => {
-    if (isAuthenticated && token) {
-      fetchDashboardData();
+    if (isAuthenticated) {
+      fetchArticles();
     }
-  }, [isAuthenticated, token, fetchDashboardData]);
+  }, [isAuthenticated, fetchArticles]);
 
   // ─── Supabase Realtime for Comments ──────────────────────
   // Graceful: skip if Supabase env vars are not configured
@@ -594,7 +617,7 @@ export default function AdminDashboard() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={fetchDashboardData}
+                    onClick={fetchArticles}
                     className="mt-2 text-red-400 hover:text-red-300"
                   >
                     <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
@@ -642,7 +665,7 @@ export default function AdminDashboard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={fetchDashboardData}
+                  onClick={fetchArticles}
                   disabled={dataLoading}
                   className="text-muted-foreground hover:text-neon"
                 >
@@ -814,7 +837,7 @@ export default function AdminDashboard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={fetchDashboardData}
+                  onClick={fetchArticles}
                   disabled={dataLoading}
                   className="text-muted-foreground hover:text-neon"
                 >
