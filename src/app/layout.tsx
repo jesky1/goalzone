@@ -101,8 +101,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" suppressHydrationWarning>
-      <head>
-        {/* Google AdSense — loaded asynchronously in head */}
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-deep-900 text-foreground`}
+      >
+        {/* Google AdSense — Next.js auto-hoists this Script to <head> */}
         {process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && (
           <Script
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID}`}
@@ -111,10 +113,6 @@ export default function RootLayout({
             strategy="afterInteractive"
           />
         )}
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-deep-900 text-foreground`}
-      >
         {/* Google Analytics — loaded in body to avoid hydration mismatch */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
