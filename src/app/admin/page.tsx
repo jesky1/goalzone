@@ -168,6 +168,7 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [notification, setNotification] = useState<string | null>(null);
   const [deletingArticle, setDeletingArticle] = useState<string | null>(null);
+  const [realtimeAvailable, setRealtimeAvailable] = useState<boolean | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -228,12 +229,24 @@ export default function AdminDashboard() {
   }, [isAuthenticated, token, fetchDashboardData]);
 
   // ─── Supabase Realtime for Comments ──────────────────────
+  // Graceful: skip if Supabase env vars are not configured
   useEffect(() => {
     if (!token) return;
 
-    const supabase = getSupabaseClient();
+    let supabase: ReturnType<typeof getSupabaseClient> | null = null;
+    let channel: ReturnType<NonNullable<typeof supabase>['channel']> | null = null;
 
-    const channel = supabase
+    try {
+      supabase = getSupabaseClient();
+    } catch {
+      // Supabase not configured — realtime disabled
+      setRealtimeAvailable(false);
+      return;
+    }
+
+    setRealtimeAvailable(true);
+
+    channel = supabase
       .channel('admin-comments-realtime')
       .on(
         'postgres_changes',
@@ -275,7 +288,9 @@ export default function AdminDashboard() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (supabase && channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [token]);
 
@@ -486,12 +501,21 @@ export default function AdminDashboard() {
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                       Komentar Terbaru
                     </h3>
-                    <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 live-pulse" />
-                      <span className="text-[10px] font-bold text-emerald-400 uppercase">
-                        Realtime
+                    {realtimeAvailable === true && (
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 live-pulse" />
+                        <span className="text-[10px] font-bold text-emerald-400 uppercase">
+                          LIVE
+                        </span>
                       </span>
-                    </span>
+                    )}
+                    {realtimeAvailable === false && (
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                        <span className="text-[10px] font-bold text-amber-400 uppercase">
+                          Offline
+                        </span>
+                      </span>
+                    )}
                   </div>
                   <Button
                     variant="ghost"
@@ -765,12 +789,21 @@ export default function AdminDashboard() {
                   <div>
                     <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                       Comments
-                      <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 live-pulse" />
-                        <span className="text-[10px] font-bold text-emerald-400 uppercase">
-                          Live
+                      {realtimeAvailable === true && (
+                        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 live-pulse" />
+                          <span className="text-[10px] font-bold text-emerald-400 uppercase">
+                            Live
+                          </span>
                         </span>
-                      </span>
+                      )}
+                      {realtimeAvailable === false && (
+                        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                          <span className="text-[10px] font-bold text-amber-400 uppercase">
+                            Offline
+                          </span>
+                        </span>
+                      )}
                     </h2>
                     <p className="text-xs text-muted-foreground">
                       {stats?.totalComments ?? 0} total · {stats?.commentsToday ?? 0}{' '}
