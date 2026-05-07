@@ -864,17 +864,45 @@ export async function POST(request: NextRequest) {
     const authHeader = request.headers.get('authorization')
     const adminApiKey = process.env.ADMIN_API_KEY
     const cronSecret = process.env.CRON_SECRET
+    const jwtSecret = process.env.JWT_SECRET
+    const token = authHeader?.replace('Bearer ', '') || ''
 
-    // Allow if: (1) no keys configured (dev mode), (2) valid ADMIN_API_KEY, or (3) valid CRON_SECRET
-    if (adminApiKey || cronSecret) {
-      const token = authHeader?.replace('Bearer ', '') || ''
-      const isValidAdmin = adminApiKey && token === adminApiKey
-      const isValidCron = cronSecret && token === cronSecret
+    // Check authentication:
+    // (1) Valid JWT login token (admin session)
+    // (2) Valid ADMIN_API_KEY
+    // (3) Valid CRON_SECRET
+    // (4) Dev mode: no keys configured at all
+    let isAuthenticated = false
 
-      if (!isValidAdmin && !isValidCron) {
-        console.warn('[News Engine] Unauthorized pipeline trigger attempt')
-        return NextResponse.json({ error: 'Unauthorized — valid ADMIN_API_KEY or CRON_SECRET required' }, { status: 401 })
+    // Check JWT token (admin login session)
+    if (jwtSecret && token) {
+      try {
+        const jwt = (await import('jsonwebtoken')).default
+        const decoded = jwt.verify(token, jwtSecret)
+        if (decoded && typeof decoded === 'object' && decoded.role === 'admin') {
+          isAuthenticated = true
+        }
+      } catch {
+        // Invalid JWT — not a valid admin session
       }
+    }
+
+    // Check API key or cron secret
+    if (!isAuthenticated) {
+      if (adminApiKey || cronSecret) {
+        const isValidAdmin = adminApiKey && token === adminApiKey
+        const isValidCron = cronSecret && token === cronSecret
+        if (!isValidAdmin && !isValidCron) {
+          console.warn('[News Engine] Unauthorized pipeline trigger attempt')
+          return NextResponse.json({ error: 'Unauthorized — login sebagai admin terlebih dahulu' }, { status: 401 })
+        }
+        isAuthenticated = true
+      }
+    }
+
+    // Dev mode: allow if nothing is configured
+    if (!isAuthenticated && !adminApiKey && !cronSecret && !jwtSecret) {
+      isAuthenticated = true
     }
 
     const body = await request.json().catch(() => ({}))

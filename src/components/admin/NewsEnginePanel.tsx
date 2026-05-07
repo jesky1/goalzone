@@ -633,7 +633,7 @@ export default function NewsEnginePanel({ authToken }: NewsEnginePanelProps = {}
               {error.includes('Unauthorized') && (
                 <p className="text-[10px] text-amber-400 mt-1.5 flex items-center gap-1">
                   <Shield className="w-3 h-3" />
-                  Set ADMIN_API_KEY atau CRON_SECRET di environment variables, atau pastikan token masih valid.
+                  Sesi admin kadaluarsa. Silakan logout lalu login kembali.
                 </p>
               )}
               {error.includes('RLS') && (
