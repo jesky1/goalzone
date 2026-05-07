@@ -3,7 +3,6 @@
 import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import {
   Shield,
   LogIn,
@@ -31,15 +30,21 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch — only run client-side logic after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // If already authenticated, redirect via useEffect (not during render)
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && mounted) {
       router.replace(redirectPath);
     }
-  }, [isAuthenticated, router, redirectPath]);
+  }, [isAuthenticated, mounted, router, redirectPath]);
 
-  if (isAuthenticated) {
+  if (isAuthenticated && mounted) {
     return null;
   }
 
@@ -68,46 +73,38 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-deep-900 cyber-grid flex items-center justify-center p-4">
-      {/* Ambient glow */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon/3 rounded-full blur-3xl" />
+    <div className="min-h-screen bg-deep-900 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Subtle background gradient */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-blue-500/5 blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-cyan-500/3 blur-3xl" />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="relative z-10 w-full max-w-md"
+      <div
+        className={`relative z-10 w-full max-w-md transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-neon/10 border border-neon/20 neon-glow mb-4"
-          >
-            <Shield className="w-8 h-8 text-neon" />
-          </motion.div>
-          <h1 className="text-2xl font-bold neon-text tracking-wider">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 mb-4">
+            <Shield className="w-8 h-8 text-cyan-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-cyan-400 tracking-wider">
             GOALZONE
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-gray-400 mt-1">
             Admin Dashboard
           </p>
         </div>
 
         {/* Login Card */}
-        <Card className="glass-card p-0 overflow-hidden">
+        <Card className="bg-gray-900/80 border-gray-800 p-0 overflow-hidden">
           <CardContent className="p-6 space-y-6">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                <LogIn className="w-5 h-5 text-neon" />
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                <LogIn className="w-5 h-5 text-cyan-400" />
                 Sign In
               </h2>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-gray-400 mt-1">
                 Masuk untuk mengakses panel admin
               </p>
             </div>
@@ -117,7 +114,7 @@ function LoginForm() {
               <div className="space-y-1.5">
                 <label
                   htmlFor="username"
-                  className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                  className="text-xs font-semibold text-gray-400 uppercase tracking-wider"
                 >
                   Username
                 </label>
@@ -129,7 +126,7 @@ function LoginForm() {
                   onChange={(e) => setUsername(e.target.value)}
                   autoComplete="username"
                   disabled={loading}
-                  className="bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/10 focus:border-neon/50 focus:ring-neon/20"
+                  className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cyan-500/50 focus:ring-cyan-500/20"
                 />
               </div>
 
@@ -137,7 +134,7 @@ function LoginForm() {
               <div className="space-y-1.5">
                 <label
                   htmlFor="password"
-                  className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                  className="text-xs font-semibold text-gray-400 uppercase tracking-wider"
                 >
                   Password
                 </label>
@@ -150,12 +147,12 @@ function LoginForm() {
                     onChange={(e) => setPassword(e.target.value)}
                     autoComplete="current-password"
                     disabled={loading}
-                    className="bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/10 focus:border-neon/50 focus:ring-neon/20 pr-10"
+                    className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cyan-500/50 focus:ring-cyan-500/20 pr-10"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-neon transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-cyan-400 transition-colors"
                     tabIndex={-1}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
@@ -170,21 +167,17 @@ function LoginForm() {
 
               {/* Error */}
               {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20"
-                >
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
                   <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
                   <p className="text-sm text-red-400">{error}</p>
-                </motion.div>
+                </div>
               )}
 
               {/* Submit */}
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 text-sm font-bold transition-all"
+                className="w-full py-3 text-sm font-bold bg-cyan-600 hover:bg-cyan-500 text-white transition-all"
               >
                 {loading ? (
                   <>
@@ -206,21 +199,21 @@ function LoginForm() {
         <div className="text-center mt-6 space-y-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-neon transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-cyan-400 transition-colors"
           >
             <Zap className="w-3.5 h-3.5" />
             Kembali ke Beranda
           </Link>
 
           {/* Security notice */}
-          <div className="mx-auto max-w-xs p-3 rounded-lg bg-white/[0.03] border border-white/5">
-            <p className="text-[11px] text-muted-foreground text-center">
-              <span className="font-semibold text-neon/70">🔒</span>{' '}
+          <div className="mx-auto max-w-xs p-3 rounded-lg bg-gray-800/50 border border-gray-700/50">
+            <p className="text-[11px] text-gray-500 text-center">
+              <span className="font-semibold text-cyan-400/70">🔒</span>{' '}
               Akses terbatas hanya untuk admin yang terotorisasi
             </p>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -230,10 +223,10 @@ function LoginForm() {
 function LoginContent() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-deep-900 cyber-grid flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a0a12] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 text-neon animate-spin mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground">Memuat...</p>
+          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mx-auto mb-4" />
+          <p className="text-sm text-gray-400">Memuat...</p>
         </div>
       </div>
     }>

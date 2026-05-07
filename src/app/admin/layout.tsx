@@ -19,7 +19,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-deep-900 cyber-grid">
+    <div className="min-h-screen bg-[#0a0a12]">
       <AuthProvider>{children}</AuthProvider>
     </div>
   );
