@@ -540,7 +540,7 @@ export default function SearchDialog() {
       {/* Floating Search Button */}
       <motion.button
         onClick={handleOpen}
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-2xl bg-deep-800 dark:bg-deep-800 border border-white/10 dark:border-white/10 flex items-center justify-center shadow-2xl hover:bg-deep-700 hover:border-neon/30 transition-all duration-300 group"
+        className="fixed top-20 right-4 z-40 w-12 h-12 rounded-xl bg-deep-800 dark:bg-deep-800 border border-white/10 dark:border-white/10 flex items-center justify-center shadow-2xl hover:bg-deep-700 hover:border-neon/30 transition-all duration-300 group"
         whileHover={{ scale: 1.05, y: -2 }}
         whileTap={{ scale: 0.95 }}
         aria-label="Search"
@@ -567,7 +567,7 @@ export default function SearchDialog() {
 
             {/* Dialog */}
             <motion.div
-              className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh] sm:pt-[15vh] px-4"
+              className="fixed inset-0 z-50 flex items-start justify-center pt-[8vh] sm:pt-[12vh] px-4"
               variants={dialogVariants}
               initial="hidden"
               animate="visible"
