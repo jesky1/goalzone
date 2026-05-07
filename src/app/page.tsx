@@ -3,6 +3,7 @@
 import { useState, useEffect, Component, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/football/Navbar';
+import MatchResultsSection from '@/components/football/MatchResultsSection';
 import LiveScoreTicker from '@/components/football/LiveScoreTicker';
 import StandingsWidget from '@/components/football/StandingsWidget';
 import TopScorersWidget from '@/components/football/TopScorersWidget';
@@ -940,6 +941,13 @@ export default function Home() {
               </div>
             );
           })()}
+        </section>
+
+        {/* Hasil Pertandingan (Score Cards) */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+          <ErrorBoundary>
+            <MatchResultsSection />
+          </ErrorBoundary>
         </section>
 
         {/* Klasemen Section */}
