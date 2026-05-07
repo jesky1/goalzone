@@ -20,6 +20,11 @@ interface MatchResultRow {
   status: string;
   home_team_logo_url: string | null;
   away_team_logo_url: string | null;
+  referee: string | null;
+  home_possession: number | null;
+  away_possession: number | null;
+  home_scorers: any[] | null;
+  away_scorers: any[] | null;
   notes: string | null;
 }
 
@@ -37,6 +42,11 @@ interface MatchResultAPI {
   status: string;
   homeTeamLogoUrl: string | null;
   awayTeamLogoUrl: string | null;
+  referee: string | null;
+  homePossession: number | null;
+  awayPossession: number | null;
+  homeScorers: any[] | null;
+  awayScorers: any[] | null;
   notes: string | null;
 }
 
@@ -55,6 +65,11 @@ function mapMatch(row: MatchResultRow): MatchResultAPI {
     status: row.status,
     homeTeamLogoUrl: row.home_team_logo_url,
     awayTeamLogoUrl: row.away_team_logo_url,
+    referee: row.referee,
+    homePossession: row.home_possession,
+    awayPossession: row.away_possession,
+    homeScorers: row.home_scorers,
+    awayScorers: row.away_scorers,
     notes: row.notes,
   };
 }

@@ -177,6 +177,11 @@ CREATE TABLE IF NOT EXISTS public.match_results (
   status VARCHAR(20) DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'finished', 'postponed', 'cancelled', 'abandoned')),
   home_team_logo_url TEXT,
   away_team_logo_url TEXT,
+  referee VARCHAR(200),
+  home_possession INT CHECK (home_possession IS NULL OR (home_possession >= 0 AND home_possession <= 100)),
+  away_possession INT CHECK (away_possession IS NULL OR (away_possession >= 0 AND away_possession <= 100)),
+  home_scorers JSONB DEFAULT '[]',
+  away_scorers JSONB DEFAULT '[]',
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()

@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar, MapPin, Swords, RefreshCw, Clock, CheckCircle2,
-  Trophy, Hash, Info, ChevronRight, X,
+  Trophy, Hash, Info, ChevronRight, X, ExternalLink,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -444,6 +445,20 @@ function MatchDetailModal({
                 <p className="text-xs text-gray-400 leading-relaxed">{match.notes}</p>
               </motion.div>
             )}
+
+            {/* ─── Link to full detail page ────────────────── */}
+            <Link
+              href={`/match/${match.id}`}
+              onClick={onClose}
+              className="mt-4 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium
+                bg-neon/[0.06] text-neon border border-neon/20
+                hover:bg-neon/[0.1] hover:border-neon/30
+                hover:shadow-[0_0_20px_rgba(0,240,255,0.1)]
+                transition-all duration-300"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              Lihat Detail Lengkap
+            </Link>
           </div>
 
           {/* ─── Bottom neon line ────────────────────────── */}

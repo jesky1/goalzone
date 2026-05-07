@@ -45,7 +45,7 @@ export async function PUT(
     }
 
     // Build update object
-    const { homeTeam, awayTeam, homeScore, awayScore, matchDate, league, season, venue, matchWeek, status, homeTeamLogoUrl, awayTeamLogoUrl, notes } = body;
+    const { homeTeam, awayTeam, homeScore, awayScore, matchDate, league, season, venue, matchWeek, status, homeTeamLogoUrl, awayTeamLogoUrl, referee, homePossession, awayPossession, homeScorers, awayScorers, notes } = body;
     const updateData: Record<string, any> = {};
     if (homeTeam !== undefined) updateData.home_team = homeTeam;
     if (awayTeam !== undefined) updateData.away_team = awayTeam;
@@ -59,6 +59,11 @@ export async function PUT(
     if (status !== undefined) updateData.status = status;
     if (homeTeamLogoUrl !== undefined) updateData.home_team_logo_url = homeTeamLogoUrl || null;
     if (awayTeamLogoUrl !== undefined) updateData.away_team_logo_url = awayTeamLogoUrl || null;
+    if (referee !== undefined) updateData.referee = referee || null;
+    if (homePossession !== undefined) updateData.home_possession = homePossession ? Number(homePossession) : null;
+    if (awayPossession !== undefined) updateData.away_possession = awayPossession ? Number(awayPossession) : null;
+    if (homeScorers !== undefined) updateData.home_scorers = homeScorers || [];
+    if (awayScorers !== undefined) updateData.away_scorers = awayScorers || [];
     if (notes !== undefined) updateData.notes = notes || null;
 
     const { data: match, error } = await supabase
