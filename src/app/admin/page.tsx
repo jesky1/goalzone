@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,11 @@ import {
   Zap,
   Search,
   Newspaper,
+  Users,
+  Clock,
+  Layers,
+  Sparkles,
+  ArrowUpRight,
 } from 'lucide-react';
 import Link from 'next/link';
 import NewsEnginePanel from '@/components/admin/NewsEnginePanel';
@@ -71,6 +77,45 @@ interface DashboardData {
   articles: ArticleRow[];
   categories: any[];
   recentComments: any[];
+}
+
+// Extended stats from /api/admin/stats
+interface PlatformStats {
+  counts: {
+    totalArticles: number;
+    totalComments: number;
+    totalViews: number;
+    totalFeatured: number;
+    totalCategories: number;
+    commentsToday: number;
+  };
+  averages: {
+    avgReadTime: number;
+    viewsPerArticle: number;
+    commentsPerArticle: number;
+  };
+  highlights: {
+    topViewedArticle: {
+      id: string;
+      title: string;
+      slug: string;
+      viewCount: number;
+      imageUrl: string | null;
+      createdAt: string;
+    } | null;
+    latestArticle: {
+      id: string;
+      title: string;
+      slug: string;
+      viewCount: number;
+      imageUrl: string | null;
+      createdAt: string;
+    } | null;
+    weeklyNewViews: number;
+  };
+  charts: {
+    monthlyArticles: { month: string; articles: number }[];
+  };
 }
 
 // ============================================================
@@ -185,86 +230,436 @@ function LoginForm({ onLogin }: { onLogin: (token: string, user: AdminUser) => v
 }
 
 // ============================================================
-// Overview Tab
+// Animated Number Counter
 // ============================================================
-function OverviewTab({ data }: { data: DashboardData }) {
+function AnimatedNumber({ value, duration = 1200 }: { value: number; duration?: number }) {
+  const [display, setDisplay] = useState(0);
+  const prevValue = useRef(0);
+  const frameRef = useRef<number>(0);
+
+  useEffect(() => {
+    prevValue.current = display;
+    const start = display;
+    const end = value;
+    if (start === end) return;
+
+    const startTime = performance.now();
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(Math.round(start + (end - start) * eased));
+      if (progress < 1) {
+        frameRef.current = requestAnimationFrame(animate);
+      }
+    };
+    frameRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frameRef.current);
+  }, [value, duration]);
+
+  return <>{display.toLocaleString()}</>;
+}
+
+// ============================================================
+// Stats Card Component
+// ============================================================
+function StatCard({
+  label,
+  value,
+  icon: Icon,
+  color,
+  bgColor,
+  subtitle,
+  trend,
+}: {
+  label: string;
+  value: number | string;
+  icon: React.ElementType;
+  color: string;
+  bgColor: string;
+  subtitle?: string;
+  trend?: 'up' | 'down' | 'neutral';
+}) {
+  const isNumeric = typeof value === 'number';
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.5 }}
+      className="group relative overflow-hidden"
+    >
+      <Card className="bg-white dark:bg-deep-800 border border-gray-200 dark:border-white/10 hover:border-neon/30 transition-all duration-300 hover:shadow-lg hover:shadow-neon/5">
+        <CardContent className="p-4 sm:p-5">
+          {/* Icon + Trend */}
+          <div className="flex items-start justify-between mb-3">
+            <div className={`w-10 h-10 rounded-xl ${bgColor} flex items-center justify-center`}>
+              <Icon className={`w-5 h-5 ${color}`} />
+            </div>
+            {trend && trend !== 'neutral' && (
+              <div className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                trend === 'up'
+                  ? 'bg-green-500/10 text-green-600 dark:text-green-400'
+                  : 'bg-red-500/10 text-red-600 dark:text-red-400'
+              }`}>
+                {trend === 'up' ? <ArrowUpRight className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3 rotate-180" />}
+              </div>
+            )}
+          </div>
+
+          {/* Value */}
+          <div className={`text-2xl sm:text-3xl font-bold ${color} tabular-nums tracking-tight`}>
+            {isNumeric ? <AnimatedNumber value={value as number} /> : value}
+          </div>
+
+          {/* Label + Subtitle */}
+          <div className="mt-1">
+            <p className="text-xs text-muted-foreground font-medium">{label}</p>
+            {subtitle && (
+              <p className="text-[10px] text-muted-foreground/60 mt-0.5">{subtitle}</p>
+            )}
+          </div>
+        </CardContent>
+
+        {/* Decorative gradient line at bottom */}
+        <div className={`h-0.5 w-full ${bgColor} opacity-50 group-hover:opacity-100 transition-opacity`} />
+      </Card>
+    </motion.div>
+  );
+}
+
+// ============================================================
+// Mini Bar Chart
+// ============================================================
+function MiniBarChart({ data }: { data: { month: string; articles: number }[] }) {
+  if (!data.length) return null;
+  const max = Math.max(...data.map((d) => d.articles), 1);
+  const formatMonth = (m: string) => {
+    const [y, mo] = m.split('-');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    return `${months[parseInt(mo) - 1]} ${y}`;
+  };
+
+  return (
+    <div className="space-y-2">
+      {data.slice(-8).map((item, i) => (
+        <div key={item.month} className="flex items-center gap-2">
+          <span className="text-[10px] text-muted-foreground w-14 shrink-0 tabular-nums">{formatMonth(item.month)}</span>
+          <div className="flex-1 h-5 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${(item.articles / max) * 100}%` }}
+              transition={{ duration: 0.8, delay: i * 0.05 }}
+              className="h-full rounded-full bg-gradient-to-r from-neon/60 to-neon/30"
+            />
+          </div>
+          <span className="text-[10px] font-semibold text-muted-foreground w-6 text-right tabular-nums">{item.articles}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================
+// Overview Tab (Enhanced with platform stats)
+// ============================================================
+function OverviewTab({ data, token }: { data: DashboardData; token: string }) {
+  const [platformStats, setPlatformStats] = useState<PlatformStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  // Fetch extended stats from dedicated endpoint
+  useEffect(() => {
+    if (!token) return;
+    const loadStats = async () => {
+      setStatsLoading(true);
+      try {
+        const res = await fetch('/api/admin/stats', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await res.json();
+        if (json.success) {
+          setPlatformStats(json.data);
+        }
+      } catch { /* silent */ }
+      finally { setStatsLoading(false); }
+    };
+    loadStats();
+    // Refresh every 30 seconds
+    const interval = setInterval(loadStats, 30000);
+    return () => clearInterval(interval);
+  }, [token]);
+
   const topArticles = [...(data.articles || [])]
     .sort((a, b) => b.viewCount - a.viewCount)
     .slice(0, 5);
 
-  const statCards = [
-    { label: 'Total Artikel', value: data.stats.totalArticles, icon: FileText, color: 'text-neon' },
-    { label: 'Komentar', value: data.stats.totalComments, icon: MessageSquare, color: 'text-blue-400' },
-    { label: 'Total Views', value: data.stats.totalViews.toLocaleString(), icon: Eye, color: 'text-green-400' },
-    { label: 'Featured', value: data.stats.featuredArticles, icon: TrendingUp, color: 'text-amber-400' },
-  ];
+  // Use platform stats if available, fallback to dashboard data stats
+  const totalArticles = platformStats?.counts.totalArticles ?? data.stats.totalArticles;
+  const totalComments = platformStats?.counts.totalComments ?? data.stats.totalComments;
+  const totalViews = platformStats?.counts.totalViews ?? data.stats.totalViews;
+  const totalFeatured = platformStats?.counts.totalFeatured ?? data.stats.featuredArticles;
+  const totalCategories = platformStats?.counts.totalCategories ?? data.stats.totalCategories;
+  const commentsToday = platformStats?.counts.commentsToday ?? 0;
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {statCards.map((stat) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-card p-4"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <stat.icon className={`w-4 h-4 ${stat.color}`} />
-              <ChevronRight className="w-3 h-3 text-muted-foreground" />
-            </div>
-            <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">
-              {stat.label}
-            </div>
-          </motion.div>
-        ))}
+      {/* Main Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <StatCard
+          label="Total Artikel"
+          value={totalArticles}
+          icon={FileText}
+          color="text-neon"
+          bgColor="bg-neon/10"
+          subtitle={`${totalCategories} kategori aktif`}
+          trend="up"
+        />
+        <StatCard
+          label="Total Komentar"
+          value={totalComments}
+          icon={MessageSquare}
+          color="text-blue-500"
+          bgColor="bg-blue-500/10"
+          subtitle={commentsToday > 0 ? `${commentsToday} hari ini` : undefined}
+          trend={commentsToday > 0 ? 'up' : 'neutral'}
+        />
+        <StatCard
+          label="Total Views"
+          value={totalViews}
+          icon={Eye}
+          color="text-green-500"
+          bgColor="bg-green-500/10"
+          subtitle={platformStats?.averages.viewsPerArticle ? `avg ${platformStats.averages.viewsPerArticle}/artikel` : undefined}
+          trend="up"
+        />
+        <StatCard
+          label="Artikel Featured"
+          value={totalFeatured}
+          icon={TrendingUp}
+          color="text-amber-500"
+          bgColor="bg-amber-500/10"
+          subtitle={`${totalArticles > 0 ? Math.round((totalFeatured / totalArticles) * 100) : 0}% dari total`}
+        />
+        <StatCard
+          label="Rata-rata Baca"
+          value={platformStats?.averages.avgReadTime ? `${platformStats.averages.avgReadTime} mnt` : '-'}
+          icon={Clock}
+          color="text-purple-500"
+          bgColor="bg-purple-500/10"
+          subtitle="per artikel"
+        />
+        <StatCard
+          label="Komentar/Artikel"
+          value={platformStats?.averages.commentsPerArticle?.toFixed(1) ?? '-'}
+          icon={Users}
+          color="text-pink-500"
+          bgColor="bg-pink-500/10"
+          subtitle="engagement rate"
+        />
       </div>
 
-      <div className="glass-card p-5">
-        <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-amber-400" />
-          Artikel Paling Populer
-        </h3>
-        <div className="space-y-2">
-          {topArticles.map((article, i) => (
-            <div key={article.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/3 transition-colors">
-              <span className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold shrink-0 ${
-                i === 0 ? 'bg-amber-500/20 text-amber-400' : 'bg-white/5 text-muted-foreground'
-              }`}>
-                {i + 1}
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-white truncate">{article.title}</p>
-                <p className="text-[10px] text-muted-foreground">{article.categoryName}</p>
+      {/* Highlight Cards Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Top Viewed Article */}
+        <Card className="bg-white dark:bg-deep-800 border border-gray-200 dark:border-white/10">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+                <Trophy className="w-4 h-4 text-green-500" />
               </div>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-                <Eye className="w-3 h-3" />
-                {article.viewCount}
+              <div>
+                <h3 className="text-xs font-bold text-foreground">Artikel Terpopuler</h3>
+                <p className="text-[10px] text-muted-foreground">View tertinggi sepanjang masa</p>
               </div>
             </div>
-          ))}
-          {topArticles.length === 0 && (
-            <p className="text-xs text-muted-foreground text-center py-4">Belum ada artikel</p>
-          )}
-        </div>
+            {platformStats?.highlights.topViewedArticle ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  {platformStats.highlights.topViewedArticle.imageUrl && (
+                    <img
+                      src={platformStats.highlights.topViewedArticle.imageUrl}
+                      alt=""
+                      className="w-12 h-12 rounded-lg object-cover shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground line-clamp-2">
+                      {platformStats.highlights.topViewedArticle.title}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <Eye className="w-3 h-3" />
+                        {platformStats.highlights.topViewedArticle.viewCount.toLocaleString()} views
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {new Date(platformStats.highlights.topViewedArticle.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center py-6 text-muted-foreground">
+                <Sparkles className="w-4 h-4 mr-2 opacity-40" />
+                <p className="text-xs">Belum ada data</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Latest Article */}
+        <Card className="bg-white dark:bg-deep-800 border border-gray-200 dark:border-white/10">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-neon/10 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-neon" />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-foreground">Artikel Terbaru</h3>
+                <p className="text-[10px] text-muted-foreground">Baru saja dipublikas</p>
+              </div>
+            </div>
+            {platformStats?.highlights.latestArticle ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  {platformStats.highlights.latestArticle.imageUrl && (
+                    <img
+                      src={platformStats.highlights.latestArticle.imageUrl}
+                      alt=""
+                      className="w-12 h-12 rounded-lg object-cover shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground line-clamp-2">
+                      {platformStats.highlights.latestArticle.title}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <Eye className="w-3 h-3" />
+                        {platformStats.highlights.latestArticle.viewCount.toLocaleString()} views
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {new Date(platformStats.highlights.latestArticle.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center py-6 text-muted-foreground">
+                <Sparkles className="w-4 h-4 mr-2 opacity-40" />
+                <p className="text-xs">Belum ada data</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="glass-card p-5">
-        <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-neon" />
-          Kategori
-        </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {(data.categories || []).map((cat: any) => (
-            <div key={cat.id} className="flex items-center justify-between p-2.5 rounded-lg bg-white/3 border border-white/5">
-              <span className="text-xs text-white">{cat.name}</span>
-              <Badge variant="secondary" className="text-[10px] bg-white/5 text-muted-foreground">
-                {cat.articleCount || 0}
-              </Badge>
+      {/* Two-Column Section: Chart + Top 5 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Monthly Articles Chart */}
+        <Card className="bg-white dark:bg-deep-800 border border-gray-200 dark:border-white/10">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                <BarChart3 className="w-4 h-4 text-purple-500" />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-foreground">Artikel per Bulan</h3>
+                <p className="text-[10px] text-muted-foreground">Tren 12 bulan terakhir</p>
+              </div>
             </div>
-          ))}
-        </div>
+            {statsLoading ? (
+              <div className="space-y-2 py-4">
+                {[1,2,3,4,5].map((i) => (
+                  <Skeleton key={i} className="h-5 w-full bg-gray-100 dark:bg-white/5 rounded-full" />
+                ))}
+              </div>
+            ) : platformStats?.charts?.monthlyArticles?.length ? (
+              <MiniBarChart data={platformStats.charts.monthlyArticles} />
+            ) : (
+              <p className="text-xs text-muted-foreground text-center py-6">Belum ada data</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Top 5 Articles Table */}
+        <Card className="bg-white dark:bg-deep-800 border border-gray-200 dark:border-white/10">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-amber-500" />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-foreground">Top 5 Artikel</h3>
+                <p className="text-[10px] text-muted-foreground">Berdasarkan views</p>
+              </div>
+            </div>
+            <div className="space-y-1">
+              {topArticles.map((article, i) => (
+                <div key={article.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/3 transition-colors">
+                  <span className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold shrink-0 ${
+                    i === 0
+                      ? 'bg-amber-500/20 text-amber-500'
+                      : i === 1
+                        ? 'bg-gray-300 dark:bg-white/10 text-gray-600 dark:text-gray-400'
+                        : 'bg-gray-100 dark:bg-white/5 text-muted-foreground'
+                  }`}>
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-foreground truncate">{article.title}</p>
+                    <p className="text-[10px] text-muted-foreground">{article.categoryName}</p>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0 tabular-nums">
+                    <Eye className="w-3 h-3" />
+                    {article.viewCount.toLocaleString()}
+                  </div>
+                </div>
+              ))}
+              {topArticles.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-4">Belum ada artikel</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Categories Section */}
+      <Card className="bg-white dark:bg-deep-800 border border-gray-200 dark:border-white/10">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-neon/10 flex items-center justify-center">
+              <Layers className="w-4 h-4 text-neon" />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-foreground">Kategori</h3>
+              <p className="text-[10px] text-muted-foreground">{totalCategories} kategori aktif</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {(data.categories || []).map((cat: any) => (
+              <div key={cat.id} className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 dark:bg-white/3 border border-gray-200 dark:border-white/5 hover:border-neon/20 transition-colors">
+                <span className="text-xs text-foreground truncate">{cat.name}</span>
+                <Badge variant="secondary" className="text-[10px] bg-gray-100 dark:bg-white/5 text-muted-foreground">
+                  {cat.articleCount || 0}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Auto-refresh indicator */}
+      <div className="flex items-center justify-center gap-2 py-2">
+        {statsLoading ? (
+          <Loader2 className="w-3 h-3 text-neon animate-spin" />
+        ) : (
+          <CheckCircle2 className="w-3 h-3 text-green-500" />
+        )}
+        <p className="text-[10px] text-muted-foreground">
+          {statsLoading ? 'Memperbarui statistik...' : 'Statistik diperbarui otomatis setiap 30 detik'}
+        </p>
       </div>
     </div>
   );
