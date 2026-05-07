@@ -155,6 +155,8 @@ export interface PublishPayload {
   seoDescription?: string
   fixtureId?: string
   matchInfo?: string
+  jsonLd?: string
+  keywords?: string[]
 }
 
 export async function publishArticle(payload: PublishPayload): Promise<boolean> {

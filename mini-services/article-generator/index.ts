@@ -157,12 +157,14 @@ async function processMatch(fixtureId: number): Promise<GenerationResult> {
       }
     }
 
-    // ── STEP 5: Generate SEO Metadata ──
-    console.log(`\n🔍 STEP 5: Generating SEO metadata...`)
+    // ── STEP 5: Generate Enhanced SEO Metadata ──
+    console.log(`\n🔍 STEP 5: Generating EEAT SEO metadata...`)
     const seo = await generateSEOMetadata(article.title, article.content, match)
     result.seo = seo
+    console.log(`   SEO Title: "${seo.seoTitle}"`)
     console.log(`   Meta: "${seo.metaDescription}"`)
     console.log(`   Keywords: ${seo.keywords.join(', ')}`)
+    console.log(`   OG Title: "${seo.ogTitle}"`)
 
     // ── Publish to Supabase ──
     console.log(`\n🚀 STEP 6: Publishing to Supabase...`)
@@ -170,12 +172,14 @@ async function processMatch(fixtureId: number): Promise<GenerationResult> {
       title: article.title,
       slug: article.slug,
       content: article.content,
-      summary: seo.metaDescription,
+      summary: article.metaDescription || seo.metaDescription,
       imageUrl: storageUrl,
       seoTitle: seo.seoTitle,
-      seoDescription: seo.metaDescription,
+      seoDescription: article.metaDescription || seo.metaDescription,
       fixtureId: String(fixtureId),
       matchInfo: `${match.homeTeam} ${match.homeScore}-${match.awayScore} ${match.awayTeam}`,
+      jsonLd: article.jsonLd,
+      keywords: article.keywords,
     })
 
     result.published = published
