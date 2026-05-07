@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Newspaper,
@@ -23,6 +23,9 @@ import {
   FileText,
   Search,
   Shield,
+  Rss,
+  ExternalLink,
+  Calendar,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -80,6 +83,25 @@ interface ServiceStatus {
     defaultAuthor: string
     defaultCategory: string
   }
+}
+
+// Blogger types
+interface BloggerPost {
+  id: string
+  title: string
+  published: string
+  updated: string
+  url: string
+  labels?: string[]
+  author?: { displayName: string } | null
+}
+
+interface BloggerData {
+  posts: BloggerPost[]
+  total: number
+  source: 'blogger-api' | 'mock'
+  blogId: string | null
+  notice?: string | null
 }
 
 // ─── Pipeline Stage Icons ───────────────────────────────────
@@ -198,6 +220,238 @@ function ConfigPanel({ config, onFixtureIdsChange }: { config: ServiceStatus | n
   )
 }
 
+// ─── Blogger Feed Section ───────────────────────────────────
+
+function BloggerFeedSection() {
+  const [data, setData] = useState<BloggerData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const loadBlogger = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/blogger?max=5')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || `HTTP ${res.status}`)
+      }
+      const json = await res.json()
+      setData(json)
+    } catch (err: any) {
+      setError(err.message || 'Gagal memuat data Blogger')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadBlogger()
+  }, [loadBlogger])
+
+  const formatPublishedDate = (isoString: string) => {
+    try {
+      const date = new Date(isoString)
+      return date.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Jakarta',
+      })
+    } catch {
+      return isoString
+    }
+  }
+
+  const timeAgo = (isoString: string) => {
+    try {
+      const now = Date.now()
+      const then = new Date(isoString).getTime()
+      const diffMs = now - then
+      const diffMin = Math.floor(diffMs / 60000)
+      if (diffMin < 60) return `${diffMin} menit lalu`
+      const diffHr = Math.floor(diffMin / 60)
+      if (diffHr < 24) return `${diffHr} jam lalu`
+      const diffDay = Math.floor(diffHr / 24)
+      if (diffDay < 30) return `${diffDay} hari lalu`
+      const diffMonth = Math.floor(diffDay / 30)
+      return `${diffMonth} bulan lalu`
+    } catch {
+      return ''
+    }
+  }
+
+  return (
+    <div className="glass-card overflow-hidden">
+      {/* Header */}
+      <div className="p-4 border-b border-gray-200 dark:border-white/5 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-lg bg-orange-500/10">
+            <Rss className="w-4 h-4 text-orange-400" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              Blogger Feed
+              {data?.source === 'blogger-api' && (
+                <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[9px] px-1.5 py-0">
+                  LIVE
+                </Badge>
+              )}
+              {data?.source === 'mock' && (
+                <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-[9px] px-1.5 py-0">
+                  DEMO
+                </Badge>
+              )}
+            </h3>
+            <p className="text-[10px] text-muted-foreground">
+              5 postingan terbaru dari blog
+              {data?.source === 'mock' && ' (set BLOGGER_BLOG_ID & BLOGGER_API_KEY di .env)'}
+            </p>
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={loadBlogger}
+          disabled={loading}
+          className="text-muted-foreground hover:text-neon"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+        </Button>
+      </div>
+
+      {/* Notice Banner */}
+      {data?.notice && !loading && (
+        <div className="mx-4 mt-3 flex items-start gap-2 p-2.5 rounded-lg bg-amber-500/5 border border-amber-500/15">
+          <Info className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
+          <p className="text-[10px] text-amber-400/80 leading-relaxed">{data.notice}</p>
+        </div>
+      )}
+
+      {/* Error */}
+      {error && !loading && (
+        <div className="mx-4 mt-3 flex items-start gap-2 p-2.5 rounded-lg bg-red-500/5 border border-red-500/15">
+          <XCircle className="w-3.5 h-3.5 text-red-400 mt-0.5 shrink-0" />
+          <p className="text-[10px] text-red-400/80">{error}</p>
+        </div>
+      )}
+
+      {/* Loading */}
+      {loading && (
+        <div className="p-4 space-y-3">
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="flex items-start gap-3">
+              <Skeleton className="w-6 h-6 rounded-md shrink-0 bg-gray-200 dark:bg-white/5" />
+              <div className="flex-1 space-y-1.5 pt-0.5">
+                <Skeleton className="h-3.5 w-full bg-gray-200 dark:bg-white/5" />
+                <Skeleton className="h-3 w-28 bg-gray-200 dark:bg-white/5" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Posts List */}
+      {!loading && !error && data && (
+        <div className="divide-y divide-gray-100 dark:divide-white/5">
+          {data.posts.map((post, idx) => (
+            <motion.a
+              key={post.id}
+              href={post.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.25, delay: idx * 0.05 }}
+              className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors group"
+            >
+              {/* Rank */}
+              <div className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 ${
+                idx === 0
+                  ? 'bg-orange-500/15 text-orange-400'
+                  : idx === 1
+                    ? 'bg-gray-400/10 text-gray-400'
+                    : idx === 2
+                      ? 'bg-amber-600/10 text-amber-500'
+                      : 'bg-gray-500/5 text-gray-400 dark:text-gray-500'
+              }`}>
+                {idx + 1}
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <h4 className="text-[13px] font-medium text-gray-900 dark:text-white line-clamp-2 leading-snug group-hover:text-neon transition-colors">
+                  {post.title}
+                </h4>
+                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                  {/* Published date */}
+                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <Calendar className="w-3 h-3" />
+                    <time dateTime={post.published}>{formatPublishedDate(post.published)}</time>
+                  </span>
+                  {/* Time ago */}
+                  <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                    {timeAgo(post.published)}
+                  </span>
+                  {/* Author */}
+                  {post.author?.displayName && (
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                      oleh {post.author.displayName}
+                    </span>
+                  )}
+                </div>
+                {/* Labels */}
+                {post.labels && post.labels.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {post.labels.slice(0, 3).map(label => (
+                      <span
+                        key={label}
+                        className="text-[9px] px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 font-medium"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                    {post.labels.length > 3 && (
+                      <span className="text-[9px] px-1.5 py-0.5 text-gray-400 dark:text-gray-500">
+                        +{post.labels.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* External Link */}
+              <ExternalLink className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600 group-hover:text-neon transition-colors shrink-0 mt-1" />
+            </motion.a>
+          ))}
+        </div>
+      )}
+
+      {/* Footer */}
+      {!loading && !error && data && (
+        <div className="px-4 py-3 border-t border-gray-200 dark:border-white/5 flex items-center justify-between">
+          <span className="text-[10px] text-muted-foreground">
+            {data.total} postingan dari Blogger
+            {data.source === 'blogger-api' && data.blogId && (
+              <span className="text-gray-400 dark:text-gray-500 ml-1">
+                (ID: {data.blogId.slice(0, 8)}...)
+              </span>
+            )}
+          </span>
+          {data.source === 'blogger-api' && (
+            <span className="flex items-center gap-1 text-[10px] text-emerald-400">
+              <CheckCircle2 className="w-3 h-3" />
+              Connected
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main Component ─────────────────────────────────────────
 
 export default function NewsEnginePanel() {
@@ -277,6 +531,9 @@ export default function NewsEnginePanel() {
           Status
         </Button>
       </div>
+
+      {/* ─── Blogger Feed ─── */}
+      <BloggerFeedSection />
 
       {/* Stats Row */}
       {response && (
