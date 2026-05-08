@@ -18,6 +18,7 @@ import TransferFeed from '@/components/football/TransferFeed';
 import GoogleTrendsWidget from '@/components/football/GoogleTrendsWidget';
 import NativeAdBanner from '@/components/football/NativeAdBanner';
 import AdSenseAdUnit from '@/components/football/AdSenseAdUnit';
+import FixedBanner from '@/components/football/FixedBanner';
 import SearchDialog from '@/components/football/SearchDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -962,6 +963,11 @@ export default function Home() {
             <MatchResultsSection />
           </ErrorBoundary>
         </section>
+
+        {/* Fixed Banner 320x50 */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+          <FixedBanner />
+        </div>
 
         {/* Klasemen Section */}
         <section id="standings" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
