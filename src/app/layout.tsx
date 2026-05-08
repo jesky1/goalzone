@@ -110,6 +110,11 @@ export default function RootLayout({
           async
           crossOrigin="anonymous"
         />
+        {/* Ad Network Script — loaded before </head> via auto-hoist */}
+        <Script
+          src="https://pl29372464.profitablecpmratenetwork.com/f0/67/79/f06779444ea80304c09532162a3e9640.js"
+          strategy="afterInteractive"
+        />
         {/* Google Analytics — loaded in body to avoid hydration mismatch */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
