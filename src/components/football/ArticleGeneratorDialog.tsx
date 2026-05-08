@@ -134,6 +134,10 @@ export default function ArticleGeneratorDialog({
     setErrorMsg('');
     setResult(null);
 
+    // Use AbortController with 3-minute timeout for AI generation
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 180_000); // 3 minutes
+
     try {
       const res = await fetch('/api/generate-article', {
         method: 'POST',
@@ -144,7 +148,10 @@ export default function ArticleGeneratorDialog({
           language: 'id',
           generateImage,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const data = await res.json();
 
@@ -152,11 +159,19 @@ export default function ArticleGeneratorDialog({
         setResult(data.article);
         setStep('success');
       } else {
-        setErrorMsg(data.error || 'Gagal generate artikel');
+        const errMsg = data.error || `Gagal generate artikel (HTTP ${res.status})`;
+        setErrorMsg(errMsg);
         setStep('error');
+        console.error('[AI Generator] API error:', errMsg, data);
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'Terjadi kesalahan koneksi');
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') {
+        setErrorMsg('Generate artikel timeout. Coba lagi dengan topik yang lebih singkat, atau nonaktifkan "Generate Cover Image".');
+      } else {
+        setErrorMsg(err.message || 'Terjadi kesalahan koneksi');
+        console.error('[AI Generator] Fetch error:', err.message, err.stack);
+      }
       setStep('error');
     }
   };
@@ -305,7 +320,7 @@ export default function ArticleGeneratorDialog({
       'Mengoptimasi SEO...',
       'Menyusun heading hierarchy...',
     ];
-    const currentTip = tips[Math.min(Math.floor(elapsed / 3), tips.length - 1)];
+    const currentTip = tips[Math.min(Math.floor(elapsed / 6), tips.length - 1)];
 
     return (
       <div className="flex flex-col items-center justify-center py-10 space-y-6">
@@ -338,7 +353,7 @@ export default function ArticleGeneratorDialog({
         <div className="w-64 h-1.5 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-gradient-to-r from-neon to-emerald-500 rounded-full"
-            animate={{ width: `${Math.min((elapsed / 30) * 100, 95)}%` }}
+            animate={{ width: `${Math.min((elapsed / 60) * 100, 95)}%` }}
             transition={{ duration: 1, ease: 'easeOut' }}
           />
         </div>

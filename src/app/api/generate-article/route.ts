@@ -539,10 +539,12 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
+  console.log('[Generate Article] POST request received')
 
   try {
     // Parse and validate request body
     const body: GenerateArticleRequest = await request.json()
+    console.log(`[Generate Article] Input: topic="${body.topic?.substring(0, 50)}", category="${body.category}", language="${body.language}", generateImage=${body.generateImage}`)
 
     const {
       topic,
