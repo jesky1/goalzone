@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Menu, Zap, Search } from 'lucide-react';
+import { Menu, Zap, Search, Sparkles } from 'lucide-react';
 import ThemeToggle from '@/components/football/ThemeToggle';
 import {
   Sheet,
@@ -23,6 +23,10 @@ const navLinks = [
 
 function openSearchDialog() {
   window.dispatchEvent(new CustomEvent('goalzone:open-search'));
+}
+
+function openArticleGenerator() {
+  window.dispatchEvent(new CustomEvent('goalzone:open-generator'));
 }
 
 export default function Navbar() {
@@ -65,6 +69,18 @@ export default function Navbar() {
               <Search className="w-3.5 h-3.5 text-gray-500 group-hover:text-neon transition-colors" />
               <span className="text-xs">Cari artikel, tim...</span>
             </button>
+            <button
+              type="button"
+              onClick={openArticleGenerator}
+              className="ml-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg
+                bg-gradient-to-r from-neon/10 to-emerald-500/10
+                hover:from-neon/20 hover:to-emerald-500/20
+                border border-neon/20 hover:border-neon/30
+                text-neon text-xs font-semibold transition-all duration-300 group"
+            >
+              <Sparkles className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
+              <span className="hidden lg:inline">AI Tulis</span>
+            </button>
             <div className="ml-1 pl-2 border-l border-gray-200 dark:border-white/10">
               <ThemeToggle />
             </div>
@@ -79,6 +95,14 @@ export default function Navbar() {
               aria-label="Search"
             >
               <Search className="w-5 h-5 text-foreground" />
+            </button>
+            <button
+              type="button"
+              onClick={openArticleGenerator}
+              className="p-2 rounded-lg hover:bg-neon/10 transition-colors"
+              aria-label="AI Article Generator"
+            >
+              <Sparkles className="w-5 h-5 text-neon" />
             </button>
             <ThemeToggle />
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
