@@ -104,15 +104,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-deep-900 text-foreground`}
       >
-        {/* Google AdSense — Next.js auto-hoists this Script to <head> */}
-        {process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && (
-          <Script
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID}`}
-            async
-            crossOrigin="anonymous"
-            strategy="afterInteractive"
-          />
-        )}
+        {/* Google AdSense — always render, Next.js auto-hoists to <head> */}
+        <Script
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7385025232651253"
+          async
+          crossOrigin="anonymous"
+        />
         {/* Google Analytics — loaded in body to avoid hydration mismatch */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
