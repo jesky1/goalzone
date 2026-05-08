@@ -17,6 +17,7 @@ import {
   Zap,
   Clock,
   Swords,
+  Sparkles,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/lib/auth-context';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import NewsEnginePanel from '@/components/admin/NewsEnginePanel';
+import ArticleGeneratorDialog from '@/components/football/ArticleGeneratorDialog';
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -170,6 +172,7 @@ export default function AdminDashboard() {
   const [notification, setNotification] = useState<string | null>(null);
   const [deletingArticle, setDeletingArticle] = useState<string | null>(null);
   const [realtimeAvailable, setRealtimeAvailable] = useState<boolean | null>(null);
+  const [aiGenOpen, setAiGenOpen] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -425,6 +428,16 @@ export default function AdminDashboard() {
               >
                 <Swords className="w-4 h-4 sm:mr-1.5" />
                 <span className="hidden sm:inline text-xs">Pertandingan</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setAiGenOpen(true)}
+                className="text-neon hover:text-neon hover:bg-neon/10"
+                title="AI Article Generator"
+              >
+                <Sparkles className="w-4 h-4 sm:mr-1.5" />
+                <span className="hidden sm:inline text-xs">AI Tulis</span>
               </Button>
               <Separator
                 orientation="vertical"
@@ -942,6 +955,7 @@ export default function AdminDashboard() {
           )}
         </AnimatePresence>
       </main>
+      <ArticleGeneratorDialog open={aiGenOpen} onOpenChange={(v) => { setAiGenOpen(v); if (!v) fetchArticles(); }} />
     </div>
   );
 }

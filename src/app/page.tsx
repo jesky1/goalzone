@@ -19,7 +19,6 @@ import NativeAdBanner from '@/components/football/NativeAdBanner';
 import AdSenseAdUnit from '@/components/football/AdSenseAdUnit';
 import FixedBanner from '@/components/football/FixedBanner';
 import SearchDialog from '@/components/football/SearchDialog';
-import ArticleGeneratorDialog from '@/components/football/ArticleGeneratorDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Eye, Calendar, ChevronRight, ChevronDown, ChevronUp, MapPin, User, X, Loader2, Sparkles, Send, FileText, Trophy } from 'lucide-react';
@@ -791,7 +790,6 @@ export default function Home() {
   const [matchesLoading, setMatchesLoading] = useState(true);
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
   const [mounted, setMounted] = useState(false);
-  const [articleGenOpen, setArticleGenOpen] = useState(false);
 
   // Ensure content is only rendered after client-side mount
   useEffect(() => { setMounted(true); }, []);
@@ -852,11 +850,9 @@ export default function Home() {
     };
     window.addEventListener('goalzone:open-article', handleArticleEvent);
     window.addEventListener('goalzone:open-match', handleMatchEvent);
-    window.addEventListener('goalzone:open-generator', () => setArticleGenOpen(true));
     return () => {
       window.removeEventListener('goalzone:open-article', handleArticleEvent);
       window.removeEventListener('goalzone:open-match', handleMatchEvent);
-      window.removeEventListener('goalzone:open-generator', () => setArticleGenOpen(true));
     };
   }, []);
 
@@ -1056,7 +1052,6 @@ export default function Home() {
       <MatchDetailModal match={selectedMatch} open={matchModalOpen} onClose={handleCloseMatchModal} onRefereeClick={handleRefereeClick} />
       <RefereeModal referee={refereeData} open={refereeModalOpen} onClose={handleCloseRefereeModal} />
       <SearchDialog />
-      <ArticleGeneratorDialog open={articleGenOpen} onOpenChange={setArticleGenOpen} />
 
     </div>
   );
