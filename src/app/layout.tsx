@@ -104,29 +104,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-deep-900 text-foreground`}
       >
-        {/* AMP Auto Ads — placed right after <body> */}
-        <amp-auto-ads type="adsense" data-ad-client="ca-pub-7385025232651253"></amp-auto-ads>
-        {/* Google AdSense — always render, Next.js auto-hoists to <head> */}
+        {/* Google AdSense */}
         <Script
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7385025232651253"
           async
           crossOrigin="anonymous"
-        />
-        {/* Ad Network Script — loaded before </head> via auto-hoist */}
-        <Script
-          src="https://pl29372464.profitablecpmratenetwork.com/f0/67/79/f06779444ea80304c09532162a3e9640.js"
-          strategy="afterInteractive"
-        />
-        {/* Native Banner Ad — invoke script (loaded once, hoists to head) */}
-        <Script
-          async
-          data-cfasync="false"
-          src="https://pl29372466.profitablecpmratenetwork.com/9dcad91cc102d4dd03f2699b87d5a189/invoke.js"
-        />
-        {/* AMP Auto Ads — hoists to <head> */}
-        <Script
-          async
-          src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js"
         />
         {/* Google Analytics — loaded in body to avoid hydration mismatch */}
         {process.env.NEXT_PUBLIC_GA_ID && (
@@ -158,11 +140,7 @@ export default function RootLayout({
           {children}
           <Toaster />
         </ThemeProvider>
-        {/* Ad Network Script — right before </body> */}
-        <script
-          src="https://pl29372465.profitablecpmratenetwork.com/d8/28/9c/d8289c4b64d227e67a49a63c09f3b3f1.js"
-          async
-        />
+
       </body>
     </html>
   );
