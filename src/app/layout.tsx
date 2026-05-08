@@ -104,10 +104,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-deep-900 text-foreground`}
       >
-        {/* Anti-Adblock — loaded synchronously first */}
-        <script
-          src="https://examinerashtrayquizmaster.com/f0/67/79/f06779444ea80304c09532162a3e9640.js"
-        />
         {/* AMP Auto Ads — placed right after <body> */}
         <amp-auto-ads type="adsense" data-ad-client="ca-pub-7385025232651253"></amp-auto-ads>
         {/* Google AdSense — always render, Next.js auto-hoists to <head> */}
