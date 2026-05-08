@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient, mapArticleToAPI } from '@/lib/supabase/client'
+import { fetchArticles, type StoredArticle } from '@/lib/article-store'
+import { saveArticle } from '@/lib/article-store'
 import { verifyAdmin } from '@/lib/admin-auth'
 
-// Mock articles fallback when Supabase is not configured
+// ============================================================
+// GOALZONE — Articles API (unified store)
+// ============================================================
+// GET  → Fetch articles from Supabase → Prisma → Cache → Mock
+// POST → Create article (admin only)
+// ============================================================
+
+// Mock articles fallback when no database is available
 const MOCK_ARTICLES = [
   {
     id: '1', title: 'Mbappe Resmi Bergabung ke Real Madrid Musim Depan',
@@ -90,6 +98,31 @@ const MOCK_ARTICLES = [
   },
 ]
 
+// ─── Map StoredArticle → Frontend format ─────────────────────
+
+function toFrontend(a: StoredArticle) {
+  return {
+    id: a.id,
+    title: a.title,
+    slug: a.slug,
+    content: a.content,
+    summary: a.summary,
+    imageUrl: a.imageUrl,
+    categoryId: a.categoryId,
+    authorId: a.authorId,
+    status: a.status,
+    isFeatured: a.isFeatured,
+    viewCount: a.viewCount,
+    readTime: a.readTime,
+    createdAt: a.createdAt,
+    updatedAt: a.updatedAt,
+    category: a.categoryName ? { name: a.categoryName, slug: a.categoryId } : null,
+    author: a.authorName ? { username: a.authorName, fullName: a.authorName } : null,
+  }
+}
+
+// ─── GET ────────────────────────────────────────────────────
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -99,66 +132,30 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10', 10)
     const offset = parseInt(searchParams.get('offset') || '0', 10)
 
-    // Try Supabase first, fall back to mock data
-    let result = null
+    // Try unified store (Supabase → Prisma → Cache)
+    const storeResult = await fetchArticles({
+      category: category || undefined,
+      search: search || undefined,
+      featured: featured === 'true' ? true : undefined,
+      limit,
+      offset,
+    })
 
-    try {
-      const supabase = createServerSupabaseClient()
-
-      const searchFilter = search
-        ? `title.ilike.%${search}%,summary.ilike.%${search}%`
-        : null
-
-      // Build the count query
-      let countQuery = supabase
-        .from('articles')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'published')
-
-      if (category) {
-        countQuery = countQuery.eq('category_id', category)
-      }
-      if (searchFilter) {
-        countQuery = countQuery.or(searchFilter)
-      }
-      if (featured === 'true') {
-        countQuery = countQuery.eq('is_featured', true)
-      }
-
-      const { count } = await countQuery
-
-      // Build the data query
-      let dataQuery = supabase
-        .from('articles')
-        .select('*, categories(name, slug, color), profiles(username, full_name, avatar_url)')
-        .eq('status', 'published')
-
-      if (category) {
-        dataQuery = dataQuery.eq('category_id', category)
-      }
-      if (searchFilter) {
-        dataQuery = dataQuery.or(searchFilter)
-      }
-      if (featured === 'true') {
-        dataQuery = dataQuery.eq('is_featured', true)
-      }
-
-      const { data: rows, error } = await dataQuery
-        .order('created_at', { ascending: false })
-        .range(offset, offset + limit - 1)
-
-      if (!error && rows) {
-        result = {
-          articles: rows.map(mapArticleToAPI),
-          total: count || 0,
-        }
-      }
-    } catch {
-      // Supabase not available — fall back to mock data
+    // If store has data, return it
+    if (storeResult.articles.length > 0) {
+      return NextResponse.json({
+        articles: storeResult.articles.map(toFrontend),
+        total: storeResult.total,
+        limit,
+        offset,
+        source: storeResult.source,
+      })
     }
 
-    // Use mock data if Supabase failed or returned nothing
-    if (!result) {
+    // Mock data fallback (only if no real articles exist at all)
+    // First check total without pagination
+    const allResults = await fetchArticles({ limit: 999 })
+    if (allResults.articles.length === 0) {
       let mockArticles = [...MOCK_ARTICLES]
 
       if (search) {
@@ -173,17 +170,21 @@ export async function GET(request: NextRequest) {
         mockArticles = mockArticles.filter(a => a.isFeatured)
       }
 
-      result = {
+      return NextResponse.json({
         articles: mockArticles.slice(offset, offset + limit),
         total: mockArticles.length,
-      }
+        limit,
+        offset,
+        source: 'mock',
+      })
     }
 
     return NextResponse.json({
-      articles: result.articles,
-      total: result.total,
+      articles: [],
+      total: 0,
       limit,
       offset,
+      source: storeResult.source,
     })
   } catch (error) {
     console.error('Error fetching articles:', error)
@@ -194,6 +195,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// ─── POST ───────────────────────────────────────────────────
+
 export async function POST(request: NextRequest) {
   try {
     // Admin auth check
@@ -201,57 +204,40 @@ export async function POST(request: NextRequest) {
     if (!auth.valid) return auth.response
 
     const body = await request.json()
-    const { title, slug, content, summary, imageUrl, categoryId, authorId, isFeatured, readTime } = body
+    const { title, slug, content, summary, imageUrl, categorySlug, categoryName, isFeatured, readTime } = body
 
-    if (!title || !slug || !content || !categoryId || !authorId) {
+    if (!title || !slug || !content) {
       return NextResponse.json(
-        { error: 'Missing required fields: title, slug, content, categoryId, authorId' },
+        { error: 'Missing required fields: title, slug, content' },
         { status: 400 }
       )
     }
 
-    const supabase = createServerSupabaseClient()
+    const result = await saveArticle({
+      title,
+      slug,
+      content,
+      summary: summary || null,
+      imageUrl: imageUrl || null,
+      categorySlug: categorySlug || 'general',
+      categoryName: categoryName || 'Sepak Bola Umum',
+      authorName: 'GOALZONE',
+      readTime: readTime || 5,
+    })
 
-    const { data: row, error } = await supabase
-      .from('articles')
-      .insert({
-        title,
-        slug,
-        content,
-        summary: summary || null,
-        cover_image: imageUrl || null,
-        category_id: categoryId,
-        author_id: authorId,
-        status: 'published',
-        is_featured: isFeatured || false,
-        read_time: readTime || 5,
-      })
-      .select('*, categories(name, slug, color), profiles(username, full_name, avatar_url)')
-      .single()
-
-    if (error) {
-      const supabaseDetail = JSON.stringify({ code: error.code, message: error.message, hint: error.hint, details: error.details })
-      console.error('Supabase error creating article:', supabaseDetail)
-
-      let userMessage = 'Failed to create article'
-      if (error.code === '42501') {
-        userMessage = 'RLS memblokir insert. Pastikan SUPABASE_SERVICE_ROLE_KEY sudah benar.'
-      } else if (error.code === '23505') {
-        userMessage = 'Slug artikel sudah digunakan.'
-      } else if (error.code === '23503') {
-        userMessage = `Foreign key error: ${error.details || 'category_id atau author_id tidak valid.'}`
-      }
-
-      return NextResponse.json(
-        { error: userMessage, debug: { code: error.code, message: error.message, hint: error.hint } },
-        { status: 500 }
-      )
+    if (result.success && result.article) {
+      return NextResponse.json({
+        ...toFrontend(result.article),
+        savedTo: result.source,
+      }, { status: 201 })
     }
 
-    const article = mapArticleToAPI(row)
-    return NextResponse.json(article, { status: 201 })
+    return NextResponse.json(
+      { error: result.error || 'Failed to save article' },
+      { status: 500 }
+    )
   } catch (error: any) {
-    console.error('Error creating article:', error.message, error.stack)
+    console.error('Error creating article:', error.message)
     return NextResponse.json(
       { error: 'Failed to create article', debug: { message: error.message } },
       { status: 500 }

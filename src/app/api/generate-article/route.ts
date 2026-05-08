@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import ZAI from 'z-ai-web-dev-sdk'
-import { createServerSupabaseClient, mapArticleToAPI } from '@/lib/supabase/client'
+import { saveArticle, getCacheStats } from '@/lib/article-store'
 
 // ============================================================
-// GOALZONE — Manual Article Generator API (Supabase-backed)
+// GOALZONE — Manual Article Generator API (Unified Store)
 // ============================================================
-// POST /api/generate-article  → Generate article via AI + save to Supabase
+// POST /api/generate-article  → Generate article via AI + auto-save
 // GET  /api/generate-article  → Status info + available categories
+// Saves to: Supabase → Prisma/SQLite → In-memory cache (auto-fallback)
 // ============================================================
 
 // ─── Types ───────────────────────────────────────────────────
@@ -53,7 +54,7 @@ const CATEGORY_MAP: Record<CategorySlug, string> = {
 }
 
 // Map our slugs to Supabase category slugs
-const SLUG_TO_SUPABASE_SLUG: Record<CategorySlug, string> = {
+const CATEGORY_SLUG_MAP: Record<CategorySlug, string> = {
   'match-report': 'analisis-taktis',
   'transfer': 'transfer',
   'taktik': 'analisis-taktis',
@@ -151,74 +152,6 @@ function cleanSlug(input: string): string {
 
 function isValidCategory(value: string): value is CategorySlug {
   return VALID_CATEGORIES.includes(value as CategorySlug)
-}
-
-// ─── Supabase: Find or create category ──────────────────────
-
-async function ensureCategory(supabase: any, slug: CategorySlug): Promise<string | null> {
-  try {
-    // Try to find existing category by slug
-    const supabaseSlug = SLUG_TO_SUPABASE_SLUG[slug]
-
-    const { data: existing } = await supabase
-      .from('categories')
-      .select('id, slug')
-      .eq('slug', supabaseSlug)
-      .maybeSingle()
-
-    if (existing) return existing.id
-
-    // Try to create the category (service role should bypass RLS)
-    const { data: created, error } = await supabase
-      .from('categories')
-      .insert({
-        name: CATEGORY_MAP[slug],
-        slug: supabaseSlug,
-        color: '#00f0ff',
-        is_active: true,
-      })
-      .select('id')
-      .single()
-
-    if (created) return created.id
-    if (error) {
-      console.warn(`[Generate Article] Could not create category "${slug}": ${error.message}`)
-      return null
-    }
-  } catch (err: any) {
-    console.warn(`[Generate Article] Category lookup failed: ${err.message}`)
-  }
-
-  return null
-}
-
-// ─── Supabase: Get or find a valid author ───────────────────
-
-async function findAuthor(supabase: any): Promise<string | null> {
-  try {
-    // Try to find any editor or admin profile
-    const { data: editor } = await supabase
-      .from('profiles')
-      .select('id, role')
-      .in('role', ['editor', 'admin'])
-      .limit(1)
-      .maybeSingle()
-
-    if (editor) return editor.id
-
-    // Try to find any profile
-    const { data: anyProfile } = await supabase
-      .from('profiles')
-      .select('id')
-      .limit(1)
-      .maybeSingle()
-
-    if (anyProfile) return anyProfile.id
-  } catch (err: any) {
-    console.warn(`[Generate Article] Author lookup failed: ${err.message}`)
-  }
-
-  return null
 }
 
 // ─── AI Content Generation ──────────────────────────────────
@@ -358,7 +291,7 @@ export async function GET() {
 
     // Merge with all available categories
     const allCategories = VALID_CATEGORIES.map((slug) => {
-      const existing = dbCategories.find((c) => c.slug === slug || c.slug === SLUG_TO_SUPABASE_SLUG[slug])
+      const existing = dbCategories.find((c) => c.slug === slug)
       return {
         slug,
         name: existing?.name || CATEGORY_MAP[slug],
@@ -366,24 +299,18 @@ export async function GET() {
       }
     })
 
-    // Check Supabase status
-    let supabaseStatus = 'not_configured'
-    try {
-      const supabase = createServerSupabaseClient()
-      const { error } = await supabase.from('categories').select('id').limit(1)
-      supabaseStatus = error ? 'error' : 'connected'
-    } catch {
-      // still not configured
-    }
+    // Check storage status
+    const stats = getCacheStats()
 
     return NextResponse.json({
       status: 'active',
       service: 'GOALZONE Manual Article Generator',
-      version: '2.0.0',
-      description: 'AI-powered manual article generation — saves to Supabase',
-      database: {
-        backend: 'supabase',
-        status: supabaseStatus,
+      version: '3.0.0',
+      description: 'AI-powered article generation — auto-saves to Supabase / Prisma / Memory',
+      storage: {
+        supabase: stats.supabaseAvailable ? 'connected' : 'not configured',
+        prisma: stats.prismaAvailable ? 'connected' : 'not available',
+        memoryCache: `${stats.memoryCacheSize} articles cached`,
       },
       availableCategories: allCategories,
       supportedLanguages: ['id (Bahasa Indonesia)', 'en (English)'],
@@ -450,142 +377,42 @@ export async function POST(request: NextRequest) {
     const contentLength = aiArticle.content_html.length
     const readTime = Math.max(3, Math.ceil(contentLength / 1000))
 
-    // Step 4: Try to save to Supabase
-    let savedArticle: any = null
-    let saveError: string | null = null
-    let savedToDb = false
-
-    try {
-      const supabase = createServerSupabaseClient()
-
-      // Ensure category exists
-      const categoryId = await ensureCategory(supabase, resolvedCategory)
-
-      if (categoryId) {
-        // Find a valid author
-        const authorId = await findAuthor(supabase)
-
-        if (authorId) {
-          // Check for slug uniqueness and add suffix if needed
-          let finalSlug = aiArticle.slug
-          let slugAttempt = 0
-
-          while (slugAttempt < 10) {
-            const { data: existing } = await supabase
-              .from('articles')
-              .select('id')
-              .eq('slug', finalSlug)
-              .maybeSingle()
-
-            if (!existing) break
-            slugAttempt++
-            finalSlug = slugAttempt === 1
-              ? `${aiArticle.slug}-${new Date().toISOString().split('T')[0]}`
-              : `${aiArticle.slug}-${new Date().toISOString().split('T')[0]}-${slugAttempt}`
-          }
-
-          // Upload cover image to Supabase storage if it was generated (base64 → storage)
-          let coverImageUrl: string | null = imageUrl
-          if (imageUrl && imageUrl.startsWith('data:')) {
-            try {
-              // Convert base64 data URL to buffer and upload to Supabase Storage
-              const base64Data = imageUrl.replace(/^data:image\/\w+;base64,/, '')
-              const buffer = Buffer.from(base64Data, 'base64')
-
-              const storagePath = `articles/${finalSlug}-${Date.now()}.png`
-              const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('news-images')
-                .upload(storagePath, buffer, {
-                  contentType: 'image/png',
-                  cacheControl: '31536000',
-                  upsert: false,
-                })
-
-              if (!uploadError && uploadData) {
-                const { data: urlData } = supabase.storage
-                  .from('news-images')
-                  .getPublicUrl(uploadData.path)
-                coverImageUrl = urlData.publicUrl
-              } else {
-                console.warn(`[Generate Article] Image upload failed: ${uploadError?.message}`)
-                // Keep the base64 image URL as fallback
-              }
-            } catch (uploadErr: any) {
-              console.warn(`[Generate Article] Image upload failed: ${uploadErr.message}`)
-              // Keep the base64 image URL
-            }
-          }
-
-          // Insert article
-          const { data: row, error } = await supabase
-            .from('articles')
-            .insert({
-              title: aiArticle.title,
-              slug: finalSlug,
-              content: aiArticle.content_html,
-              summary: aiArticle.summary,
-              cover_image: coverImageUrl,
-              category_id: categoryId,
-              author_id: authorId,
-              status: 'published',
-              is_featured: false,
-              is_trending: false,
-              view_count: 0,
-              read_time: readTime,
-              seo_title: aiArticle.title,
-              seo_description: aiArticle.meta_description,
-              published_at: new Date().toISOString(),
-            })
-            .select('*, categories(name, slug, color), profiles(username, full_name, avatar_url)')
-            .single()
-
-          if (!error && row) {
-            savedArticle = mapArticleToAPI(row)
-            savedToDb = true
-            coverImageUrl = savedArticle.imageUrl
-          } else if (error) {
-            saveError = error.message
-            console.warn(`[Generate Article] Supabase save failed: ${error.code} — ${error.message}`)
-          }
-        } else {
-          saveError = 'No valid author profile found in database'
-          console.warn('[Generate Article] Could not find a valid author profile')
-        }
-      } else {
-        saveError = 'Category not available in database'
-        console.warn(`[Generate Article] Category "${resolvedCategory}" not available`)
-      }
-    } catch (dbErr: any) {
-      saveError = dbErr.message
-      console.warn(`[Generate Article] Database operation failed: ${dbErr.message}`)
-    }
+    // Step 4: Save article via unified store (Supabase → Prisma → Memory)
+    const saveResult = await saveArticle({
+      title: aiArticle.title,
+      slug: aiArticle.slug,
+      content: aiArticle.content_html,
+      summary: aiArticle.summary,
+      imageUrl: imageUrl,
+      categorySlug: resolvedCategory,
+      categoryName: CATEGORY_MAP[resolvedCategory],
+      authorName: 'GOALZONE AI',
+      readTime,
+    })
 
     const duration = Date.now() - startTime
 
-    // Return success even if DB save failed — article was still generated
     return NextResponse.json({
       success: true,
-      message: savedToDb
-        ? 'Article generated and saved to database successfully'
-        : 'Article generated successfully (not saved to database — database not configured)',
-      savedToDb,
+      message: `Article generated and saved via ${saveResult.source}`,
+      savedToDb: saveResult.source !== 'cache',
+      savedTo: saveResult.source,
       article: {
-        id: savedArticle?.id || `ai-${Date.now()}`,
+        id: saveResult.article?.id || `ai-${Date.now()}`,
         title: aiArticle.title,
-        slug: savedArticle?.slug || aiArticle.slug,
+        slug: saveResult.article?.slug || aiArticle.slug,
         summary: aiArticle.summary,
-        imageUrl: savedArticle?.imageUrl || imageUrl,
+        imageUrl: imageUrl,
         readTime,
-        category: savedArticle?.category || {
+        category: {
           name: CATEGORY_MAP[resolvedCategory],
           slug: resolvedCategory,
-          color: '#00f0ff',
         },
-        author: savedArticle?.author || {
-          username: 'GOALZONE AI',
+        author: {
+          username: saveResult.article?.authorName || 'GOALZONE AI',
           fullName: 'Tim Redaksi AI',
         },
-        createdAt: savedArticle?.createdAt || new Date().toISOString(),
+        createdAt: saveResult.article?.createdAt || new Date().toISOString(),
       },
       meta: {
         generationTimeMs: duration,
@@ -593,8 +420,7 @@ export async function POST(request: NextRequest) {
         language,
         generateImage,
         aiImageGenerated: !!imageUrl,
-        savedToDb,
-        databaseError: saveError,
+        savedTo: saveResult.source,
       },
     })
   } catch (error: unknown) {

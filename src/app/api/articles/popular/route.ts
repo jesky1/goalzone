@@ -1,33 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabaseClient, mapArticleToAPI } from '@/lib/supabase/client'
-
-/**
- * GET /api/articles/popular
- *
- * Supabase SQL Query yang dieksekusi:
- * ====================================
- * SELECT
- *   a.id, a.title, a.slug, a.summary, a.cover_image,
- *   a.view_count, a.like_count, a.comment_count, a.read_time,
- *   a.is_featured, a.is_trending, a.status,
- *   a.published_at, a.created_at, a.updated_at,
- *   c.name AS category_name, c.slug AS category_slug, c.color AS category_color,
- *   p.username AS author_name, p.avatar_url AS author_avatar
- * FROM public.articles a
- * LEFT JOIN public.categories c ON a.category_id = c.id
- * LEFT JOIN public.profiles p ON a.author_id = p.id
- * WHERE a.status = 'published'
- * ORDER BY a.view_count DESC
- * LIMIT 5;
- *
- * Melalui Supabase JS Client:
- *   supabase
- *     .from('articles')
- *     .select('*, categories(name, slug, color), profiles(username, full_name, avatar_url)')
- *     .eq('status', 'published')
- *     .order('view_count', { ascending: false })
- *     .limit(5)
- */
+import { fetchArticles } from '@/lib/article-store'
 
 // Mock fallback data — sudah diurutkan view_count DESC
 const MOCK_POPULAR_ARTICLES = [
@@ -98,38 +70,39 @@ const MOCK_POPULAR_ARTICLES = [
   },
 ]
 
+function toFrontend(a: any) {
+  return {
+    id: a.id, title: a.title, slug: a.slug, summary: a.summary,
+    imageUrl: a.imageUrl, viewCount: a.viewCount, readTime: a.readTime,
+    createdAt: a.createdAt, isFeatured: a.isFeatured,
+    category: a.categoryName ? { name: a.categoryName, slug: a.categoryId } : a.category || null,
+    author: a.authorName ? { username: a.authorName, fullName: a.authorName } : a.author || null,
+  }
+}
+
 export async function GET() {
   try {
-    let articles = null
     let source = 'mock'
 
-    // ─── Supabase Query ─────────────────────────────
-    try {
-      const supabase = createServerSupabaseClient()
+    // Try unified store (Supabase → Prisma → Cache)
+    const { articles: storeArticles, source: storeSource } = await fetchArticles({
+      limit: 100,
+    })
 
-      const { data: rows, error } = await supabase
-        .from('articles')
-        .select('*, categories(name, slug, color), profiles(username, full_name, avatar_url)')
-        .eq('status', 'published')
-        .order('view_count', { ascending: false })
-        .limit(5)
-
-      if (!error && rows && rows.length > 0) {
-        articles = rows.map(mapArticleToAPI)
-        source = 'supabase'
-      }
-    } catch {
-      // Supabase belum dikonfigurasi — gunakan mock data
+    if (storeArticles.length > 0) {
+      // Sort by view count (most popular first)
+      const sorted = [...storeArticles].sort((a, b) => b.viewCount - a.viewCount).slice(0, 5)
+      return NextResponse.json({
+        articles: sorted.map(toFrontend),
+        total: sorted.length,
+        source: storeSource,
+      })
     }
 
-    // ─── Fallback ke mock data ──────────────────────
-    if (!articles) {
-      articles = MOCK_POPULAR_ARTICLES
-    }
-
+    // Fallback to mock
     return NextResponse.json({
-      articles,
-      total: articles.length,
+      articles: MOCK_POPULAR_ARTICLES,
+      total: MOCK_POPULAR_ARTICLES.length,
       source,
     })
   } catch (error) {
