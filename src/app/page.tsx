@@ -16,6 +16,7 @@ import type { RefereeData } from '@/components/football/RefereeModal';
 import StadiumName from '@/components/football/StadiumName';
 import TransferFeed from '@/components/football/TransferFeed';
 import GoogleTrendsWidget from '@/components/football/GoogleTrendsWidget';
+import NativeAdBanner from '@/components/football/NativeAdBanner';
 import SearchDialog from '@/components/football/SearchDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -891,6 +892,11 @@ export default function Home() {
           <HeroSection articles={featuredArticles} onArticleClick={handleArticleClick} />
         </ErrorBoundary>
 
+        {/* Native Ad Banner — Below Hero */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <NativeAdBanner />
+        </div>
+
         {/* Live Scores */}
         <section id="live" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-6">
@@ -995,6 +1001,11 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Native Ad Banner — Between News & Transfer */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <NativeAdBanner />
+        </div>
+
         {/* Transfer Feed */}
         <section id="transfer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-6">
@@ -1009,6 +1020,11 @@ export default function Home() {
           </ErrorBoundary>
         </section>
       </main>
+
+      {/* Native Ad Banner — Above Footer */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <NativeAdBanner />
+      </div>
 
       <Footer />
 

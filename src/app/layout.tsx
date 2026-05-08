@@ -115,6 +115,12 @@ export default function RootLayout({
           src="https://pl29372464.profitablecpmratenetwork.com/f0/67/79/f06779444ea80304c09532162a3e9640.js"
           strategy="afterInteractive"
         />
+        {/* Native Banner Ad — invoke script (loaded once, hoists to head) */}
+        <Script
+          async
+          data-cfasync="false"
+          src="https://pl29372466.profitablecpmratenetwork.com/9dcad91cc102d4dd03f2699b87d5a189/invoke.js"
+        />
         {/* Google Analytics — loaded in body to avoid hydration mismatch */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
