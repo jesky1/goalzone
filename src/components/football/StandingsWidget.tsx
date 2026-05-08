@@ -37,7 +37,7 @@ export default function StandingsWidget() {
   const [standings, setStandings] = useState<Standing[]>([]);
   const [leagues, setLeagues] = useState<LeagueOption[]>([]);
   const [activeLeague, setActiveLeague] = useState('premier-league');
-  const [seasonLabel, setSeasonLabel] = useState('2025/26');
+  const [seasonLabel, setSeasonLabel] = useState('2024/25');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -60,7 +60,7 @@ export default function StandingsWidget() {
         if (data.availableLeagues && data.availableLeagues.length > 0) {
           setLeagues(data.availableLeagues);
         }
-        setSeasonLabel(data.season || '2025/26');
+        setSeasonLabel(data.season || '2024/25');
       }
     } catch {
       // silently fail
@@ -84,7 +84,7 @@ export default function StandingsWidget() {
     >
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-          Klasemen <span className="neon-text">2025/26</span>
+          Klasemen <span className="neon-text">{seasonLabel}</span>
         </h3>
         <button
           onClick={() => loadStandings(activeLeague)}

@@ -28,13 +28,13 @@ interface LeagueInfo {
 
 // Supported leagues: Premier League (39), La Liga (140), Serie A (135), Bundesliga (78), Ligue 1 (61), Champions League (2), Europa League (3)
 const LEAGUES: Record<string, LeagueInfo> = {
-  'premier-league': { id: 39, name: 'Premier League', season: 2026 },
-  'la-liga': { id: 140, name: 'La Liga', season: 2026 },
-  'serie-a': { id: 135, name: 'Serie A', season: 2026 },
-  'bundesliga': { id: 78, name: 'Bundesliga', season: 2026 },
-  'ligue-1': { id: 61, name: 'Ligue 1', season: 2026 },
-  'champions-league': { id: 2, name: 'Champions League', season: 2026 },
-  'europa-league': { id: 3, name: 'Europa League', season: 2026 },
+  'premier-league': { id: 39, name: 'Premier League', season: 2024 },
+  'la-liga': { id: 140, name: 'La Liga', season: 2024 },
+  'serie-a': { id: 135, name: 'Serie A', season: 2024 },
+  'bundesliga': { id: 78, name: 'Bundesliga', season: 2024 },
+  'ligue-1': { id: 61, name: 'Ligue 1', season: 2024 },
+  'champions-league': { id: 2, name: 'Champions League', season: 2024 },
+  'europa-league': { id: 3, name: 'Europa League', season: 2024 },
 }
 
 const availableLeagues = Object.entries(LEAGUES).map(([slug, info]) => ({
@@ -114,19 +114,19 @@ export async function GET(request: Request) {
     let usedFallback = false
     let fallbackSeason = ''
 
-    if (!result && leagueInfo.season === 2026) {
-      console.log(`No standings data for ${leagueInfo.name} season 2026, falling back to 2025...`)
+    if (!result && leagueInfo.season === 2024) {
+      console.log(`No standings data for ${leagueInfo.name} season 2024, falling back to 2025...`)
       const fallbackInfo: LeagueInfo = { ...leagueInfo, season: 2025 }
       result = await fetchStandings(fallbackInfo)
       usedFallback = result !== null
       fallbackSeason = '2025/26'
     }
-    if (!result && leagueInfo.season === 2026) {
-      console.log(`No standings data for ${leagueInfo.name} season 2025, falling back to 2024...`)
-      const fallbackInfo: LeagueInfo = { ...leagueInfo, season: 2024 }
+    if (!result && leagueInfo.season === 2024) {
+      console.log(`No standings data for ${leagueInfo.name} season 2025, falling back to 2023...`)
+      const fallbackInfo: LeagueInfo = { ...leagueInfo, season: 2023 }
       result = await fetchStandings(fallbackInfo)
       usedFallback = result !== null
-      fallbackSeason = '2024/25'
+      fallbackSeason = '2023/24'
     }
 
     if (result) {

@@ -118,9 +118,10 @@ function extractTransfers(playerTransfers: ApiPlayerTransfer[]): TransferEntry[]
 
   for (const pt of playerTransfers) {
     const { player } = pt
+    const teams = pt.teams || { in: [] as ApiTeamTransfer[], out: [] as ApiTeamTransfer[] }
 
     // Process incoming transfers (teams.in)
-    for (const incoming of pt.teams.in || []) {
+    for (const incoming of teams.in || []) {
       const id = generateId(player.name, incoming.transfer.date, incoming.team.name)
       entries.push({
         id,
@@ -137,7 +138,7 @@ function extractTransfers(playerTransfers: ApiPlayerTransfer[]): TransferEntry[]
     }
 
     // Process outgoing transfers (teams.out)
-    for (const outgoing of pt.teams.out || []) {
+    for (const outgoing of teams.out || []) {
       const id = generateId(player.name, outgoing.transfer.date, outgoing.team.name)
       entries.push({
         id,
