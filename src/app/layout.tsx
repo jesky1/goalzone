@@ -121,6 +121,11 @@ export default function RootLayout({
           data-cfasync="false"
           src="https://pl29372466.profitablecpmratenetwork.com/9dcad91cc102d4dd03f2699b87d5a189/invoke.js"
         />
+        {/* AMP Auto Ads — hoists to <head> */}
+        <Script
+          async
+          src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js"
+        />
         {/* Google Analytics — loaded in body to avoid hydration mismatch */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
