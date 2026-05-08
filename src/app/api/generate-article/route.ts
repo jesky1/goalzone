@@ -275,6 +275,7 @@ export async function GET() {
     let dbCategories: Array<{ slug: string; name: string }> = []
 
     try {
+      const { createServerSupabaseClient } = await import('@/lib/supabase/client')
       const supabase = createServerSupabaseClient()
       const { data: cats } = await supabase
         .from('categories')
