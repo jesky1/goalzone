@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  allowedDevOrigins: [
+    '.space-z.ai',
+  ],
   async headers() {
     return [
       {

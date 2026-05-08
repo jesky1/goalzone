@@ -11,7 +11,18 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10', 10)
     const offset = parseInt(searchParams.get('offset') || '0', 10)
 
-    const supabase = createServerSupabaseClient()
+    let supabase
+    try {
+      supabase = createServerSupabaseClient()
+    } catch {
+      // Supabase not configured - return empty articles
+      return NextResponse.json({
+        articles: [],
+        total: 0,
+        limit,
+        offset,
+      })
+    }
 
     // Build the count query with the same filters
     let countQuery = supabase
