@@ -3,21 +3,15 @@ import ZAI from 'z-ai-web-dev-sdk'
 import { saveArticle, getCacheStats } from '@/lib/article-store'
 
 // ============================================================
-// GOALZONE — Manual Article Generator API (Unified Store)
+// GOALZONE — Article Generator API v4.0.0
 // ============================================================
-// POST /api/generate-article  → Generate article via AI + auto-save
+// POST /api/generate-article  → Generate article via GPT-4o + auto-save
 // GET  /api/generate-article  → Status info + available categories
+// Supports: free-form topic AND structured matchResult input
 // Saves to: Supabase → Prisma/SQLite → In-memory cache (auto-fallback)
 // ============================================================
 
 // ─── Types ───────────────────────────────────────────────────
-
-interface GenerateArticleRequest {
-  topic: string
-  category?: CategorySlug
-  language?: string
-  generateImage?: boolean
-}
 
 type CategorySlug =
   | 'match-report'
@@ -29,6 +23,23 @@ type CategorySlug =
   | 'champions-league'
   | 'bundesliga'
   | 'general'
+
+interface GenerateArticleRequest {
+  topic?: string
+  matchResult?: {
+    homeTeam: string
+    awayTeam: string
+    homeScore: number
+    awayScore: number
+    league?: string
+    matchDate?: string
+    scorers?: string[]
+    highlights?: string
+  }
+  category?: CategorySlug
+  language?: string
+  generateImage?: boolean
+}
 
 interface AIArticleOutput {
   title: string
@@ -53,92 +64,110 @@ const CATEGORY_MAP: Record<CategorySlug, string> = {
   'general': 'Sepak Bola Umum',
 }
 
-// Map our slugs to Supabase category slugs
-const CATEGORY_SLUG_MAP: Record<CategorySlug, string> = {
-  'match-report': 'analisis-taktis',
-  'transfer': 'transfer',
-  'taktik': 'analisis-taktis',
-  'premier-league': 'premier-league',
-  'la-liga': 'la-liga',
-  'serie-a': 'serie-a',
-  'champions-league': 'champions-league',
-  'bundesliga': 'bundesliga',
-  'general': 'analisis-taktis',
-}
-
 const VALID_CATEGORIES = Object.keys(CATEGORY_MAP) as CategorySlug[]
 
 // ─── System Prompt ──────────────────────────────────────────
 
-const ARTICLE_SYSTEM_PROMPT = `Kamu adalah Senior SEO Specialist sekaligus Jurnalis Sepak Bola Profesional kelas dunia yang bekerja untuk GOALZONE, portal berita sepak bola terkemuka di Indonesia.
+const ARTICLE_SYSTEM_PROMPT = `Kamu adalah Jurnalis Olahraga Profesional sekaligus Ahli Analisis Taktik Sepak Bola kelas dunia yang bekerja untuk GOALZONE, portal berita sepak bola terkemuka di Indonesia. Kamu sedang BERADA DI LAPANGAN — di tepi pitch, di dalam stadion, mendengar sorak penonton, merasakan tekanan pertandingan. Tulis seperti reporter lapangan yang menyaksikan pertandingan secara langsung.
 
 ═══════════════════════════════════════════════════════════
-               INSTRUKSI SEO KETAT — WAJIB DIIKUTI
+         IDENTITAS & GAYA PENULISAN — WAJIB DIIKUTI
 ═══════════════════════════════════════════════════════════
 
-1. STRUKTUR JUDUL (H1):
+1. SUARA LAPANGAN:
+   - Tulis seolah-olah kamu sedang berdiri di tepi lapangan
+   - Gunakan deskripsi sensorik: suara sorak, aroma rumput, cahaya floodlight
+   - Buat pembaca MERASAKAN atmosfer stadion
+   - Variasikan struktur kalimat: pendek untuk drama, panjang untuk analisis, retoris untuk provokasi, deskriptif untuk momen kunci
+
+2. ANALISIS TAKTIS MENDALAM — INI KEAHLIAN UTAMAMU:
+   - Analisis formasi kedua tim (4-3-3, 3-5-2, 4-2-3-1, dll)
+   - Jelaskan sistem pressing: high press, medium block, low block
+   - Bahas counter-pressing (Gegenpressing) dan transisi menyerang/bertahan
+   - Analisis build-up play: dari kiper ke lini tengah, dari sayap ke kotak penalti
+   - Identifikasi eksploitasi half-space (ruang antara full-back dan center-back)
+   - Bahas positional play (Juego de Posición) vs direct play
+   - Sebutkan pressing traps, ball progression lines, overloads
+   - Analisis defensive shape saat kehilangan bola
+   - Bahas peran individual: pivot, inverted full-back, false nine, mezzala, regista
+   - Gunakan istilah taktis AKURAT: half-space, third of the pitch, rest-defense, trigger press
+
+3. NARASI & OPINI TAJAM:
+   - Berikan opini yang tajam dan bisa memicu diskusi
+   - Jangan netral — ambil posisi analitis yang kuat
+   - Bandingkan dengan pertandingan sebelumnya atau rival
+   - Sertakan konteks historis: rekor pertemuan, tren, statistik head-to-head
+   - Berikan perspektif tentang dampak hasil ini terhadap kompetisi
+
+4. OPTIMASI SEO & LSI:
+   - Sisipkan kata kunci terkait SECARA NATURAL di dalam narasi
+   - Kata kunci LSI: "hasil pertandingan", "klasemen terbaru", "top skor", "analisis taktik", "jalannya pertandingan", "pencetak gol", "berita sepak bola terkini", "highlight pertandingan", "starting eleven", "formasi"
+   - JANGAN menyebutkannya sebagai list — sisipkan dalam alur kalimat yang natural
+   - Keyword utama harus muncul di judul dan paragraf pertama
+
+═══════════════════════════════════════════════════════════
+               STRUKTUR ARTIKEL — WAJIB
+═══════════════════════════════════════════════════════════
+
+5. STRUKTUR JUDUL (H1):
    - Keyword Utama HARUS di depan judul
-   - Gunakan gaya emosional/kontroversial untuk CTR tinggi
-   - Maks 80 karakter, JANGAN gunakan tanda kutip di judul
+   - Gunakan gaya emosional/dramatis untuk CTR tinggi
+   - Maks 80 karakter, TANPA tanda kutip
 
-2. OPTIMASI LSI (Latent Semantic Indexing):
-   Sisipkan kata kunci terkait SECARA NATURAL di dalam artikel:
-   - "Hasil pertandingan", "Klasemen terbaru", "Top skor"
-   - "Analisis taktik", "Jalannya pertandingan", "Pencetak gol"
-   - "Berita sepak bola terkini", "Highlight pertandingan"
-   - JANGAN menyebutkan kata-kata ini sebagai list — sisipkan dalam kalimat natural
+6. HEADING HIERARCHY:
+   - Minimal 3 tag <h2> dan minimal 1 tag <h3>
+   - Contoh struktur yang direkomendasikan:
+     <h2>Babak Pertama: Pertarungan Taktis</h2>
+     <h2>Analisis Formasi & Strategi</h2>
+     <h3>Pressing & Transisi</h3>
+     <h3>Build-up Play & Half-space Exploitation</h3>
+     <h2>Momen-momen Kunci</h2>
+     <h2>Dampak & Perspektif</h2>
 
-3. KONTEN UNIK (ANTI-AI DETECTOR) — INI PALING PENTING:
-   ❌ JANGAN hanya menuliskan ulang informasi mentah
-   ✅ BERIKAN ANALISIS "KENAPA" — Analisis taktis mendalam
-   ✅ NARASI MOMEN KUNCI — Tulis seperti reporter lapangan
-   ✅ PREDIKSI DAMPAK — Bagaimana hal ini mempengaruhi kompetisi
+7. FEATURED SNIPPET READY:
+   - Di salah satu <h3>, gunakan format <ul><li> dengan data statistik kunci
+   - Agar Google bisa mengambil sebagai Featured Snippet
 
-4. STRUKTUR ARTIKEL (WAJIB ikuti heading hierarchy):
-   Gunakan minimal 3 tag <h2> dan 1 tag <h3>.
-   Contoh struktur:
-   <h2>Ringkasan</h2>
-   <h2>Analisis Mendalam</h2>
-   <h3>Statistik & Data Kunci</h3>
-   <h2>Prediksi & Dampak</h2>
+8. MINIMAL KONTEN:
+   - Minimal 8 paragraf (<p>)
+   - Setiap paragraf harus substance-ful, bukan filler
 
-5. FEATURED SNIPPET READY:
-   Di bagian <h3>Statistik & Data Kunci</h3>, gunakan format <ul><li>
-   agar Google bisa mengambil sebagai Featured Snippet.
+═══════════════════════════════════════════════════════════
+               PENUTUP & SIGNATURE — WAJIB
+═══════════════════════════════════════════════════════════
 
-6. CALL TO ACTION (CTA):
+9. CALL TO ACTION (CTA) — WAJIB di akhir artikel:
    "Bagaimana pendapatmu tentang hal ini? Tulis di kolom komentar di bawah!"
 
-7. SIGNATURE LINE:
-   <p><em>Laporan eksklusif oleh tim redaksi GoalZone.</em></p>
-
-8. IMAGE PROMPT:
-   Buat deskripsi gambar sinematik dalam bahasa Inggris untuk DALL-E 3 (1344x768).
-   Format: pertandingan sepak bola dramatis, stadium penuh penonton, pencahayaan sinematik.
+10. SIGNATURE LINE — WAJIB di akhir artikel:
+    <p><em>Laporan eksklusif oleh tim redaksi GoalZone.</em></p>
 
 ═══════════════════════════════════════════════════════════
-                    FORMAT OUTPUT WAJIB
+               FORMAT OUTPUT — HANYA JSON
 ═══════════════════════════════════════════════════════════
-Output HANYA JSON valid, tanpa teks tambahan:
+
+Output HANYA JSON valid, tanpa teks tambahan sebelum atau sesudah:
 
 {
-  "title": "Judul H1 — emosional, keyword di depan, maks 80 karakter",
+  "title": "Judul H1 — dramatis, keyword di depan, maks 80 karakter",
   "slug": "slug-url-friendly-lowercase-hanya-huruf-angka-strip",
   "meta_description": "Rich snippet meta description, maks 150 karakter",
   "summary": "Ringkasan 1-2 kalimat untuk card preview (maks 160 karakter)",
-  "content_html": "Artikel lengkap dalam HTML. Gunakan tag: <p>, <h2>, <h3>, <strong>, <em>, <ul>, <li>, <blockquote>. Minimal 8 paragraf.",
-  "image_prompt": "Cinematic English prompt for DALL-E 3 (1344x768). Dramatic football scene, no text, no logos."
+  "content_html": "Artikel lengkap dalam HTML. Gunakan tag: <p>, <h2>, <h3>, <strong>, <em>, <ul>, <li>, <blockquote>. Minimal 8 paragraf, min 3 <h2>, min 1 <h3>. Diakhiri CTA + signature.",
+  "image_prompt": "Cinematic English prompt for DALL-E 3 (1344x768). Dramatic football scene, stadium atmosphere, no text, no logos."
 }
 
 ATURAN FINAL:
-- title: emosional, akurat, keyword di depan, TANPA tanda kutip
+- title: dramatis, akurat, keyword di depan, TANPA tanda kutip, maks 80 karakter
 - slug: unik, lowercase, [a-z0-9-] saja
-- content_html: HTML VALID, bukan markdown, WAJIB 8+ paragraf
-- content_html: WAJIB mengandung minimal 3 tag <h2> dan 1 tag <h3>
+- content_html: HTML VALID, bukan markdown
+- content_html: WAJIB minimal 8 paragraf (<p>)
+- content_html: WAJIB minimal 3 tag <h2> dan minimal 1 tag <h3>
 - content_html: WAJIB diakhiri CTA + signature "Laporan eksklusif oleh tim redaksi GoalZone."
-- meta_description: ≤150 karakter
-- image_prompt: English, descriptive, cinematic, no text/logos
-- Output HANYA JSON — tidak boleh ada teks sebelum/sesudah JSON`
+- meta_description: maks 150 karakter
+- summary: maks 160 karakter
+- image_prompt: bahasa Inggris, deskriptif, sinematik, tanpa teks/logo
+- Output HANYA JSON — tidak boleh ada teks sebelum atau sesudah JSON`
 
 // ─── Helper Functions ───────────────────────────────────────
 
@@ -154,40 +183,71 @@ function isValidCategory(value: string): value is CategorySlug {
   return VALID_CATEGORIES.includes(value as CategorySlug)
 }
 
+function buildMatchResultContext(matchResult: GenerateArticleRequest['matchResult']): string {
+  if (!matchResult) return ''
+  const m = matchResult
+  const lines: string[] = [
+    `📋 DATA PERTANDINGAN (VERIFIED):`,
+    `• Tim Tuan Rumah: ${m.homeTeam}`,
+    `• Tim Tamu: ${m.awayTeam}`,
+    `• Skor Akhir: ${m.homeTeam} ${m.homeScore} - ${m.awayScore} ${m.awayTeam}`,
+  ]
+  if (m.league) lines.push(`• Kompetisi: ${m.league}`)
+  if (m.matchDate) lines.push(`• Tanggal: ${m.matchDate}`)
+  if (m.scorers && m.scorers.length > 0) lines.push(`• Pencetak Gol: ${m.scorers.join(', ')}`)
+  if (m.highlights) lines.push(`• Highlight Pertandingan: ${m.highlights}`)
+  return lines.join('\n')
+}
+
+function detectInputType(
+  topic?: string,
+  matchResult?: GenerateArticleRequest['matchResult']
+): 'topic' | 'matchResult' {
+  return matchResult && (matchResult.homeTeam || matchResult.awayTeam) ? 'matchResult' : 'topic'
+}
+
 // ─── AI Content Generation ──────────────────────────────────
 
 async function generateArticleContent(
   topic: string,
   category: CategorySlug,
-  language: string
+  language: string,
+  matchResultContext?: string
 ): Promise<AIArticleOutput> {
   const zai = await ZAI.create()
 
   const categoryLabel = CATEGORY_MAP[category]
   const langInstruction = language === 'id'
-    ? 'Tulis seluruh artikel dalam Bahasa Indonesia yang natural dan profesional.'
-    : `Tulis artikel dalam bahasa "${language}".`
+    ? 'Tulis seluruh artikel dalam Bahasa Indonesia yang natural, profesional, dan penuh gaya jurnalistik.'
+    : `Tulis artikel dalam bahasa "${language}" dengan gaya jurnalistik yang sama kuatnya.`
 
-  const userPrompt = `Bertindaklah sebagai Senior SEO Specialist dan Jurnalis Sepak Bola Profesional untuk GOALZONE.
+  const matchSection = matchResultContext
+    ? `\n\n${matchResultContext}\n\nGunakan data pertandingan di atas sebagai FAKTA UTAMA. Jangan mengubah skor atau detail pertandingan. Analisis taktisnya secara mendalam berdasarkan data ini.`
+    : ''
+
+  const userPrompt = `Bertindaklah sebagai Jurnalis Olahraga Profesional dan Ahli Analisis Taktik untuk GOALZONE. Kamu sedang meliput pertandingan dari tepi lapangan.
 
 TOPIC / TEMA ARTIKEL:
 ${topic}
-
+${matchSection}
 KATEGORI: ${categoryLabel} (${category})
 
 ${langInstruction}
 
 INGAT:
-- Tulis artikel mendalam, seru, dan SEO-optimized.
-- Jangan hanya ulang informasi mentah. BERI ANALISIS MENDALAM.
-- Buat narasi yang engaging untuk pembaca.
-- Sertakan prediksi dan dampak ke dunia sepak bola.
+- Tulis seperti reporter lapangan yang sedang MENYAKSIKAN pertandingan langsung
+- Berikan ANALISIS TAKTIS MENDALAM: formasi, pressing, build-up, transitions, half-space
+- Gunakan istilah taktis akurat: high press, low block, counter-pressing, positional play, trigger, rest-defense
+- Buat narasi yang MEMBUAT PEMBACA MERASAKAN atmosfer stadion
+- Berikan opini tajam yang memicu diskusi
+- Sertakan konteks historis dan statistik
+- Minimal 8 paragraf, minimal 3 <h2>, minimal 1 <h3>
 - Diakhiri CTA + "Laporan eksklusif oleh tim redaksi GoalZone."
 - Buat image_prompt yang sinematik untuk DALL-E 3.
 - Output HANYA JSON.`
 
   const completion = await zai.chat.completions.create({
-    model: 'glm-4-flash',
+    model: 'gpt-4o',
     messages: [
       { role: 'assistant', content: ARTICLE_SYSTEM_PROMPT },
       { role: 'user', content: userPrompt },
@@ -262,7 +322,7 @@ async function generateCoverImage(imagePrompt: string): Promise<string | null> {
     // Return as data URL
     return `data:image/png;base64,${base64}`
   } catch (err: any) {
-    console.error(`[Generate Article] Image generation failed: ${err.message}`)
+    console.error(`[Generate Article v4] Image generation failed: ${err.message}`)
     return null
   }
 }
@@ -305,9 +365,10 @@ export async function GET() {
 
     return NextResponse.json({
       status: 'active',
-      service: 'GOALZONE Manual Article Generator',
-      version: '3.0.0',
-      description: 'AI-powered article generation — auto-saves to Supabase / Prisma / Memory',
+      service: 'GOALZONE Article Generator',
+      version: '4.0.0',
+      model: 'GPT-4o',
+      description: 'AI-powered article generation with tactical football analysis — auto-saves to Supabase / Prisma / Memory',
       storage: {
         supabase: stats.supabaseAvailable ? 'connected' : 'not configured',
         prisma: stats.prismaAvailable ? 'connected' : 'not available',
@@ -315,14 +376,36 @@ export async function GET() {
       },
       availableCategories: allCategories,
       supportedLanguages: ['id (Bahasa Indonesia)', 'en (English)'],
+      inputTypes: {
+        topic: {
+          type: 'string (optional if matchResult provided)',
+          description: 'Free-form article topic/title. Ignored if matchResult is provided.',
+        },
+        matchResult: {
+          type: 'object (optional)',
+          description: 'Structured match data for automated match report generation.',
+          fields: {
+            homeTeam: 'string (required) — Home team name',
+            awayTeam: 'string (required) — Away team name',
+            homeScore: 'number (required) — Home team score',
+            awayScore: 'number (required) — Away team score',
+            league: 'string (optional) — Competition/league name',
+            matchDate: 'string (optional) — Match date',
+            scorers: 'string[] (optional) — Goal scorers',
+            highlights: 'string (optional) — Match highlights description',
+          },
+        },
+      },
       usage: {
         method: 'POST',
         body: {
-          topic: 'string (required) — article topic/title',
+          topic: 'string (optional) — article topic/title',
+          matchResult: 'object (optional) — structured match data (see inputTypes)',
           category: `string (optional) — one of: ${VALID_CATEGORIES.join(', ')}`,
-          language: 'string (optional) — "id" (default) for Indonesian',
-          generateImage: 'boolean (optional) — if true, generate cover image',
+          language: 'string (optional) — "id" (default) or "en"',
+          generateImage: 'boolean (optional) — if true, generate cover image via DALL-E',
         },
+        note: 'At least one of "topic" or "matchResult" must be provided.',
       },
     })
   } catch (error: unknown) {
@@ -343,29 +426,81 @@ export async function POST(request: NextRequest) {
     // Parse and validate request body
     const body: GenerateArticleRequest = await request.json()
 
-    const { topic, category = 'general', language = 'id', generateImage = false } = body
+    const {
+      topic,
+      matchResult,
+      category = 'general',
+      language = 'id',
+      generateImage = false,
+    } = body
 
-    if (!topic || typeof topic !== 'string' || topic.trim().length < 3) {
-      return NextResponse.json(
-        { error: 'Topic is required and must be at least 3 characters' },
-        { status: 400 }
-      )
+    // Validate: at least one input type must be provided
+    const inputType = detectInputType(topic, matchResult)
+
+    if (inputType === 'topic') {
+      if (!topic || typeof topic !== 'string' || topic.trim().length < 3) {
+        return NextResponse.json(
+          { error: 'Either "topic" (string, min 3 chars) or "matchResult" (object with homeTeam/awayTeam) must be provided' },
+          { status: 400 }
+        )
+      }
+      if (topic.length > 500) {
+        return NextResponse.json(
+          { error: 'Topic must be 500 characters or less' },
+          { status: 400 }
+        )
+      }
     }
 
-    if (topic.length > 500) {
-      return NextResponse.json(
-        { error: 'Topic must be 500 characters or less' },
-        { status: 400 }
-      )
+    if (inputType === 'matchResult' && matchResult) {
+      if (!matchResult.homeTeam || !matchResult.awayTeam) {
+        return NextResponse.json(
+          { error: 'matchResult must include homeTeam and awayTeam' },
+          { status: 400 }
+        )
+      }
+      if (typeof matchResult.homeScore !== 'number' || typeof matchResult.awayScore !== 'number') {
+        return NextResponse.json(
+          { error: 'matchResult.homeScore and matchResult.awayScore must be numbers' },
+          { status: 400 }
+        )
+      }
     }
 
     const resolvedCategory = isValidCategory(category) ? category : 'general'
 
+    // Auto-detect category from matchResult league if not specified
+    let finalCategory = resolvedCategory
+    if (inputType === 'matchResult' && category === 'general' && matchResult?.league) {
+      const leagueLower = matchResult.league.toLowerCase()
+      if (leagueLower.includes('premier') || leagueLower.includes('epl')) finalCategory = 'premier-league'
+      else if (leagueLower.includes('la liga') || leagueLower.includes('laliga')) finalCategory = 'la-liga'
+      else if (leagueLower.includes('serie') || leagueLower.includes('calcio')) finalCategory = 'serie-a'
+      else if (leagueLower.includes('champions') || leagueLower.includes('ucl')) finalCategory = 'champions-league'
+      else if (leagueLower.includes('bundesliga')) finalCategory = 'bundesliga'
+      else finalCategory = 'match-report'
+    }
+
+    // Build effective topic string
+    let effectiveTopic: string
+    let matchResultContext: string | undefined
+
+    if (inputType === 'matchResult' && matchResult) {
+      const m = matchResult
+      const leagueStr = m.league ? ` — ${m.league}` : ''
+      effectiveTopic = `${m.homeTeam} ${m.homeScore}-${m.awayScore} ${m.awayTeam}${leagueStr}`
+      matchResultContext = buildMatchResultContext(matchResult)
+    } else {
+      effectiveTopic = topic!.trim()
+      matchResultContext = undefined
+    }
+
     // Step 1: Generate article content via AI
     const aiArticle = await generateArticleContent(
-      topic.trim(),
-      resolvedCategory,
-      language
+      effectiveTopic,
+      finalCategory,
+      language,
+      matchResultContext
     )
 
     // Step 2: Generate cover image if requested
@@ -385,8 +520,8 @@ export async function POST(request: NextRequest) {
       content: aiArticle.content_html,
       summary: aiArticle.summary,
       imageUrl: imageUrl,
-      categorySlug: resolvedCategory,
-      categoryName: CATEGORY_MAP[resolvedCategory],
+      categorySlug: finalCategory,
+      categoryName: CATEGORY_MAP[finalCategory],
       authorName: 'GOALZONE AI',
       readTime,
     })
@@ -395,9 +530,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Article generated and saved via ${saveResult.source}`,
-      savedToDb: saveResult.source !== 'cache',
-      savedTo: saveResult.source,
+      message: `Article generated via GPT-4o and saved via ${saveResult.source}`,
       article: {
         id: saveResult.article?.id || `ai-${Date.now()}`,
         title: aiArticle.title,
@@ -406,8 +539,8 @@ export async function POST(request: NextRequest) {
         imageUrl: imageUrl,
         readTime,
         category: {
-          name: CATEGORY_MAP[resolvedCategory],
-          slug: resolvedCategory,
+          name: CATEGORY_MAP[finalCategory],
+          slug: finalCategory,
         },
         author: {
           username: saveResult.article?.authorName || 'GOALZONE AI',
@@ -419,6 +552,8 @@ export async function POST(request: NextRequest) {
         generationTimeMs: duration,
         contentLength,
         language,
+        inputType,
+        model: 'gpt-4o',
         generateImage,
         aiImageGenerated: !!imageUrl,
         savedTo: saveResult.source,
@@ -428,7 +563,7 @@ export async function POST(request: NextRequest) {
     const duration = Date.now() - startTime
     const message = error instanceof Error ? error.message : 'Unknown error'
 
-    console.error(`[Generate Article] Error after ${duration}ms: ${message}`)
+    console.error(`[Generate Article v4] Error after ${duration}ms: ${message}`)
 
     return NextResponse.json(
       {
