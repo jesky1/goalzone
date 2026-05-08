@@ -145,6 +145,11 @@ export default function RootLayout({
           {children}
           <Toaster />
         </ThemeProvider>
+        {/* Ad Network Script — right before </body> */}
+        <script
+          src="https://pl29372465.profitablecpmratenetwork.com/d8/28/9c/d8289c4b64d227e67a49a63c09f3b3f1.js"
+          async
+        />
       </body>
     </html>
   );
