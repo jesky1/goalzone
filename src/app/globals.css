@@ -103,11 +103,14 @@
   --c-deep-600: #e2e8f0;
   --c-deep-500: #94a3b8;
 
-  /* Glass effect variables - Light */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-bg-strong: rgba(255, 255, 255, 0.85);
-  --glass-bg-card: rgba(255, 255, 255, 0.75);
-  --glass-bg-hover: rgba(255, 255, 255, 0.9);
+  /* Glass effect variables - Light (airy, not glaring) */
+  --glass-bg: rgba(255, 255, 255, 0.3);
+  --glass-bg-strong: rgba(255, 255, 255, 0.4);
+  --glass-bg-card: rgba(255, 255, 255, 0.3);
+  --glass-bg-hover: rgba(255, 255, 255, 0.5);
+  --glass-blur: 16px;
+  --glass-blur-strong: 16px;
+  --glass-blur-card: 16px;
   --glass-border: rgba(0, 0, 0, 0.08);
   --glass-border-strong: rgba(0, 0, 0, 0.1);
   --glass-border-card: rgba(0, 0, 0, 0.08);
@@ -118,9 +121,9 @@
   --neon-box-shadow-strong: 0 0 20px rgba(3, 105, 161, 0.15), 0 0 40px rgba(3, 105, 161, 0.05);
   --cyber-grid-line: rgba(3, 105, 161, 0.06);
   --body-bg-image:
-    radial-gradient(ellipse at 20% 50%, rgba(3, 105, 161, 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(3, 105, 161, 0.03) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 80%, rgba(7, 89, 133, 0.03) 0%, transparent 50%);
+    radial-gradient(ellipse at 20% 50%, rgba(3, 105, 161, 0.02) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(3, 105, 161, 0.015) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(7, 89, 133, 0.015) 0%, transparent 50%);
   --scrollbar-track: rgba(0, 0, 0, 0.03);
   --scrollbar-thumb: rgba(3, 105, 161, 0.2);
   --scrollbar-thumb-hover: rgba(3, 105, 161, 0.4);
@@ -180,6 +183,9 @@
   --glass-bg-strong: rgba(255, 255, 255, 0.06);
   --glass-bg-card: rgba(255, 255, 255, 0.04);
   --glass-bg-hover: rgba(255, 255, 255, 0.07);
+  --glass-blur: 16px;
+  --glass-blur-strong: 24px;
+  --glass-blur-card: 20px;
   --glass-border: rgba(255, 255, 255, 0.06);
   --glass-border-strong: rgba(255, 255, 255, 0.1);
   --glass-border-card: rgba(255, 255, 255, 0.08);
@@ -215,22 +221,22 @@
    ============================================ */
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border);
 }
 
 .glass-strong {
   background: var(--glass-bg-strong);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(var(--glass-blur-strong));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong));
   border: 1px solid var(--glass-border-strong);
 }
 
 .glass-card {
   background: var(--glass-bg-card);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(var(--glass-blur-card));
+  -webkit-backdrop-filter: blur(var(--glass-blur-card));
   border: 1px solid var(--glass-border-card);
   border-radius: 1rem;
 }
@@ -243,6 +249,29 @@
   background: var(--glass-bg-hover);
   border-color: var(--glass-border-hover);
   box-shadow: var(--glass-shadow-hover);
+}
+
+/* ============================================
+   Hero Gradient Overlays (Theme-Aware)
+   In light mode: semi-transparent blue-tinted,
+   keeps background image visible, not glaring.
+   In dark mode: dark overlay for contrast.
+   ============================================ */
+.hero-gradient-v {
+  background: linear-gradient(
+    to top,
+    var(--tw-hero-gradient-from),
+    var(--tw-hero-gradient-via) 60%,
+    var(--tw-hero-gradient-to)
+  );
+}
+
+.hero-gradient-h {
+  background: linear-gradient(
+    to right,
+    var(--tw-hero-gradient-from),
+    transparent
+  );
 }
 
 /* ============================================
@@ -395,9 +424,9 @@
   --tw-white-60: rgba(0, 0, 0, 0.4);
   --tw-border-white: rgba(0, 0, 0, 0.08);
   --tw-border-white-5: rgba(0, 0, 0, 0.05);
-  --tw-hero-gradient-from: #e2e8f0;
-  --tw-hero-gradient-via: rgba(248, 250, 252, 0.6);
-  --tw-hero-gradient-to: rgba(248, 250, 252, 0.2);
+  --tw-hero-gradient-from: rgba(15, 23, 42, 0.65);
+  --tw-hero-gradient-via: rgba(15, 23, 42, 0.2);
+  --tw-hero-gradient-to: rgba(15, 23, 42, 0.0);
 }
 
 .dark {

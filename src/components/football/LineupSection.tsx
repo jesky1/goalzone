@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import Link from 'next/link'
 import { ChevronDown, ChevronUp, User } from 'lucide-react'
 
 // ──────────────────────────────────────────────
@@ -225,13 +226,15 @@ function PlayerNode({ player, pos, index, teamColor, teamLogo }: PlayerNodeProps
         )}
       </div>
 
-      {/* Player Avatar */}
-      <div
-        className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden"
+      {/* Player Avatar - Clickable */}
+      <Link
+        href={`/players/${player.id}`}
+        className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden block cursor-pointer transition-transform hover:scale-110 active:scale-95"
         style={{
           border: `2.5px solid ${teamColor}`,
           boxShadow: `0 0 10px ${teamColor}30, 0 2px 6px rgba(0,0,0,0.3)`,
         }}
+        title={player.name}
       >
         {hasPhoto && (
           <img
@@ -265,7 +268,7 @@ function PlayerNode({ player, pos, index, teamColor, teamLogo }: PlayerNodeProps
             </span>
           </div>
         )}
-      </div>
+      </Link>
 
       {/* Number badge */}
       <div
@@ -277,13 +280,15 @@ function PlayerNode({ player, pos, index, teamColor, teamLogo }: PlayerNodeProps
         </span>
       </div>
 
-      {/* Player name */}
-      <span
-        className="mt-0.5 text-[8px] sm:text-[9px] font-bold leading-tight block truncate max-w-[52px] sm:max-w-[64px] drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]"
+      {/* Player name - Clickable */}
+      <Link
+        href={`/players/${player.id}`}
+        className="mt-0.5 text-[8px] sm:text-[9px] font-bold leading-tight block truncate max-w-[52px] sm:max-w-[64px] drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] hover:text-neon transition-colors cursor-pointer"
         style={{ color: '#ffffff' }}
+        title={player.name}
       >
         {lastName}
-      </span>
+      </Link>
     </motion.div>
   )
 }
@@ -379,7 +384,7 @@ function SubstitutesList({ players, teamColor, side }: { players: PitchPlayer[];
                     <div className="flex-1 min-w-0">
                       <div className={`flex items-center gap-1.5 ${side === 'away' ? 'justify-end' : ''}`}>
                         <span className="text-[10px] text-gray-500 w-4 shrink-0 tabular-nums">{p.number}</span>
-                        <span className="text-[12px] text-white truncate">{p.name}</span>
+                        <Link href={`/players/${p.id}`} className="text-[12px] text-white truncate hover:text-neon transition-colors">{p.name}</Link>
                         <span
                           className="text-[8px] px-1 py-0.5 rounded border font-bold shrink-0"
                           style={{

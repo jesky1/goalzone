@@ -23,6 +23,11 @@ import {
   FileText,
   Search,
   Shield,
+  Sparkles,
+  BookOpen,
+  Tag,
+  Copy,
+  Check,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -45,6 +50,14 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 
 // ─── Types ──────────────────────────────────────────────────
+
+interface GeneratedArticle {
+  title: string
+  content: string
+  summary: string
+  category: string
+  readTime: number
+}
 
 interface PipelineResult {
   success: boolean
@@ -215,6 +228,14 @@ export default function NewsEnginePanel() {
   const [maxArticles, setMaxArticles] = useState('5')
   const [dryRun, setDryRun] = useState(false)
 
+  // AI Article Generator state
+  const [aiTopic, setAiTopic] = useState('')
+  const [aiCategory, setAiCategory] = useState<string>('')
+  const [aiGenerating, setAiGenerating] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
+  const [aiArticle, setAiArticle] = useState<GeneratedArticle | null>(null)
+  const [copiedField, setCopiedField] = useState<string | null>(null)
+
   // Load service status
   const loadStatus = useCallback(async () => {
     try {
@@ -254,8 +275,222 @@ export default function NewsEnginePanel() {
     }
   }
 
+  // Generate AI article
+  const generateAiArticle = async () => {
+    if (!aiTopic.trim()) return
+    setAiGenerating(true)
+    setAiError(null)
+    setAiArticle(null)
+
+    try {
+      const adminKey = localStorage.getItem('admin_api_key') || ''
+      const res = await fetch('/api/generate-article', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(adminKey ? { Authorization: `Bearer ${adminKey}` } : {}),
+        },
+        body: JSON.stringify({ topic: aiTopic.trim(), category: aiCategory || undefined }),
+      })
+
+      const data = await res.json()
+      if (!res.ok || !data.success) throw new Error(data.error || 'AI generation failed')
+      setAiArticle(data.article)
+    } catch (err: any) {
+      setAiError(err.message)
+    } finally {
+      setAiGenerating(false)
+    }
+  }
+
+  // Copy to clipboard
+  const copyToClipboard = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedField(field)
+      setTimeout(() => setCopiedField(null), 2000)
+    } catch { /* silent */ }
+  }
+
   return (
     <div className="space-y-6">
+      {/* ── AI Article Generator Section ── */}
+      <div className="glass-card overflow-hidden">
+        <div className="p-4 border-b border-gray-200 dark:border-white/5 flex items-center gap-2">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-violet-500/20 to-fuchsia-500/10 border border-violet-500/20">
+            <Sparkles className="w-4 h-4 text-violet-400" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">AI Article Generator</h3>
+            <p className="text-[11px] text-muted-foreground">Generate football news articles with AI</p>
+          </div>
+        </div>
+
+        <div className="p-4 space-y-4">
+          {/* Input row */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1">
+              <Input
+                placeholder="Enter article topic, e.g. Manchester City kejar striker baru di bursa transfer"
+                value={aiTopic}
+                onChange={(e) => setAiTopic(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && !aiGenerating && generateAiArticle()}
+                className="text-sm bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/10"
+                disabled={aiGenerating}
+              />
+            </div>
+            <div className="w-full sm:w-48">
+              <Select value={aiCategory} onValueChange={setAiCategory}>
+                <SelectTrigger className="text-sm bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/10">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Premier League">Premier League</SelectItem>
+                  <SelectItem value="La Liga">La Liga</SelectItem>
+                  <SelectItem value="Serie A">Serie A</SelectItem>
+                  <SelectItem value="Bundesliga">Bundesliga</SelectItem>
+                  <SelectItem value="Ligue 1">Ligue 1</SelectItem>
+                  <SelectItem value="Champions League">Champions League</SelectItem>
+                  <SelectItem value="Europa League">Europa League</SelectItem>
+                  <SelectItem value="Transfer">Transfer</SelectItem>
+                  <SelectItem value="Timnas">Timnas</SelectItem>
+                  <SelectItem value="Analisis">Analisis</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              onClick={generateAiArticle}
+              disabled={aiGenerating || !aiTopic.trim()}
+              className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-lg shadow-violet-500/20 shrink-0"
+              size="default"
+            >
+              {aiGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Generate with AI
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* AI Error */}
+          {aiError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20"
+            >
+              <XCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-red-400">Generation Error</p>
+                <p className="text-xs text-red-400/70 mt-0.5">{aiError}</p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* AI Generated Article Preview */}
+          <AnimatePresence>
+            {aiArticle && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="rounded-xl border border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-fuchsia-500/5 overflow-hidden"
+              >
+                {/* Preview header */}
+                <div className="p-4 border-b border-violet-500/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-violet-400" />
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">Generated Article Preview</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20">AI Generated</Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-red-400 h-7 px-2"
+                      onClick={() => setAiArticle(null)}
+                    >
+                      <XCircle className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Preview content */}
+                <div className="p-4 space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar">
+                  {/* Title */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Title</span>
+                      <button
+                        onClick={() => copyToClipboard(aiArticle.title, 'title')}
+                        className="text-[10px] text-muted-foreground hover:text-neon flex items-center gap-1 transition-colors"
+                      >
+                        {copiedField === 'title' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        {copiedField === 'title' ? 'Copied!' : 'Copy'}
+                      </button>
+                    </div>
+                    <h4 className="text-base font-bold text-gray-900 dark:text-white leading-snug">{aiArticle.title}</h4>
+                  </div>
+
+                  {/* Meta info */}
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <Badge variant="outline" className="text-[10px] flex items-center gap-1">
+                      <Tag className="w-3 h-3" />
+                      {aiArticle.category}
+                    </Badge>
+                    <Badge variant="outline" className="text-[10px] flex items-center gap-1">
+                      <BookOpen className="w-3 h-3" />
+                      {aiArticle.readTime} min read
+                    </Badge>
+                  </div>
+
+                  {/* Summary */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Summary</span>
+                      <button
+                        onClick={() => copyToClipboard(aiArticle.summary, 'summary')}
+                        className="text-[10px] text-muted-foreground hover:text-neon flex items-center gap-1 transition-colors"
+                      >
+                        {copiedField === 'summary' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        {copiedField === 'summary' ? 'Copied!' : 'Copy'}
+                      </button>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 italic leading-relaxed">{aiArticle.summary}</p>
+                  </div>
+
+                  <Separator className="bg-violet-500/10" />
+
+                  {/* Content */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Content</span>
+                      <button
+                        onClick={() => copyToClipboard(aiArticle.content, 'content')}
+                        className="text-[10px] text-muted-foreground hover:text-neon flex items-center gap-1 transition-colors"
+                      >
+                        {copiedField === 'content' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        {copiedField === 'content' ? 'Copied!' : 'Copy HTML'}
+                      </button>
+                    </div>
+                    <div
+                      className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: aiArticle.content }}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

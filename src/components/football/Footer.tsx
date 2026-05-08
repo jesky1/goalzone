@@ -4,14 +4,28 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Zap, Twitter, Youtube, Instagram } from 'lucide-react';
 
+const leagues = [
+  { label: 'Premier League', href: '#' },
+  { label: 'La Liga', href: '#' },
+  { label: 'Serie A', href: '#' },
+  { label: 'Bundesliga', href: '#' },
+  { label: 'Ligue 1', href: '#' },
+  { label: 'Eredivisie', href: '#' },
+  { label: 'Liga Portugal', href: '#' },
+  { label: 'Primeira Liga', href: '#' },
+  { label: 'Belgian Pro League', href: '#' },
+  { label: 'Scottish Premiership', href: '#' },
+  { label: 'Turkish Süper Lig', href: '#' },
+  { label: 'MLS', href: '#' },
+  { label: 'Liga MX', href: '#' },
+  { label: 'Brasileirão', href: '#' },
+  { label: 'Argentine Primera', href: '#' },
+  { label: 'Saudi Pro League', href: '#' },
+  { label: 'J-League', href: '#' },
+  { label: 'K-League', href: '#' },
+];
+
 const quickLinks = {
-  Liga: [
-    { label: 'Premier League', href: '#' },
-    { label: 'La Liga', href: '#' },
-    { label: 'Serie A', href: '#' },
-    { label: 'Bundesliga', href: '#' },
-    { label: 'Ligue 1', href: '#' },
-  ],
   Tim: [
     { label: 'Manchester City', href: '#' },
     { label: 'Real Madrid', href: '#' },
@@ -69,6 +83,24 @@ export default function Footer() {
                     <social.icon className="w-4 h-4" />
                   </a>
                 ))}
+              </div>
+            </div>
+
+            {/* Leagues - Full 3-Column Grid */}
+            <div className="sm:col-span-2 lg:col-span-2">
+              <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Liga</h4>
+              <div className="glass-card p-4">
+                <div className="grid grid-cols-3 gap-x-3 gap-y-1">
+                  {leagues.map((league) => (
+                    <a
+                      key={league.label}
+                      href={league.href}
+                      className="text-sm text-muted-foreground hover:text-neon transition-colors duration-200 py-1 truncate"
+                    >
+                      {league.label}
+                    </a>
+                  ))}
+                </div>
               </div>
             </div>
 

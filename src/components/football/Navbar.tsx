@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Menu, Zap } from 'lucide-react';
+import { Menu, Zap, Search, ChevronDown } from 'lucide-react';
 import ThemeToggle from '@/components/football/ThemeToggle';
 import {
   Sheet,
@@ -12,6 +12,11 @@ import {
   SheetClose,
   SheetTitle,
 } from '@/components/ui/sheet';
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from '@/components/ui/popover';
 
 const navLinks = [
   { label: 'Beranda', href: '#home' },
@@ -20,8 +25,30 @@ const navLinks = [
   { label: 'Transfer', href: '#transfer' },
 ];
 
+const leagues = [
+  { label: 'Premier League', href: '#' },
+  { label: 'La Liga', href: '#' },
+  { label: 'Serie A', href: '#' },
+  { label: 'Bundesliga', href: '#' },
+  { label: 'Ligue 1', href: '#' },
+  { label: 'Eredivisie', href: '#' },
+  { label: 'Liga Portugal', href: '#' },
+  { label: 'Primeira Liga', href: '#' },
+  { label: 'Belgian Pro League', href: '#' },
+  { label: 'Scottish Premiership', href: '#' },
+  { label: 'Turkish Süper Lig', href: '#' },
+  { label: 'MLS', href: '#' },
+  { label: 'Liga MX', href: '#' },
+  { label: 'Brasileirão', href: '#' },
+  { label: 'Argentine Primera', href: '#' },
+  { label: 'Saudi Pro League', href: '#' },
+  { label: 'J-League', href: '#' },
+  { label: 'K-League', href: '#' },
+];
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <motion.nav
@@ -33,7 +60,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
+          <Link href="/" className="flex items-center gap-2 group shrink-0">
             <Zap className="w-6 h-6 text-neon neon-glow" />
             <span className="text-xl font-bold neon-text tracking-wider">
               GOALZONE
@@ -51,6 +78,48 @@ export default function Navbar() {
                 {link.label}
               </a>
             ))}
+
+            {/* League Dropdown */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-neon hover:bg-white/5 dark:hover:bg-white/5 transition-all duration-300 flex items-center gap-1">
+                  Liga
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="start"
+                className="w-[480px] p-4 bg-deep-800/95 dark:bg-deep-800/95 backdrop-blur-xl border-white/10 rounded-xl"
+              >
+                <h4 className="text-sm font-bold text-white mb-3 neon-text">
+                  Football Leagues
+                </h4>
+                <div className="grid grid-cols-3 gap-1">
+                  {leagues.map((league) => (
+                    <a
+                      key={league.label}
+                      href={league.href}
+                      className="px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-neon hover:bg-white/5 transition-all duration-200 truncate"
+                    >
+                      {league.label}
+                    </a>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* Search Bar */}
+            <div className="ml-3 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 w-48 pl-9 pr-3 rounded-lg text-sm backdrop-blur-md bg-white/30 dark:bg-white/5 border border-white/20 dark:border-white/10 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-neon/40 focus:ring-1 focus:ring-neon/20 transition-all duration-300"
+              />
+            </div>
+
             <div className="ml-2 pl-2 border-l border-gray-200 dark:border-white/10">
               <ThemeToggle />
             </div>
@@ -58,6 +127,17 @@ export default function Navbar() {
 
           {/* Mobile Menu */}
           <div className="md:hidden flex items-center gap-2">
+            {/* Mobile Search */}
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-8 w-32 pl-8 pr-2 rounded-lg text-xs backdrop-blur-md bg-white/30 dark:bg-white/5 border border-white/20 dark:border-white/10 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-neon/40 transition-all duration-300"
+              />
+            </div>
             <ThemeToggle />
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
@@ -99,6 +179,25 @@ export default function Navbar() {
                         </SheetClose>
                       </motion.div>
                     ))}
+                  </div>
+
+                  {/* Mobile Leagues */}
+                  <div className="mt-6 pt-4 border-t border-white/10">
+                    <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3">
+                      Football Leagues
+                    </h4>
+                    <div className="grid grid-cols-2 gap-1 max-h-64 overflow-y-auto custom-scrollbar">
+                      {leagues.map((league) => (
+                        <SheetClose asChild key={league.label}>
+                          <a
+                            href={league.href}
+                            className="block px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-neon hover:bg-white/5 transition-all duration-200 truncate"
+                          >
+                            {league.label}
+                          </a>
+                        </SheetClose>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </SheetContent>

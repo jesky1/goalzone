@@ -80,9 +80,9 @@ export default function HeroSlider() {
             />
           )}
 
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-deep-900 via-deep-900/60 to-deep-900/20" />
-          <div className="absolute inset-0 bg-gradient-to-r from-deep-900/80 to-transparent" />
+          {/* Gradient Overlay (theme-aware via CSS classes) */}
+          <div className="absolute inset-0 hero-gradient-v" />
+          <div className="absolute inset-0 hero-gradient-h" />
 
           {/* Content */}
           <div className="relative h-full flex flex-col justify-end p-6 sm:p-8 md:p-12 max-w-7xl mx-auto">

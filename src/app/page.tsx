@@ -14,6 +14,8 @@ import RefereeModal from '@/components/football/RefereeModal';
 import type { RefereeData } from '@/components/football/RefereeModal';
 import StadiumName from '@/components/football/StadiumName';
 import TransferFeed from '@/components/football/TransferFeed';
+import AdSenseSlot from '@/components/football/AdSenseSlot';
+import { WebsiteJsonLd, OrganizationJsonLd, NewsArticleJsonLd } from '@/components/football/JsonLd';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Eye, Calendar, ChevronRight, ChevronDown, ChevronUp, MapPin, User, X, Loader2, Sparkles, Send } from 'lucide-react';
@@ -808,6 +810,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-deep-900 cyber-grid">
+      {/* JSON-LD Structured Data for Google */}
+      <WebsiteJsonLd />
+      <OrganizationJsonLd />
+
       <Navbar />
       <LiveScoreTicker />
 
@@ -816,6 +822,11 @@ export default function Home() {
         <ErrorBoundary fallback={<div className="h-[400px] bg-deep-800" />}>
           <HeroSection articles={featuredArticles} onArticleClick={handleArticleClick} />
         </ErrorBoundary>
+
+        {/* Ad Slot - After Hero */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AdSenseSlot slot="hero-bottom" format="horizontal" className="mt-2" />
+        </div>
 
         {/* Live Scores */}
         <section id="live" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
@@ -872,6 +883,8 @@ export default function Home() {
 
         {/* News + Sidebar */}
         <section id="standings" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+          {/* Ad Slot - Between Live Scores and News */}
+          <AdSenseSlot slot="before-news" format="horizontal" className="mb-6" />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             <div className="lg:col-span-2">
               <NewsSection onArticleClick={handleArticleClick} />
@@ -893,6 +906,8 @@ export default function Home() {
 
         {/* Transfer Feed */}
         <section id="transfer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+          {/* Ad Slot - Between News and Transfer */}
+          <AdSenseSlot slot="before-transfer" format="horizontal" className="mb-6" />
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-6">
             <div className="flex items-center gap-3 mb-1">
               <div className="w-2 h-2 rounded-full bg-neon" />
@@ -906,8 +921,15 @@ export default function Home() {
         </section>
       </main>
 
+      {/* Ad Slot - Before Footer */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <AdSenseSlot slot="before-footer" format="horizontal" className="mb-4" />
+      </div>
+
       <Footer />
 
+      {/* Article Modal with NewsArticle JSON-LD */}
+      {selectedArticle && modalOpen && <NewsArticleJsonLd article={selectedArticle} />}
       <ArticleModalView article={selectedArticle} open={modalOpen} onClose={handleCloseModal} />
       <MatchDetailModal match={selectedMatch} open={matchModalOpen} onClose={handleCloseMatchModal} onRefereeClick={handleRefereeClick} />
       <RefereeModal referee={refereeData} open={refereeModalOpen} onClose={handleCloseRefereeModal} />
