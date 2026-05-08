@@ -3,11 +3,12 @@ import ZAI from 'z-ai-web-dev-sdk'
 import { saveArticle, getCacheStats } from '@/lib/article-store'
 
 // ============================================================
-// GOALZONE — Article Generator API v4.0.0
+// GOALZONE — Article Generator API v5.0.0
 // ============================================================
 // POST /api/generate-article  → Generate article via GPT-4o + auto-save
 // GET  /api/generate-article  → Status info + available categories
 // Supports: free-form topic AND structured matchResult input
+// Trending: Google Trends via web search, auto-injected into AI prompt (30min cache)
 // Saves to: Supabase → Prisma/SQLite → In-memory cache (auto-fallback)
 // ============================================================
 
@@ -65,6 +66,81 @@ const CATEGORY_MAP: Record<CategorySlug, string> = {
 }
 
 const VALID_CATEGORIES = Object.keys(CATEGORY_MAP) as CategorySlug[]
+
+// ─── Google Trends / Web Search Cache ───────────────────────
+
+interface TrendingTopic {
+  title: string
+  snippet: string
+  source: string
+}
+
+let trendingCache: {
+  topics: TrendingTopic[]
+  fetchedAt: number
+} | null = null
+
+const TRENDING_CACHE_TTL = 30 * 60 * 1000 // 30 minutes
+
+async function fetchTrendingFootballTopics(): Promise<TrendingTopic[]> {
+  // Return cached if still valid
+  if (trendingCache && Date.now() - trendingCache.fetchedAt < TRENDING_CACHE_TTL) {
+    return trendingCache.topics
+  }
+
+  try {
+    const zai = await ZAI.create()
+
+    // Search for trending football news in Indonesian
+    const [resultsId, resultsEn] = await Promise.all([
+      zai.functions.invoke('web_search', {
+        query: 'berita sepak bola terkini hari ini 2025',
+        num: 8,
+      }) as Promise<Array<{ name: string; snippet: string; host_name: string }>>,
+      zai.functions.invoke('web_search', {
+        query: 'football transfer news today 2025 trending',
+        num: 5,
+      }) as Promise<Array<{ name: string; snippet: string; host_name: string }>>,
+    ])
+
+    const allResults = [...(resultsId || []), ...(resultsEn || [])]
+
+    // Deduplicate by title similarity
+    const seen = new Set<string>()
+    const topics: TrendingTopic[] = []
+
+    for (const r of allResults) {
+      const key = r.name.toLowerCase().substring(0, 40)
+      if (!seen.has(key) && r.name && r.snippet) {
+        seen.add(key)
+        topics.push({
+          title: r.name,
+          snippet: r.snippet.substring(0, 150),
+          source: r.host_name || '',
+        })
+      }
+      if (topics.length >= 10) break
+    }
+
+    // Cache the result
+    trendingCache = { topics, fetchedAt: Date.now() }
+    console.log(`[Trending] Fetched ${topics.length} trending topics, cached for ${TRENDING_CACHE_TTL / 60000}min`)
+    return topics
+  } catch (err: any) {
+    console.warn(`[Trending] Failed to fetch: ${err.message}`)
+    // Return cached even if expired, or empty
+    return trendingCache?.topics || []
+  }
+}
+
+function buildTrendingContext(topics: TrendingTopic[]): string {
+  if (!topics || topics.length === 0) return ''
+  const lines = topics.map((t, i) => `${i + 1}. ${t.title} — ${t.snippet}`)
+  return `🔥 TOPIK TRENDING SEPAK BOLA TERKINI (Google Trends / Web Search):
+${lines.join('\n')}
+
+INSTRUKSI: Gunakan informasi trending di atas untuk MENYEGARKAN artikel Anda. Jika ada topik trending yang relevan dengan tema artikel, sisipkan sebagai konteks tambahan, perbandingan, atau referensi untuk membuat artikel lebih up-to-date dan SEO-friendly. Jangan memaksakan jika tidak relevan.`
+}
 
 // ─── System Prompt ──────────────────────────────────────────
 
@@ -218,7 +294,8 @@ async function generateArticleContent(
   topic: string,
   category: CategorySlug,
   language: string,
-  matchResultContext?: string
+  matchResultContext?: string,
+  trendingTopics?: TrendingTopic[]
 ): Promise<AIArticleOutput> {
   const zai = await ZAI.create()
 
@@ -226,6 +303,9 @@ async function generateArticleContent(
   const langInstruction = language === 'id'
     ? 'Tulis seluruh artikel dalam Bahasa Indonesia yang natural, profesional, dan penuh gaya jurnalistik.'
     : `Tulis artikel dalam bahasa "${language}" dengan gaya jurnalistik yang sama kuatnya.`
+
+  // Use trending topics passed from caller (already fetched + cached)
+  const trendingSection = trendingTopics ? buildTrendingContext(trendingTopics) : ''
 
   const matchSection = matchResultContext
     ? `\n\n${matchResultContext}\n\nGunakan data pertandingan di atas sebagai FAKTA UTAMA. Jangan mengubah skor atau detail pertandingan. Analisis taktisnya secara mendalam berdasarkan data ini.`
@@ -237,6 +317,8 @@ TOPIC / TEMA ARTIKEL:
 ${topic}
 ${matchSection}
 KATEGORI: ${categoryLabel} (${category})
+
+${trendingSection}
 
 ${langInstruction}
 
@@ -401,9 +483,10 @@ export async function GET() {
     return NextResponse.json({
       status: 'active',
       service: 'GOALZONE Article Generator',
-      version: '4.0.0',
+      version: '5.0.0',
       model: 'GPT-4o',
-      description: 'AI-powered article generation with tactical football analysis — auto-saves to Supabase / Prisma / Memory',
+      trending: 'Google Trends via web search (auto-injected into prompt)',
+      description: 'AI-powered article generation with tactical football analysis + Google Trends trending topics — auto-saves to Supabase / Prisma / Memory',
       storage: {
         supabase: stats.supabaseAvailable ? 'connected' : 'not configured',
         prisma: stats.prismaAvailable ? 'connected' : 'not available',
@@ -530,12 +613,14 @@ export async function POST(request: NextRequest) {
       matchResultContext = undefined
     }
 
-    // Step 1: Generate article content via AI
+    // Step 1: Fetch trending topics + Generate article content via AI
+    const trendingTopics = await fetchTrendingFootballTopics()
     const aiArticle = await generateArticleContent(
       effectiveTopic,
       finalCategory,
       language,
-      matchResultContext
+      matchResultContext,
+      trendingTopics
     )
 
     // Step 2: Generate cover image if requested
@@ -592,6 +677,7 @@ export async function POST(request: NextRequest) {
         generateImage,
         aiImageGenerated: !!imageUrl,
         savedTo: saveResult.source,
+        trendingTopicsInjected: trendingTopics.length,
       },
     })
   } catch (error: unknown) {
