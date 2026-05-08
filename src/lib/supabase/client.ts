@@ -1,50 +1,20 @@
 // ============================================================
 // GOALZONE - Supabase Client Configuration
 // ============================================================
-// Client-side dan server-side Supabase client
+// Server-side only — all access via API routes for security.
 // ============================================================
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-let _supabase: SupabaseClient | null = null
-
-// Client-side Supabase (anon key, RLS aktif) — lazy init
-export function getSupabaseClient(): SupabaseClient {
-  if (_supabase) return _supabase
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      'Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. ' +
-      'Please set these in .env.local or Vercel Environment Variables.'
-    )
-  }
-
-  _supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-    },
-  })
-
-  return _supabase
-}
-
-// Convenience export (calls getSupabaseClient lazily)
-export const supabase = new Proxy({} as SupabaseClient, {
-  get(_target, prop) {
-    const client = getSupabaseClient()
-    const value = (client as any)[prop]
-    if (typeof value === 'function') return value.bind(client)
-    return value
-  },
-})
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  SECURITY: Client-side Supabase access REMOVED             ║
+// ║  All Supabase operations now go through server-side        ║
+// ║  API routes using createServerSupabaseClient() below.     ║
+// ║  NEXT_PUBLIC_SUPABASE_ANON_KEY is no longer used.          ║
+// ╚══════════════════════════════════════════════════════════════╝
 
 // Server-side Supabase admin client (service role key, bypass RLS)
-export function createServerSupabaseClient() {
+export function createServerSupabaseClient(): SupabaseClient {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 

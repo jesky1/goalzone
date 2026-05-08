@@ -26,7 +26,6 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/lib/auth-context';
-import { getSupabaseClient } from '@/lib/supabase/client';
 import NewsEnginePanel from '@/components/admin/NewsEnginePanel';
 import ArticleGeneratorDialog from '@/components/football/ArticleGeneratorDialog';
 
@@ -181,145 +180,81 @@ export default function AdminDashboard() {
     }
   }, [authLoading, isAuthenticated, router]);
 
-  // ─── fetchArticles — direct Supabase client query ──────────
-  // Fetches all articles ordered by created_at DESC
-  const fetchArticles = useCallback(async () => {
+  // ─── fetchDashboardData — via API route (server-side, secure) ──
+  // Fetches all dashboard data through /api/admin/data API route
+  const fetchDashboardData = useCallback(async () => {
     setDataLoading(true);
     setDataError(null);
 
     try {
-      const supabase = getSupabaseClient();
+      const res = await fetch('/api/admin/data', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
 
-      const { data, error } = await supabase
-        .from('articles')
-        .select('*, categories(name, slug), profiles(username)')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('[fetchArticles] Supabase error:', JSON.stringify({
-          code: error.code, message: error.message, hint: error.hint, details: error.details,
-        }));
-
-        let msg = 'Gagal memuat artikel dari Supabase';
-        if (error.code === '42501' || error.message?.includes('policy')) {
-          msg = 'RLS memblokir akses. Tambahkan policy: CREATE POLICY "anon_read" ON articles FOR SELECT TO anon USING (true);';
-        } else if (error.code === '42P01') {
-          msg = 'Tabel articles belum ada. Jalankan migration terlebih dahulu.';
-        }
-        setDataError(msg);
-        setArticles([]);
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        setDataError(errBody.error || `Gagal memuat data (HTTP ${res.status})`);
         return;
       }
 
-      // Map snake_case rows to Article interface
-      const mapped: Article[] = (data || []).map((row: any) => ({
+      const json = await res.json();
+
+      if (!json.success) {
+        setDataError(json.error || 'Gagal memuat data dari server');
+        return;
+      }
+
+      const { stats: apiStats, articles: apiArticles, recentComments: apiComments } = json.data;
+
+      // Map articles from API response to local Article interface
+      const mapped: Article[] = (apiArticles || []).map((row: any) => ({
         id: row.id,
         title: row.title,
         slug: row.slug,
         status: row.status ?? 'published',
-        viewCount: row.view_count ?? 0,
-        categoryName: row.categories?.name || null,
-        authorName: row.profiles?.username || null,
-        isFeatured: row.is_featured ?? false,
-        createdAt: row.created_at,
+        viewCount: row.viewCount ?? row.view_count ?? 0,
+        categoryName: row.categoryName ?? row.category_name ?? null,
+        authorName: row.authorName ?? row.author_name ?? null,
+        isFeatured: row.isFeatured ?? row.is_featured ?? false,
+        createdAt: row.createdAt ?? row.created_at,
       }));
 
       setArticles(mapped);
-      console.log(`[fetchArticles] Loaded ${mapped.length} articles from Supabase`);
+      setRecentComments((apiComments || []).map((c: any) => ({
+        id: c.id,
+        text: c.text,
+        createdAt: c.createdAt,
+        authorName: c.authorName,
+        articleTitle: c.articleTitle,
+      })));
 
-      // Derive stats from articles
-      setStats(prev => ({
-        totalArticles: mapped.length,
-        totalComments: prev?.totalComments ?? 0,
-        commentsToday: prev?.commentsToday ?? 0,
-        totalViews: mapped.reduce((sum, a) => sum + (a.viewCount || 0), 0),
-        totalCategories: new Set(mapped.map(a => a.categoryName).filter(Boolean)).size,
-      }));
+      setStats({
+        totalArticles: apiStats?.totalArticles ?? 0,
+        totalComments: apiStats?.totalComments ?? 0,
+        commentsToday: 0,
+        totalViews: apiStats?.totalViews ?? 0,
+        totalCategories: apiStats?.totalCategories ?? 0,
+      });
     } catch (err: any) {
-      console.error('[fetchArticles] Error:', err.message);
-      if (err.message?.includes('NEXT_PUBLIC_SUPABASE')) {
-        setDataError('Supabase belum dikonfigurasi. Set NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY.');
-      } else {
-        setDataError(`Gagal memuat artikel: ${err.message}`);
-      }
-      setArticles([]);
+      console.error('[fetchDashboardData] Error:', err.message);
+      setDataError(`Gagal memuat data: ${err.message}`);
     } finally {
       setDataLoading(false);
     }
-  }, []);
+  }, [token]);
 
   // ─── Auto-fetch on mount ──────────────────────────────────
   useEffect(() => {
     if (isAuthenticated) {
-      fetchArticles();
+      fetchDashboardData();
     }
-  }, [isAuthenticated, fetchArticles]);
+  }, [isAuthenticated, fetchDashboardData]);
 
-  // ─── Supabase Realtime for Comments ──────────────────────
-  // Graceful: skip if Supabase env vars are not configured
+  // Realtime disabled — Supabase client-side access removed for security.
+  // All data now fetched via server-side API routes.
   useEffect(() => {
-    if (!token) return;
-
-    let supabase: ReturnType<typeof getSupabaseClient> | null = null;
-    let channel: ReturnType<NonNullable<typeof supabase>['channel']> | null = null;
-
-    try {
-      supabase = getSupabaseClient();
-    } catch {
-      // Supabase not configured — realtime disabled
-      setRealtimeAvailable(false);
-      return;
-    }
-
-    setRealtimeAvailable(true);
-
-    channel = supabase
-      .channel('admin-comments-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'comments',
-        },
-        (payload) => {
-          const newComment = payload.new as Record<string, unknown>;
-          setStats((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  totalComments: prev.totalComments + 1,
-                  commentsToday: prev.commentsToday + 1,
-                }
-              : prev,
-          );
-          setRecentComments((prev) =>
-            [
-              {
-                id: String(newComment.id || ''),
-                text: String(newComment.content || newComment.text || ''),
-                createdAt: String(newComment.created_at || new Date().toISOString()),
-                authorName:
-                  String(
-                    (newComment.profiles as Record<string, unknown>)?.username || 'New User',
-                  ),
-                articleTitle: null,
-              },
-              ...prev,
-            ].slice(0, 10),
-          );
-          setNotification('Komentar baru masuk!');
-          setTimeout(() => setNotification(null), 3000);
-        },
-      )
-      .subscribe();
-
-    return () => {
-      if (supabase && channel) {
-        supabase.removeChannel(channel);
-      }
-    };
-  }, [token]);
+    setRealtimeAvailable(false);
+  }, []);
 
   // ─── Delete article ──────────────────────────────────────
   const handleDeleteArticle = async (id: string) => {
@@ -645,7 +580,7 @@ export default function AdminDashboard() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={fetchArticles}
+                    onClick={fetchDashboardData}
                     className="mt-2 text-red-400 hover:text-red-300"
                   >
                     <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
@@ -693,7 +628,7 @@ export default function AdminDashboard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={fetchArticles}
+                  onClick={fetchDashboardData}
                   disabled={dataLoading}
                   className="text-muted-foreground hover:text-neon"
                 >
@@ -867,7 +802,7 @@ export default function AdminDashboard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={fetchArticles}
+                  onClick={fetchDashboardData}
                   disabled={dataLoading}
                   className="text-muted-foreground hover:text-neon"
                 >
@@ -955,7 +890,7 @@ export default function AdminDashboard() {
           )}
         </AnimatePresence>
       </main>
-      <ArticleGeneratorDialog open={aiGenOpen} onOpenChange={(v) => { setAiGenOpen(v); if (!v) fetchArticles(); }} />
+      <ArticleGeneratorDialog open={aiGenOpen} onOpenChange={(v) => { setAiGenOpen(v); if (!v) fetchDashboardData(); }} />
     </div>
   );
 }

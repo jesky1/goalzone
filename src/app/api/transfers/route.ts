@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 export const revalidate = 1800 // Cache 30 minutes to save API calls
 
-const API_KEY = process.env.FOOTBALL_API_KEY || process.env.NEXT_PUBLIC_FOOTBALL_API_KEY
+const API_KEY = process.env.FOOTBALL_API_KEY
 const API_BASE = 'https://v3.football.api-sports.io'
 
 // Top clubs to fetch transfers for

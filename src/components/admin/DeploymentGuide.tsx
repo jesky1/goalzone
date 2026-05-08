@@ -860,9 +860,8 @@ function EnvVarsTab() {
             <Database className="w-4 h-4 text-neon" /> Supabase
           </h4>
           <div className="space-y-2">
-            <EnvVar name="NEXT_PUBLIC_SUPABASE_URL" description="URL project Supabase Anda" example="https://xxxxx.supabase.co" />
-            <EnvVar name="NEXT_PUBLIC_SUPABASE_ANON_KEY" description="Public anon key untuk client-side" example="eyJhbGciOiJI..." />
-            <EnvVar name="SUPABASE_SERVICE_ROLE_KEY" description="Secret service role key (bypasses RLS) - JANGAN EXPOSE!" example="eyJhbGciOiJI..." />
+            <EnvVar name="NEXT_PUBLIC_SUPABASE_URL" description="URL project Supabase Anda (public, aman)" example="https://xxxxx.supabase.co" />
+            <EnvVar name="SUPABASE_SERVICE_ROLE_KEY" description="Secret service role key (bypasses RLS) - JANGAN EXPOSE ke client!" example="eyJhbGciOiJI..." required={true} />
           </div>
         </div>
 
@@ -873,8 +872,7 @@ function EnvVarsTab() {
             <Globe className="w-4 h-4 text-neon" /> API-Football
           </h4>
           <div className="space-y-2">
-            <EnvVar name="NEXT_PUBLIC_FOOTBALL_API_KEY" description="API key dari api-football.com" example="a1b2c3d4e5f6..." required={false} />
-            <EnvVar name="FOOTBALL_API_KEY" description="API key (server-side only)" example="a1b2c3d4e5f6..." required={true} />
+            <EnvVar name="FOOTBALL_API_KEY" description="API key dari api-football.com (server-side only)" example="a1b2c3d4e5f6..." required={true} />
           </div>
         </div>
 
@@ -932,7 +930,6 @@ openssl rand -base64 32
 
 # --- Supabase ---
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJI...
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJI...
 
 # --- API-Football ---

@@ -30,7 +30,7 @@ export const config = {
   port: Number(process.env.ARTICLE_GEN_PORT) || 3005,
 
   // API-Football
-  footballApiKey: process.env.FOOTBALL_API_KEY || process.env.NEXT_PUBLIC_FOOTBALL_API_KEY || '',
+  footballApiKey: process.env.FOOTBALL_API_KEY || '',
   footballApiBase: 'https://v3.football.api-sports.io',
 
   // Leagues to monitor (API-Football league IDs)

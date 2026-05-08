@@ -40,7 +40,8 @@ import {
   AlertCircle,
   RefreshCw,
 } from 'lucide-react';
-import { getSupabaseClient } from '@/lib/supabase/client';
+// Supabase client-side access removed for security.
+// All data now fetched via server-side API routes (/api/admin/data).
 
 interface Category {
   id: string;
@@ -88,109 +89,69 @@ export default function AdminDashboard({ open, onClose }: AdminDashboardProps) {
   const [formIsFeatured, setFormIsFeatured] = useState(false);
   const [formReadTime, setFormReadTime] = useState('5');
 
-  // ─── fetchArticles — direct Supabase client query ──────────
-  // Fetches all articles from Supabase ordered by created_at DESC
-  const fetchArticles = useCallback(async () => {
+  // ─── fetchData — via API route (server-side, secure) ───────
+  // Fetches articles & categories through /api/admin/data API route
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setFetchError(null);
 
     try {
-      const supabase = getSupabaseClient();
-
-      const { data, error } = await supabase
-        .from('articles')
-        .select('*, categories(name, slug), profiles(username)')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('[fetchArticles] Supabase error:', JSON.stringify({
-          code: error.code,
-          message: error.message,
-          hint: error.hint,
-          details: error.details,
-        }));
-
-        // Provide user-friendly message for common errors
-        let msg = 'Gagal memuat artikel dari Supabase';
-        if (error.code === '42501' || error.message?.includes('policy')) {
-          msg = 'RLS memblokir akses. Tambahkan policy: CREATE POLICY "anon_read" ON articles FOR SELECT TO anon USING (true);';
-        } else if (error.code === '42P01') {
-          msg = 'Tabel articles belum ada di Supabase. Jalankan migration terlebih dahulu.';
-        }
-        setFetchError(msg);
-        setArticles([]);
+      const res = await fetch('/api/admin/data');
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        setFetchError(errBody.error || `Gagal memuat data (HTTP ${res.status})`);
         return;
       }
 
-      // Map Supabase rows (snake_case) to Article interface (camelCase)
-      const mapped: Article[] = (data || []).map((row: any) => ({
+      const json = await res.json();
+      if (!json.success) {
+        setFetchError(json.error || 'Gagal memuat data dari server');
+        return;
+      }
+
+      const { articles: apiArticles, categories: apiCategories } = json.data;
+
+      // Map articles from API to local Article interface
+      const mapped: Article[] = (apiArticles || []).map((row: any) => ({
         id: row.id,
         title: row.title,
         slug: row.slug,
         content: row.content,
         summary: row.summary,
-        imageUrl: row.cover_image,
+        imageUrl: row.imageUrl ?? null,
         category: {
-          name: row.categories?.name || 'Tanpa Kategori',
-          slug: row.categories?.slug || '',
+          name: row.categoryName || 'Tanpa Kategori',
+          slug: row.category?.slug || '',
         },
         author: {
-          username: row.profiles?.username || 'Unknown',
+          username: row.authorName || 'Unknown',
         },
-        viewCount: row.view_count ?? 0,
-        isFeatured: row.is_featured ?? false,
-        readTime: row.read_time ?? 5,
-        createdAt: row.created_at,
+        viewCount: row.viewCount ?? 0,
+        isFeatured: row.isFeatured ?? false,
+        readTime: row.readTime ?? 5,
+        createdAt: row.createdAt,
       }));
 
       setArticles(mapped);
-      console.log(`[fetchArticles] Loaded ${mapped.length} articles from Supabase`);
+      setCategories((apiCategories || []).map((c: any) => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+      })));
     } catch (err: any) {
-      console.error('[fetchArticles] Unexpected error:', err.message);
-      // Supabase client might not be configured
-      if (err.message?.includes('NEXT_PUBLIC_SUPABASE')) {
-        setFetchError('Supabase belum dikonfigurasi. Set NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY.');
-      } else {
-        setFetchError(`Gagal memuat artikel: ${err.message}`);
-      }
-      setArticles([]);
+      console.error('[fetchData] Error:', err.message);
+      setFetchError(`Gagal memuat data: ${err.message}`);
     } finally {
       setLoading(false);
-    }
-  }, []);
-
-  // ─── fetchCategories — direct Supabase client query ────────
-  const fetchCategories = useCallback(async () => {
-    try {
-      const supabase = getSupabaseClient();
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('sort_order', { ascending: true });
-
-      if (error) {
-        console.error('[fetchCategories] Supabase error:', error.message);
-        return;
-      }
-
-      const mapped: Category[] = (data || []).map((row: any) => ({
-        id: row.id,
-        name: row.name,
-        slug: row.slug,
-      }));
-      setCategories(mapped);
-    } catch (err: any) {
-      console.error('[fetchCategories] Error:', err.message);
     }
   }, []);
 
   // ─── Auto-fetch on mount ──────────────────────────────────
   useEffect(() => {
     if (open) {
-      fetchArticles();
-      fetchCategories();
+      fetchData();
     }
-  }, [open, fetchArticles, fetchCategories]);
+  }, [open, fetchData]);
 
   const resetForm = () => {
     setFormTitle('');
@@ -228,7 +189,7 @@ export default function AdminDashboard({ open, onClose }: AdminDashboardProps) {
         method: 'DELETE',
       });
       if (res.ok) {
-        fetchArticles();
+        fetchData();
       }
     } catch {
       // silently fail
@@ -267,7 +228,7 @@ export default function AdminDashboard({ open, onClose }: AdminDashboardProps) {
       if (res.ok) {
         setShowEditor(false);
         resetForm();
-        fetchArticles();
+        fetchData();
       }
     } catch {
       // silently fail
@@ -325,7 +286,7 @@ export default function AdminDashboard({ open, onClose }: AdminDashboardProps) {
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-red-400 break-words">{fetchError}</p>
                 </div>
-                <Button variant="ghost" size="sm" className="shrink-0 text-red-400 hover:text-red-300" onClick={fetchArticles}>
+                <Button variant="ghost" size="sm" className="shrink-0 text-red-400 hover:text-red-300" onClick={fetchData}>
                   <RefreshCw className="w-3.5 h-3.5" />
                 </Button>
               </div>
@@ -356,7 +317,7 @@ export default function AdminDashboard({ open, onClose }: AdminDashboardProps) {
               <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
                 <FileText className="w-4 h-4 text-neon" />
                 Daftar Artikel
-                <Button variant="ghost" size="sm" className="ml-auto h-6 w-6 p-0 text-muted-foreground hover:text-neon" onClick={fetchArticles} disabled={loading}>
+                <Button variant="ghost" size="sm" className="ml-auto h-6 w-6 p-0 text-muted-foreground hover:text-neon" onClick={fetchData} disabled={loading}>
                   <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
                 </Button>
               </h3>

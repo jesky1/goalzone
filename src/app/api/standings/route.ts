@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 export const revalidate = 300 // Cache 5 minutes
 
-const API_KEY = process.env.FOOTBALL_API_KEY || process.env.NEXT_PUBLIC_FOOTBALL_API_KEY
+const API_KEY = process.env.FOOTBALL_API_KEY
 const API_BASE = 'https://v3.football.api-sports.io'
 
 interface StandingEntry {
