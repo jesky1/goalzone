@@ -17,6 +17,7 @@ import StadiumName from '@/components/football/StadiumName';
 import TransferFeed from '@/components/football/TransferFeed';
 import GoogleTrendsWidget from '@/components/football/GoogleTrendsWidget';
 import NativeAdBanner from '@/components/football/NativeAdBanner';
+import AdSenseAdUnit from '@/components/football/AdSenseAdUnit';
 import SearchDialog from '@/components/football/SearchDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -897,6 +898,11 @@ export default function Home() {
           <NativeAdBanner />
         </div>
 
+        {/* AdSense Ad Unit — Below Hero */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
+          <AdSenseAdUnit adSlot="7152898605" />
+        </div>
+
         {/* Live Scores */}
         <section id="live" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-6">
@@ -1006,6 +1012,11 @@ export default function Home() {
           <NativeAdBanner />
         </div>
 
+        {/* AdSense Ad Unit — Between News & Transfer */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
+          <AdSenseAdUnit adSlot="7152898605" />
+        </div>
+
         {/* Transfer Feed */}
         <section id="transfer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-6">
@@ -1024,6 +1035,11 @@ export default function Home() {
       {/* Native Ad Banner — Above Footer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <NativeAdBanner />
+      </div>
+
+      {/* AdSense Ad Unit — Above Footer */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
+        <AdSenseAdUnit adSlot="7152898605" />
       </div>
 
       <Footer />
