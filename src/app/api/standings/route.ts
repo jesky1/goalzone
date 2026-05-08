@@ -43,31 +43,6 @@ const availableLeagues = Object.entries(LEAGUES).map(([slug, info]) => ({
   logo: `https://media.api-sports.io/football/leagues/${info.id}.png`,
 }))
 
-function getMockStandings(): StandingEntry[] {
-  return [
-    { position: 1, team: 'Liverpool', teamLogo: 'https://media.api-sports.io/football/teams/40.png', played: 28, won: 20, drawn: 5, lost: 3, goalsFor: 62, goalsAgainst: 24, goalDiff: 38, points: 65, form: ['W', 'W', 'D', 'W', 'L'] },
-    { position: 2, team: 'Arsenal', teamLogo: 'https://media.api-sports.io/football/teams/42.png', played: 28, won: 19, drawn: 6, lost: 3, goalsFor: 58, goalsAgainst: 22, goalDiff: 36, points: 63, form: ['W', 'L', 'W', 'W', 'D'] },
-    { position: 3, team: 'Manchester City', teamLogo: 'https://media.api-sports.io/football/teams/50.png', played: 27, won: 18, drawn: 5, lost: 4, goalsFor: 55, goalsAgainst: 28, goalDiff: 27, points: 59, form: ['L', 'W', 'W', 'D', 'W'] },
-    { position: 4, team: 'Nottingham Forest', teamLogo: 'https://media.api-sports.io/football/teams/65.png', played: 28, won: 17, drawn: 5, lost: 6, goalsFor: 46, goalsAgainst: 30, goalDiff: 16, points: 56, form: ['W', 'D', 'W', 'W', 'W'] },
-    { position: 5, team: 'Chelsea', teamLogo: 'https://media.api-sports.io/football/teams/49.png', played: 28, won: 16, drawn: 6, lost: 6, goalsFor: 52, goalsAgainst: 31, goalDiff: 21, points: 54, form: ['D', 'W', 'L', 'W', 'W'] },
-    { position: 6, team: 'Aston Villa', teamLogo: 'https://media.api-sports.io/football/teams/66.png', played: 28, won: 15, drawn: 6, lost: 7, goalsFor: 44, goalsAgainst: 34, goalDiff: 10, points: 51, form: ['W', 'W', 'D', 'L', 'W'] },
-    { position: 7, team: 'Newcastle United', teamLogo: 'https://media.api-sports.io/football/teams/34.png', played: 28, won: 14, drawn: 6, lost: 8, goalsFor: 42, goalsAgainst: 29, goalDiff: 13, points: 48, form: ['L', 'W', 'D', 'W', 'L'] },
-    { position: 8, team: 'Bournemouth', teamLogo: 'https://media.api-sports.io/football/teams/35.png', played: 28, won: 14, drawn: 5, lost: 9, goalsFor: 40, goalsAgainst: 35, goalDiff: 5, points: 47, form: ['W', 'L', 'W', 'W', 'D'] },
-    { position: 9, team: 'Brighton & Hove Albion', teamLogo: 'https://media.api-sports.io/football/teams/51.png', played: 28, won: 12, drawn: 8, lost: 8, goalsFor: 44, goalsAgainst: 38, goalDiff: 6, points: 44, form: ['D', 'D', 'W', 'L', 'W'] },
-    { position: 10, team: 'Manchester United', teamLogo: 'https://media.api-sports.io/football/teams/33.png', played: 28, won: 12, drawn: 5, lost: 11, goalsFor: 36, goalsAgainst: 38, goalDiff: -2, points: 41, form: ['L', 'W', 'L', 'D', 'W'] },
-    { position: 11, team: 'Fulham', teamLogo: 'https://media.api-sports.io/football/teams/36.png', played: 28, won: 10, drawn: 8, lost: 10, goalsFor: 40, goalsAgainst: 42, goalDiff: -2, points: 38, form: ['D', 'L', 'D', 'W', 'L'] },
-    { position: 12, team: 'Tottenham', teamLogo: 'https://media.api-sports.io/football/teams/47.png', played: 28, won: 10, drawn: 4, lost: 14, goalsFor: 52, goalsAgainst: 48, goalDiff: 4, points: 34, form: ['L', 'L', 'W', 'D', 'L'] },
-    { position: 13, team: 'West Ham United', teamLogo: 'https://media.api-sports.io/football/teams/48.png', played: 28, won: 9, drawn: 6, lost: 13, goalsFor: 34, goalsAgainst: 45, goalDiff: -11, points: 33, form: ['L', 'D', 'L', 'W', 'D'] },
-    { position: 14, team: 'Crystal Palace', teamLogo: 'https://media.api-sports.io/football/teams/52.png', played: 28, won: 8, drawn: 8, lost: 12, goalsFor: 30, goalsAgainst: 38, goalDiff: -8, points: 32, form: ['W', 'D', 'L', 'L', 'D'] },
-    { position: 15, team: 'Brentford', teamLogo: 'https://media.api-sports.io/football/teams/55.png', played: 28, won: 8, drawn: 7, lost: 13, goalsFor: 38, goalsAgainst: 46, goalDiff: -8, points: 31, form: ['D', 'L', 'W', 'L', 'W'] },
-    { position: 16, team: 'Everton', teamLogo: 'https://media.api-sports.io/football/teams/45.png', played: 28, won: 7, drawn: 8, lost: 13, goalsFor: 26, goalsAgainst: 40, goalDiff: -14, points: 29, form: ['D', 'L', 'D', 'L', 'D'] },
-    { position: 17, team: 'Wolverhampton', teamLogo: 'https://media.api-sports.io/football/teams/76.png', played: 28, won: 7, drawn: 6, lost: 15, goalsFor: 33, goalsAgainst: 50, goalDiff: -17, points: 27, form: ['L', 'L', 'W', 'D', 'L'] },
-    { position: 18, team: 'Leicester City', teamLogo: 'https://media.api-sports.io/football/teams/46.png', played: 28, won: 5, drawn: 7, lost: 16, goalsFor: 25, goalsAgainst: 53, goalDiff: -28, points: 22, form: ['L', 'D', 'L', 'L', 'W'] },
-    { position: 19, team: 'Ipswich Town', teamLogo: 'https://media.api-sports.io/football/teams/62.png', played: 28, won: 4, drawn: 8, lost: 16, goalsFor: 24, goalsAgainst: 52, goalDiff: -28, points: 20, form: ['L', 'D', 'L', 'L', 'D'] },
-    { position: 20, team: 'Southampton', teamLogo: 'https://media.api-sports.io/football/teams/41.png', played: 28, won: 3, drawn: 5, lost: 20, goalsFor: 19, goalsAgainst: 55, goalDiff: -36, points: 14, form: ['L', 'L', 'D', 'L', 'L'] },
-  ]
-}
-
 async function fetchStandings(leagueInfo: LeagueInfo): Promise<{ standings: StandingEntry[]; seasonLabel: string } | null> {
   const response = await fetch(
     `${API_BASE}/standings?league=${leagueInfo.id}&season=${leagueInfo.season}`,
@@ -122,11 +97,11 @@ export async function GET(request: Request) {
     ...extra,
   })
 
-  // If no API key, fallback to mock
+  // If no API key, return empty
   if (!API_KEY) {
     return NextResponse.json(
-      buildResponse('Premier League', '2026/27', getMockStandings(), 'mock', {
-        message: 'Set FOOTBALL_API_KEY in Vercel Environment Variables for real standings',
+      buildResponse('Premier League', '', [], 'none', {
+        message: 'Configure FOOTBALL_API_KEY in environment variables for real standings',
       })
     )
   }
@@ -162,17 +137,17 @@ export async function GET(request: Request) {
       )
     }
 
-    // No data for either season, return mock
+    // No data for any season, return empty
     return NextResponse.json(
-      buildResponse(leagueInfo.name, '2026/27', getMockStandings(), 'mock', {
+      buildResponse(leagueInfo.name, '', [], 'none', {
         error: 'No standings data available for this league',
       })
     )
   } catch (error) {
     console.error('Error fetching standings from API-Football:', error)
     return NextResponse.json(
-      buildResponse('Premier League', '2026/27', getMockStandings(), 'mock', {
-        error: 'API fetch failed, showing sample data',
+      buildResponse('Premier League', '', [], 'none', {
+        error: 'API fetch failed',
       })
     )
   }

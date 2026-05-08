@@ -130,44 +130,11 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Error fetching fan tokens from CoinGecko:', error)
-    // Fallback ke mock data
     return NextResponse.json({
-      tokens: getMockTokens(),
-      summary: getMockSummary(),
-      source: 'mock',
-      error: 'CoinGecko API unavailable, showing fallback data',
+      tokens: [],
+      summary: null,
+      source: 'none',
+      error: 'CoinGecko API unavailable',
     })
-  }
-}
-
-function getMockTokens() {
-  return TOKEN_IDS.map(id => {
-    const meta = TOKEN_META[id]
-    return {
-      symbol: meta.symbol,
-      name: `${meta.team} Fan Token`,
-      team: meta.team,
-      league: meta.league,
-      price: Math.round((1 + Math.random() * 5) * 1000) / 1000,
-      change24h: Math.round((Math.random() - 0.5) * 0.5 * 1000) / 1000,
-      changePercent24h: Math.round((Math.random() - 0.5) * 10 * 100) / 100,
-      volume24h: Math.floor(Math.random() * 5000000) + 100000,
-      marketCap: Math.floor(Math.random() * 50000000) + 5000000,
-      logo: meta.logo,
-      color: meta.color,
-      image: '',
-      sparkline: Array.from({ length: 168 }, () => 1 + (Math.random() - 0.5) * 0.3),
-      updatedAt: new Date().toISOString(),
-    }
-  }).sort((a, b) => b.marketCap - a.marketCap)
-}
-
-function getMockSummary() {
-  return {
-    totalMarketCap: 250000000,
-    totalTokens: 12,
-    gainers: 7,
-    losers: 5,
-    topGainer: { symbol: 'PSG', team: 'Paris Saint-Germain', changePercent24h: 5.88 },
   }
 }

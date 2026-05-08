@@ -74,149 +74,6 @@ function mapMatch(row: MatchResultRow): MatchResultAPI {
   };
 }
 
-// ─── Mock Data (fallback jika Supabase belum dikonfigurasi) ──
-
-// Common team logo URLs from API-Football CDN
-const TEAM_LOGOS: Record<string, string> = {
-  'Arsenal': 'https://media.api-sports.io/football/teams/42.png',
-  'Manchester City': 'https://media.api-sports.io/football/teams/50.png',
-  'Liverpool': 'https://media.api-sports.io/football/teams/40.png',
-  'Chelsea': 'https://media.api-sports.io/football/teams/49.png',
-  'Real Madrid': 'https://media.api-sports.io/football/teams/541.png',
-  'Barcelona': 'https://media.api-sports.io/football/teams/529.png',
-  'AC Milan': 'https://media.api-sports.io/football/teams/489.png',
-  'Inter Milan': 'https://media.api-sports.io/football/teams/505.png',
-  'Juventus': 'https://media.api-sports.io/football/teams/496.png',
-  'Napoli': 'https://media.api-sports.io/football/teams/492.png',
-  'Bayern Munich': 'https://media.api-sports.io/football/teams/157.png',
-  'Borussia Dortmund': 'https://media.api-sports.io/football/teams/165.png',
-  'RB Leipzig': 'https://media.api-sports.io/football/teams/173.png',
-  'PSG': 'https://media.api-sports.io/football/teams/85.png',
-  'Marseille': 'https://media.api-sports.io/football/teams/81.png',
-};
-
-function getTeamLogo(teamName: string): string | null {
-  return TEAM_LOGOS[teamName] || null;
-}
-
-function getMockResults(statusFilter: string = 'all'): MatchResultAPI[] {
-  const all: MatchResultAPI[] = [
-    // ── Scheduled (Upcoming) ──
-    {
-      id: 'mock-up1',
-      homeTeam: 'Liverpool',
-      awayTeam: 'Arsenal',
-      homeScore: 0, awayScore: 0,
-      matchDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-      league: 'Premier League', season: 2025, venue: 'Anfield', matchWeek: 31,
-      status: 'scheduled',
-      homeTeamLogoUrl: getTeamLogo('Liverpool'),
-      awayTeamLogoUrl: getTeamLogo('Arsenal'),
-      notes: 'Big Match',
-    },
-    {
-      id: 'mock-up2',
-      homeTeam: 'Juventus',
-      awayTeam: 'Napoli',
-      homeScore: 0, awayScore: 0,
-      matchDate: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
-      league: 'Serie A', season: 2025, venue: 'Allianz Stadium', matchWeek: 30,
-      status: 'scheduled',
-      homeTeamLogoUrl: getTeamLogo('Juventus'),
-      awayTeamLogoUrl: getTeamLogo('Napoli'),
-      notes: null,
-    },
-    {
-      id: 'mock-up3',
-      homeTeam: 'Bayern Munich',
-      awayTeam: 'RB Leipzig',
-      homeScore: 0, awayScore: 0,
-      matchDate: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
-      league: 'Bundesliga', season: 2025, venue: 'Allianz Arena', matchWeek: 27,
-      status: 'scheduled',
-      homeTeamLogoUrl: getTeamLogo('Bayern Munich'),
-      awayTeamLogoUrl: getTeamLogo('RB Leipzig'),
-      notes: null,
-    },
-    // ── Finished ──
-    {
-      id: 'mock-1',
-      homeTeam: 'Arsenal',
-      awayTeam: 'Manchester City',
-      homeScore: 2, awayScore: 1,
-      matchDate: new Date().toISOString().split('T')[0],
-      league: 'Premier League', season: 2025, venue: 'Emirates Stadium', matchWeek: 28,
-      status: 'finished',
-      homeTeamLogoUrl: getTeamLogo('Arsenal'),
-      awayTeamLogoUrl: getTeamLogo('Manchester City'),
-      notes: null,
-    },
-    {
-      id: 'mock-2',
-      homeTeam: 'Real Madrid',
-      awayTeam: 'Barcelona',
-      homeScore: 3, awayScore: 3,
-      matchDate: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-      league: 'La Liga', season: 2025, venue: 'Santiago Bernabéu', matchWeek: 30,
-      status: 'finished',
-      homeTeamLogoUrl: getTeamLogo('Real Madrid'),
-      awayTeamLogoUrl: getTeamLogo('Barcelona'),
-      notes: 'El Clásico',
-    },
-    {
-      id: 'mock-3',
-      homeTeam: 'AC Milan',
-      awayTeam: 'Inter Milan',
-      homeScore: 1, awayScore: 2,
-      matchDate: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0],
-      league: 'Serie A', season: 2025, venue: 'San Siro', matchWeek: 29,
-      status: 'finished',
-      homeTeamLogoUrl: getTeamLogo('AC Milan'),
-      awayTeamLogoUrl: getTeamLogo('Inter Milan'),
-      notes: 'Derby della Madonnina',
-    },
-    {
-      id: 'mock-4',
-      homeTeam: 'Bayern Munich',
-      awayTeam: 'Borussia Dortmund',
-      homeScore: 4, awayScore: 2,
-      matchDate: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0],
-      league: 'Bundesliga', season: 2025, venue: 'Allianz Arena', matchWeek: 26,
-      status: 'finished',
-      homeTeamLogoUrl: getTeamLogo('Bayern Munich'),
-      awayTeamLogoUrl: getTeamLogo('Borussia Dortmund'),
-      notes: null,
-    },
-    {
-      id: 'mock-5',
-      homeTeam: 'Liverpool',
-      awayTeam: 'Chelsea',
-      homeScore: 0, awayScore: 0,
-      matchDate: new Date(Date.now() - 4 * 86400000).toISOString().split('T')[0],
-      league: 'Premier League', season: 2025, venue: 'Anfield', matchWeek: 27,
-      status: 'postponed',
-      homeTeamLogoUrl: getTeamLogo('Liverpool'),
-      awayTeamLogoUrl: getTeamLogo('Chelsea'),
-      notes: 'Ditunda karena cuaca buruk',
-    },
-    {
-      id: 'mock-6',
-      homeTeam: 'PSG',
-      awayTeam: 'Marseille',
-      homeScore: 2, awayScore: 0,
-      matchDate: new Date(Date.now() - 5 * 86400000).toISOString().split('T')[0],
-      league: 'Ligue 1', season: 2025, venue: 'Parc des Princes', matchWeek: 25,
-      status: 'finished',
-      homeTeamLogoUrl: getTeamLogo('PSG'),
-      awayTeamLogoUrl: getTeamLogo('Marseille'),
-      notes: 'Le Classique',
-    },
-  ];
-
-  if (statusFilter === 'all') return all;
-  return all.filter(m => m.status === statusFilter);
-}
-
 // ─── GET /api/match-results ──────────────────────────────────
 
 export async function GET(request: NextRequest) {
@@ -241,30 +98,17 @@ export async function GET(request: NextRequest) {
     const { data, error, count } = await query;
 
     if (error) {
-      // Jika tabel belum ada atau RLS blokir, fallback ke mock
-      if (error.code === '42P01' || error.code === '42501') {
-        console.warn(`[match-results] Table/RLS issue (${error.code}), using mock data`);
-        return NextResponse.json({
-          success: true,
-          matches: getMockResults(statusFilter),
-          total: getMockResults(statusFilter).length,
-          source: 'mock',
-        });
-      }
-      throw error;
+      // Jika tabel belum ada atau RLS blokir, return empty
+      console.warn(`[match-results] Table/RLS issue (${error.code}), returning empty`);
+      return NextResponse.json({
+        success: true,
+        matches: [],
+        total: 0,
+        source: 'none',
+      });
     }
 
     const matches = (data ?? []).map(mapMatch);
-
-    // Jika kosong, fallback ke mock agar UI tetap menampilkan sesuatu
-    if (matches.length === 0) {
-      return NextResponse.json({
-        success: true,
-        matches: getMockResults(statusFilter),
-        total: getMockResults(statusFilter).length,
-        source: 'mock',
-      });
-    }
 
     return NextResponse.json({
       success: true,
@@ -276,9 +120,9 @@ export async function GET(request: NextRequest) {
     console.error('[match-results GET Error]', error.message);
     return NextResponse.json({
       success: true,
-      matches: getMockResults(statusFilter),
-      total: getMockResults(statusFilter).length,
-      source: 'mock',
+      matches: [],
+      total: 0,
+      source: 'none',
       error: error.message,
     });
   }

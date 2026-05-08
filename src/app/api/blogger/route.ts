@@ -29,55 +29,6 @@ interface BloggerPost {
   }
 }
 
-// Mock fallback saat env vars belum dikonfigurasi
-const MOCK_POSTS: BloggerPost[] = [
-  {
-    id: 'mock-1',
-    title: 'Preview: Real Madrid vs Barcelona — El Clasico Akhir Pekan Ini',
-    published: '2025-07-15T08:00:00.000+07:00',
-    updated: '2025-07-15T10:30:00.000+07:00',
-    url: 'https://blog.example.com/2025/07/preview-real-madrid-vs-barcelona.html',
-    labels: ['La Liga', 'Preview'],
-    author: { displayName: 'GOALZONE Editorial' },
-  },
-  {
-    id: 'mock-2',
-    title: 'Transfer Update: Florian Wirtz Resmi ke Liverpool Senilai €150 Juta',
-    published: '2025-07-14T14:00:00.000+07:00',
-    updated: '2025-07-14T16:00:00.000+07:00',
-    url: 'https://blog.example.com/2025/07/transfer-wirtz-liverpool.html',
-    labels: ['Transfer', 'Premier League'],
-    author: { displayName: 'GOALZONE Editorial' },
-  },
-  {
-    id: 'mock-3',
-    title: 'Analisis Taktik: Guardiola Ubah Formasi 3-4-3 di Manchester City',
-    published: '2025-07-13T09:00:00.000+07:00',
-    updated: '2025-07-13T12:00:00.000+07:00',
-    url: 'https://blog.example.com/2025/07/analisis-guardiola-3-4-3.html',
-    labels: ['Analisis Taktis', 'Premier League'],
-    author: { displayName: 'GOALZONE Editorial' },
-  },
-  {
-    id: 'mock-4',
-    title: 'Top 5 Pemain Muda Terbaik Musim 2024/25 — Lamine Yamal Mendominasi',
-    published: '2025-07-12T11:00:00.000+07:00',
-    updated: '2025-07-12T14:00:00.000+07:00',
-    url: 'https://blog.example.com/2025/07/top-5-pemain-muda.html',
-    labels: ['Opini', 'La Liga'],
-    author: { displayName: 'GOALZONE Editorial' },
-  },
-  {
-    id: 'mock-5',
-    title: 'Jadwal Liga Champions 2025/26: Fase Baru Swiss Model',
-    published: '2025-07-11T07:00:00.000+07:00',
-    updated: '2025-07-11T09:00:00.000+07:00',
-    url: 'https://blog.example.com/2025/07/jadwal-liga-champions.html',
-    labels: ['Champions League'],
-    author: { displayName: 'GOALZONE Editorial' },
-  },
-]
-
 export async function GET(request: NextRequest) {
   const blogId = process.env.BLOGGER_BLOG_ID
   const apiKey = process.env.BLOGGER_API_KEY
@@ -142,11 +93,11 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // ─── Fallback: Mock data ────────────────────────────────────
+  // ─── No API key configured ──────────────────────────────────
   return NextResponse.json({
-    posts: MOCK_POSTS.slice(0, maxResults),
-    total: MOCK_POSTS.length,
-    source: 'mock',
+    posts: [],
+    total: 0,
+    source: 'none',
     blogId: blogId || null,
     notice: !blogId
       ? 'BLOGGER_BLOG_ID belum dikonfigurasi. Set BLOGGER_BLOG_ID dan BLOGGER_API_KEY di .env.local'

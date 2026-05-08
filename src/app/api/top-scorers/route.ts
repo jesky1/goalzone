@@ -39,21 +39,6 @@ const availableLeagues = Object.entries(LEAGUES).map(([slug, info]) => ({
   logo: `https://media.api-sports.io/football/leagues/${info.id}.png`,
 }))
 
-function getMockTopScorers(): TopScorer[] {
-  return [
-    { rank: 1, name: 'Mohamed Salah', photo: 'https://media.api-sports.io/football/players/306.png', team: 'Liverpool', teamLogo: 'https://media.api-sports.io/football/teams/40.png', goals: 22, assists: 14, minutesPlayed: 2430 },
-    { rank: 2, name: 'Erling Haaland', photo: 'https://media.api-sports.io/football/players/882.png', team: 'Manchester City', teamLogo: 'https://media.api-sports.io/football/teams/50.png', goals: 21, assists: 5, minutesPlayed: 2250 },
-    { rank: 3, name: 'Alexander Isak', photo: 'https://media.api-sports.io/football/players/524.png', team: 'Newcastle United', teamLogo: 'https://media.api-sports.io/football/teams/34.png', goals: 18, assists: 4, minutesPlayed: 2190 },
-    { rank: 4, name: 'Bukayo Saka', photo: 'https://media.api-sports.io/football/players/519.png', team: 'Arsenal', teamLogo: 'https://media.api-sports.io/football/teams/42.png', goals: 16, assists: 11, minutesPlayed: 2310 },
-    { rank: 5, name: 'Bryan Mbeumo', photo: 'https://media.api-sports.io/football/players/620.png', team: 'Brentford', teamLogo: 'https://media.api-sports.io/football/teams/55.png', goals: 15, assists: 3, minutesPlayed: 2340 },
-    { rank: 6, name: 'Cole Palmer', photo: 'https://media.api-sports.io/football/players/624.png', team: 'Chelsea', teamLogo: 'https://media.api-sports.io/football/teams/49.png', goals: 15, assists: 6, minutesPlayed: 2160 },
-    { rank: 7, name: 'Chris Wood', photo: 'https://media.api-sports.io/football/players/516.png', team: 'Nottingham Forest', teamLogo: 'https://media.api-sports.io/football/teams/65.png', goals: 14, assists: 3, minutesPlayed: 2280 },
-    { rank: 8, name: 'Kai Havertz', photo: 'https://media.api-sports.io/football/players/506.png', team: 'Arsenal', teamLogo: 'https://media.api-sports.io/football/teams/42.png', goals: 13, assists: 5, minutesPlayed: 2100 },
-    { rank: 9, name: 'Matheus Cunha', photo: 'https://media.api-sports.io/football/players/741.png', team: 'Wolverhampton', teamLogo: 'https://media.api-sports.io/football/teams/76.png', goals: 12, assists: 7, minutesPlayed: 2220 },
-    { rank: 10, name: 'Dominic Solanke', photo: 'https://media.api-sports.io/football/players/533.png', team: 'Tottenham', teamLogo: 'https://media.api-sports.io/football/teams/47.png', goals: 12, assists: 4, minutesPlayed: 2070 },
-  ]
-}
-
 async function fetchTopScorers(leagueInfo: LeagueInfo): Promise<{ topScorers: TopScorer[]; seasonLabel: string } | null> {
   const response = await fetch(
     `${API_BASE}/players/topscorers?league=${leagueInfo.id}&season=${leagueInfo.season}`,
@@ -103,12 +88,12 @@ export async function GET(request: Request) {
     ...extra,
   })
 
-  // If no API key, fallback to mock
+  // If no API key, return empty
   if (!API_KEY) {
     return NextResponse.json(
-      buildResponse('Premier League', getMockTopScorers(), 'mock', {
-        season: '2026/27',
-        message: 'Set FOOTBALL_API_KEY in Vercel Environment Variables for real top scorers',
+      buildResponse('Premier League', [], 'none', {
+        season: '',
+        message: 'Configure FOOTBALL_API_KEY in environment variables for real top scorers',
       })
     )
   }
@@ -145,19 +130,19 @@ export async function GET(request: Request) {
       )
     }
 
-    // No data for either season, return mock
+    // No data for any season, return empty
     return NextResponse.json(
-      buildResponse(leagueInfo.name, getMockTopScorers(), 'mock', {
-        season: '2026/27',
+      buildResponse(leagueInfo.name, [], 'none', {
+        season: '',
         error: 'No top scorers data available for this league',
       })
     )
   } catch (error) {
     console.error('Error fetching top scorers from API-Football:', error)
     return NextResponse.json(
-      buildResponse('Premier League', getMockTopScorers(), 'mock', {
-        season: '2026/27',
-        error: 'API fetch failed, showing sample data',
+      buildResponse('Premier League', [], 'none', {
+        season: '',
+        error: 'API fetch failed',
       })
     )
   }

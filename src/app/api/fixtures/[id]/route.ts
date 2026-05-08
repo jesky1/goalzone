@@ -46,7 +46,12 @@ export async function GET(
   const fixtureId = id
 
   if (!API_KEY) {
-    return NextResponse.json(getMockFixtureDetail(fixtureId))
+    return NextResponse.json({
+      success: false,
+      error: 'Fixture not found',
+      source: 'none',
+      message: 'Set FOOTBALL_API_KEY for real match details',
+    })
   }
 
   try {
@@ -63,7 +68,11 @@ export async function GET(
     const fixture = data.response?.[0]
 
     if (!fixture) {
-      return NextResponse.json({ error: 'Match not found' }, { status: 404 })
+      return NextResponse.json({
+        success: false,
+        error: 'Fixture not found',
+        source: 'none',
+      }, { status: 404 })
     }
 
     const homeLineup = parseLineup(fixture.lineups?.[0], fixture.events || [], fixture.teams.home.id)
@@ -105,7 +114,11 @@ export async function GET(
     })
   } catch (error) {
     console.error('Error fetching fixture detail:', error)
-    return NextResponse.json(getMockFixtureDetail(fixtureId))
+    return NextResponse.json({
+      success: false,
+      error: 'Fixture not found',
+      source: 'none',
+    })
   }
 }
 
@@ -190,104 +203,4 @@ function extractMatchEvents(events: any[], teamId: number) {
         card: e.cards?.[0]?.color || null,
       }
     })
-}
-
-function getMockFixtureDetail(id: string) {
-  const pp = (pid: number) => `https://media.api-sports.io/football/players/${pid}.png`
-
-  return {
-    fixture: {
-      id: parseInt(id) || 0,
-      date: new Date().toISOString(),
-      status: 'LIVE',
-      elapsed: 67,
-      referee: 'Michael Oliver',
-      venue: 'Emirates Stadium',
-      venueCity: 'London',
-      venueCapacity: 60704,
-      venueId: 555,
-      homeTeam: 'Arsenal',
-      awayTeam: 'Manchester City',
-      homeLogo: 'https://media.api-sports.io/football/teams/42.png',
-      awayLogo: 'https://media.api-sports.io/football/teams/50.png',
-      homeScore: 2,
-      awayScore: 1,
-      homeWinner: true,
-      awayWinner: false,
-      league: {
-        name: 'Premier League',
-        country: 'England',
-        logo: 'https://media.api-sports.io/football/leagues/39.png',
-        round: 'Regular Season - 28',
-      },
-      homeEvents: [
-        { type: 'goal', minute: 12, player: 'B. Saka', playerId: 873, playerPhoto: pp(873), detail: 'Normal Goal', card: null },
-        { type: 'goal', minute: 45, player: 'K. Havertz', playerId: 860, playerPhoto: pp(860), detail: 'Normal Goal', card: null },
-        { type: 'card', minute: 34, player: 'M. Rice', playerId: 289, playerPhoto: pp(289), detail: 'Yellow Card', card: 'yellow' },
-      ],
-      awayEvents: [
-        { type: 'goal', minute: 38, player: 'E. Haaland', playerId: 882, playerPhoto: pp(882), detail: 'Normal Goal', card: null },
-      ],
-      homeStatistics: [
-        { type: 'Total Shots', value: 14 },
-        { type: 'Shots on Goal', value: 6 },
-        { type: 'Ball Possession', value: '52%' },
-        { type: 'Corners', value: 5 },
-        { type: 'Fouls', value: 9 },
-      ],
-      awayStatistics: [
-        { type: 'Total Shots', value: 11 },
-        { type: 'Shots on Goal', value: 3 },
-        { type: 'Ball Possession', value: '48%' },
-        { type: 'Corners', value: 7 },
-        { type: 'Fouls', value: 12 },
-      ],
-    },
-    homeLineup: {
-      team: { id: 42, name: 'Arsenal', logo: 'https://media.api-sports.io/football/teams/42.png' },
-      coach: { id: 1, name: 'Mikel Arteta', photo: 'https://media.api-sports.io/football/coachs/1.png' },
-      formation: '4-3-3',
-      startXI: [
-        { id: 154, name: 'D. Raya', number: 22, position: 'G', grid: '1:1', rating: 7.2, photo: pp(154), events: [] },
-        { id: 514, name: 'B. White', number: 4, position: 'D', grid: '2:1', rating: 7.0, photo: pp(514), events: [] },
-        { id: 2930, name: 'G. Saliba', number: 2, position: 'D', grid: '2:2', rating: 7.5, photo: pp(2930), events: [] },
-        { id: 2932, name: 'W. Saliba', number: 6, position: 'D', grid: '2:3', rating: 7.3, photo: pp(2932), events: [] },
-        { id: 883, name: 'O. Zinchenko', number: 35, position: 'D', grid: '2:4', rating: 6.8, photo: pp(883), events: [] },
-        { id: 289, name: 'M. Rice', number: 41, position: 'M', grid: '3:2', rating: 7.6, photo: pp(289), events: [{ type: 'card', detail: 'Yellow Card', time: 34 }] },
-        { id: 882, name: 'M. Ødegaard', number: 8, position: 'M', grid: '3:3', rating: 8.1, photo: pp(882), events: [] },
-        { id: 475, name: 'T. Partey', number: 5, position: 'M', grid: '3:1', rating: 6.9, photo: pp(475), events: [] },
-        { id: 873, name: 'B. Saka', number: 7, position: 'F', grid: '4:1', rating: 8.5, photo: pp(873), events: [{ type: 'goal', detail: 'Normal Goal', time: 12 }] },
-        { id: 860, name: 'K. Havertz', number: 29, position: 'F', grid: '4:2', rating: 7.8, photo: pp(860), events: [{ type: 'goal', detail: 'Normal Goal', time: 45 }] },
-        { id: 874, name: 'G. Martinelli', number: 11, position: 'F', grid: '4:3', rating: 6.7, photo: pp(874), events: [] },
-      ],
-      substitutes: [
-        { id: 884, name: 'L. Trossard', number: 19, position: 'SUB', grid: null, rating: 7.0, photo: pp(884), events: [] },
-        { id: 19310, name: 'E. Nwaneri', number: 53, position: 'SUB', grid: null, rating: 6.5, photo: pp(19310), events: [] },
-      ],
-    },
-    awayLineup: {
-      team: { id: 50, name: 'Manchester City', logo: 'https://media.api-sports.io/football/teams/50.png' },
-      coach: { id: 2, name: 'Pep Guardiola', photo: 'https://media.api-sports.io/football/coachs/2.png' },
-      formation: '4-3-3',
-      startXI: [
-        { id: 694, name: 'E. Ederson', number: 31, position: 'G', grid: '1:1', rating: 6.5, photo: pp(694), events: [] },
-        { id: 300, name: 'K. Walker', number: 2, position: 'D', grid: '2:1', rating: 6.3, photo: pp(300), events: [] },
-        { id: 302, name: 'R. Dias', number: 3, position: 'D', grid: '2:2', rating: 6.8, photo: pp(302), events: [] },
-        { id: 20919, name: 'M. Akanji', number: 25, position: 'D', grid: '2:3', rating: 6.6, photo: pp(20919), events: [] },
-        { id: 862, name: 'N. Aké', number: 6, position: 'D', grid: '2:4', rating: 6.4, photo: pp(862), events: [] },
-        { id: 92, name: 'R. De Bruyne', number: 17, position: 'M', grid: '3:2', rating: 7.2, photo: pp(92), events: [] },
-        { id: 866, name: 'B. Silva', number: 20, position: 'M', grid: '3:3', rating: 7.0, photo: pp(866), events: [] },
-        { id: 47731, name: 'R. Lewis', number: 82, position: 'M', grid: '3:1', rating: 6.5, photo: pp(47731), events: [] },
-        { id: 304, name: 'P. Foden', number: 47, position: 'F', grid: '4:2', rating: 6.9, photo: pp(304), events: [] },
-        { id: 469, name: 'M. Grealish', number: 10, position: 'F', grid: '4:1', rating: 6.7, photo: pp(469), events: [] },
-        { id: 882, name: 'E. Haaland', number: 9, position: 'F', grid: '4:3', rating: 7.9, photo: pp(882), events: [{ type: 'goal', detail: 'Normal Goal', time: 38 }] },
-      ],
-      substitutes: [
-        { id: 284682, name: 'J. Doku', number: 11, position: 'SUB', grid: null, rating: 6.2, photo: pp(284682), events: [] },
-        { id: 9282, name: 'O. Bobb', number: 52, position: 'SUB', grid: null, rating: 6.0, photo: pp(9282), events: [] },
-      ],
-    },
-    source: 'mock',
-    message: 'Set FOOTBALL_API_KEY for real match details',
-  }
 }
