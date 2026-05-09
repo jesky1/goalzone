@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
   },
   allowedDevOrigins: [
     '.space-z.ai',
+    'preview-chat-316c8979-28ce-4e36-98ce-563e2662d80c.space-z.ai',
   ],
   async headers() {
     return [
