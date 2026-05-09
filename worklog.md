@@ -56,3 +56,35 @@ Task: Fix article images cropped
 Stage Summary:
 - Already using aspect-video + object-contain for news cards
 - Images no longer cropped
+---
+Task ID: 1
+Agent: main
+Task: Fix team page to use real Football API data instead of mock/placeholder data
+
+Work Log:
+- Analyzed .env file — FOOTBALL_API_KEY not set, causing all API routes to return mock data
+- Rewrote /api/teams/route.ts:
+  - Removed all mock squad data (Player 1, Player 2, etc.)
+  - Removed mock standings (#1, 20 Won, etc.)
+  - Removed mock fixtures (Opponent FC, Rival FC, etc.)
+  - Added dynamic team lookup by name via /teams?search= when slug not in map
+  - Expanded TEAM_SLUG_MAP from 20 to 60+ teams
+  - When API key not configured, returns proper error JSON with instructions instead of fake data
+  - Added player photo URL generation from player ID
+  - Added position normalization (Goalkeeper→GK, Defender→DEF, etc.)
+- Rewrote teams/[slug]/page.tsx:
+  - Support both slug (/teams/real-madrid) and numeric ID (/teams/541)
+  - Proper error state when API key not configured with setup instructions
+  - Squad grouped by position (GK → DEF → MID → FWD)
+  - PlayerPhoto component with fallback on image error
+  - Skeleton loaders for squad and fixtures during loading
+  - "LIVE DATA" badge when data comes from API
+  - No more placeholder text like "#1 Peringkat" or "20 Menang" — all from API
+- Lint check passed with 0 errors
+- Committed but push failed (GitHub PAT expired)
+
+Stage Summary:
+- API route now exclusively uses real Football API data — no mock fallback
+- Team page shows skeleton loaders, grouped squad, and proper empty states
+- User needs to set FOOTBALL_API_KEY + FOOTBALL_API_BASE in Vercel env vars
+- Push requires new GitHub PAT from user
