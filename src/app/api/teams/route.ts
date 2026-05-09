@@ -36,6 +36,25 @@ const TEAM_SLUG_MAP: Record<string, { id: number; name: string; season: number }
   'porto': { id: 212, name: 'Porto', season: 2024 },
 };
 
+// ─── Position normalization ──────────────────────────────────
+// API-Football /players/squads returns positions like "Goalkeeper", "Defender", etc.
+// We normalize them to short codes for UI consistency.
+function normalizePosition(pos: string): string {
+  const p = (pos || '').toLowerCase().trim();
+  if (p.includes('goalkeeper') || p === 'gk') return 'GK';
+  if (p.includes('defender') || p === 'def') return 'DEF';
+  if (p.includes('midfield') || p === 'mid') return 'MID';
+  if (p.includes('attack') || p.includes('forward') || p === 'fwd') return 'FWD';
+  return p.toUpperCase().substring(0, 3);
+}
+
+// ─── Map API position to player photo path ──────────────────
+// API-Football player photos follow a predictable URL pattern:
+// https://media.api-sports.io/football/players/{playerId}.png
+function playerPhotoUrl(playerId: number): string {
+  return `https://media.api-sports.io/football/players/${playerId}.png`;
+}
+
 // ─── Mock Data ──────────────────────────────────────────────
 function getMockTeam(slug: string) {
   const info = TEAM_SLUG_MAP[slug] || { id: 0, name: slug.replace(/-/g, ' '), season: 2024 };
@@ -51,14 +70,7 @@ function getMockTeam(slug: string) {
       venueCapacity: 50000,
     },
     standings: { rank: 1, played: 30, won: 20, drawn: 5, lost: 5, goalsFor: 65, goalsAgainst: 25, points: 65, form: ['W','W','D','W','L'] },
-    squad: [
-      { id: 1, name: 'Player 1', number: 1, position: 'GK', age: 28, nationality: 'Country', photo: null },
-      { id: 2, name: 'Player 2', number: 4, position: 'DEF', age: 25, nationality: 'Country', photo: null },
-      { id: 3, name: 'Player 3', number: 8, position: 'MID', age: 27, nationality: 'Country', photo: null },
-      { id: 4, name: 'Player 4', number: 9, position: 'FWD', age: 24, nationality: 'Country', photo: null },
-      { id: 5, name: 'Player 5', number: 10, position: 'MID', age: 30, nationality: 'Country', photo: null },
-      { id: 6, name: 'Player 6', number: 11, position: 'FWD', age: 22, nationality: 'Country', photo: null },
-    ],
+    squad: [],
     fixtures: [
       { id: 100, homeTeam: info.name, awayTeam: 'Opponent FC', homeScore: 2, awayScore: 1, status: 'FT', date: '2025-01-15', league: 'League' },
       { id: 101, homeTeam: 'Rival FC', awayTeam: info.name, homeScore: 0, awayScore: 3, status: 'FT', date: '2025-01-10', league: 'League' },
@@ -90,7 +102,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Team tidak ditemukan' }, { status: 404 });
   }
 
-  // If API not configured, return mock
+  // If API not configured, return mock (empty squad — no fake players)
   if (!isFootballApiConfigured) {
     return NextResponse.json({ success: true, ...getMockTeam(resolvedSlug || `team-${resolvedId}`) });
   }
@@ -120,7 +132,9 @@ export async function GET(request: NextRequest) {
       venueCapacity: venueRaw?.capacity || 0,
     };
 
-    // ─── 2. Squad ─────────────────────────────────────────
+    // ─── 2. Squad (from /players/squads) ──────────────────
+    // This endpoint returns the current squad with real player names,
+    // numbers, and positions. Photo URLs are constructed from player IDs.
     let squad: any[] = [];
     try {
       const squadRes = await footballFetch(`/players/squads?team=${resolvedId}`, {
@@ -132,12 +146,11 @@ export async function GET(request: NextRequest) {
         id: p.id,
         name: p.name,
         number: p.number || '-',
-        position: p.position || 'N/A',
-        age: null,
-        nationality: null,
-        photo: null,
+        position: normalizePosition(p.position),
+        photo: playerPhotoUrl(p.id),
       }));
-    } catch {
+    } catch (err) {
+      console.warn('[Team API] Squad endpoint failed:', err);
       // Squad endpoint may not be available on all plans
     }
 

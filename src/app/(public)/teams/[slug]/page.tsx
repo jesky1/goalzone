@@ -16,7 +16,7 @@ import {
   Flag,
   Loader2,
   AlertCircle,
-  ChevronRight,
+  UserCircle,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { safeSrc } from '@/lib/safe-src';
@@ -180,8 +180,6 @@ interface SquadPlayer {
   name: string;
   number: number | string;
   position: string;
-  age: number | null;
-  nationality: string | null;
   photo: string | null;
 }
 
@@ -211,12 +209,95 @@ interface TeamData {
 
 // ─── Position order for sorting ─────────────────────────────
 const POS_ORDER: Record<string, number> = { GK: 0, DEF: 1, MID: 2, FWD: 3 };
-const POS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  GK: { bg: 'bg-amber-500/15', text: 'text-amber-400', border: 'border-amber-500/20' },
-  DEF: { bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/20' },
-  MID: { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/20' },
-  FWD: { bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/20' },
+const POS_COLORS: Record<string, { bg: string; text: string; border: string; label: string }> = {
+  GK:  { bg: 'bg-amber-500/15',  text: 'text-amber-400',  border: 'border-amber-500/20',  label: 'Goalkeeper' },
+  DEF: { bg: 'bg-blue-500/15',   text: 'text-blue-400',   border: 'border-blue-500/20',   label: 'Defender' },
+  MID: { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/20', label: 'Midfielder' },
+  FWD: { bg: 'bg-red-500/15',    text: 'text-red-400',    border: 'border-red-500/20',    label: 'Forward' },
 };
+
+// ============================================================
+// Squad Skeleton Loader
+// ============================================================
+function SquadSkeleton() {
+  return (
+    <div className="bg-white/[0.04] backdrop-blur-md border border-white/[0.08] rounded-xl overflow-hidden">
+      <div className="px-5 py-4 border-b border-white/[0.08] flex items-center gap-2">
+        <Users className="w-4 h-4 text-slate-600" />
+        <Skeleton className="h-4 w-14 bg-white/[0.06]" />
+        <Skeleton className="h-3 w-16 bg-white/[0.04] ml-auto" />
+      </div>
+      <div className="p-4 space-y-3">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <Skeleton className="h-4 w-6 bg-white/[0.06] shrink-0" />
+            <Skeleton className="w-8 h-8 rounded-full bg-white/[0.06] shrink-0" />
+            <Skeleton className="h-4 flex-1 bg-white/[0.06]" />
+            <Skeleton className="h-5 w-12 rounded bg-white/[0.06] shrink-0" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// Fixtures Skeleton Loader
+// ============================================================
+function FixturesSkeleton() {
+  return (
+    <div className="bg-white/[0.04] backdrop-blur-md border border-white/[0.08] rounded-xl overflow-hidden">
+      <div className="px-5 py-4 border-b border-white/[0.08] flex items-center gap-2">
+        <Calendar className="w-4 h-4 text-slate-600" />
+        <Skeleton className="h-4 w-36 bg-white/[0.06]" />
+      </div>
+      <div className="p-4 space-y-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-3 w-20 bg-white/[0.06]" />
+              <Skeleton className="h-3 w-12 bg-white/[0.04]" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-5 w-5 rounded bg-white/[0.06] shrink-0" />
+              <Skeleton className="h-4 flex-1 bg-white/[0.06]" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-5 w-5 rounded bg-white/[0.06] shrink-0" />
+              <Skeleton className="h-4 flex-1 bg-white/[0.06]" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// Player Photo with Error Fallback
+// ============================================================
+function PlayerPhoto({ src, name }: { src: string | null; name: string }) {
+  const [imgError, setImgError] = useState(false);
+
+  // Show initial letter fallback if no photo or image fails to load
+  if (!src || imgError) {
+    return (
+      <div className="w-8 h-8 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0">
+        <span className="text-[11px] font-bold text-slate-500">{name.charAt(0).toUpperCase()}</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={name}
+      className="w-8 h-8 rounded-full object-cover bg-white/[0.06] border border-white/[0.08] shrink-0"
+      onError={() => setImgError(true)}
+      loading="lazy"
+    />
+  );
+}
 
 // ============================================================
 // Team Page Component
@@ -254,14 +335,54 @@ export default function TeamPage() {
     return () => { cancelled = true; };
   }, [slug]);
 
-  // ─── Loading State ────────────────────────────────────────
+  const sortedSquad = team
+    ? [...team.squad].sort((a, b) => (POS_ORDER[a.position] ?? 9) - (POS_ORDER[b.position] ?? 9))
+    : [];
+
+  // Group squad by position for section headers
+  const positionGroups: { key: string; label: string; players: SquadPlayer[] }[] = [];
+  const groupOrder = ['GK', 'DEF', 'MID', 'FWD'];
+  for (const pos of groupOrder) {
+    const players = sortedSquad.filter(p => p.position === pos);
+    if (players.length > 0) {
+      const posInfo = POS_COLORS[pos];
+      positionGroups.push({ key: pos, label: posInfo?.label || pos, players });
+    }
+  }
+  // Any remaining players with unknown positions
+  const remaining = sortedSquad.filter(p => !groupOrder.includes(p.position));
+  if (remaining.length > 0) {
+    positionGroups.push({ key: 'OTHER', label: 'Lainnya', players: remaining });
+  }
+
+  // ─── Full Loading State ────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 text-neon animate-spin mx-auto mb-3" />
-          <p className="text-sm text-slate-400">Memuat profil klub...</p>
+      <div className="min-h-screen">
+        {/* Hero skeleton */}
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] via-transparent to-transparent" />
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12">
+            <Skeleton className="h-3 w-20 bg-white/[0.06] mb-8" />
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8">
+              <Skeleton className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl bg-white/[0.06]" />
+              <div className="flex-1 space-y-3 text-center sm:text-left w-full">
+                <Skeleton className="h-8 w-48 bg-white/[0.06] mx-auto sm:mx-0" />
+                <Skeleton className="h-4 w-24 bg-white/[0.06] mx-auto sm:mx-0" />
+                <div className="flex gap-3 justify-center sm:justify-start">
+                  {[1,2,3,4].map(i => <Skeleton key={i} className="h-14 w-20 rounded-xl bg-white/[0.06]" />)}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+        {/* Content skeleton */}
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-3"><SquadSkeleton /></div>
+            <div className="lg:col-span-2"><FixturesSkeleton /></div>
+          </div>
+        </section>
       </div>
     );
   }
@@ -285,7 +406,6 @@ export default function TeamPage() {
   }
 
   const { info, standings, squad, fixtures } = team;
-  const sortedSquad = [...squad].sort((a, b) => (POS_ORDER[a.position] ?? 9) - (POS_ORDER[b.position] ?? 9));
 
   return (
     <div className="min-h-screen">
@@ -437,66 +557,67 @@ export default function TeamPage() {
               <div className="px-5 py-4 border-b border-white/[0.08] flex items-center gap-2">
                 <Users className="w-4 h-4" style={{ color: accent.primary }} />
                 <h2 className="text-sm font-bold text-white">Squad</h2>
-                <span className="text-[10px] text-slate-500 ml-auto">{sortedSquad.length} pemain</span>
+                {squad.length > 0 && (
+                  <span className="text-[10px] text-slate-500 ml-auto">{squad.length} pemain</span>
+                )}
+                {team.source === 'api-football' && (
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 ml-2">LIVE DATA</span>
+                )}
               </div>
 
-              {sortedSquad.length === 0 ? (
-                <div className="text-center py-12">
-                  <Users className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-                  <p className="text-xs text-slate-500">Data squad tidak tersedia</p>
+              {squad.length === 0 ? (
+                <div className="text-center py-16">
+                  <UserCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                  <p className="text-sm text-slate-400 font-medium mb-1">Data squad belum tersedia</p>
+                  <p className="text-xs text-slate-600">
+                    {team.source === 'mock'
+                      ? 'Hubungkan Football API untuk melihat data pemain asli'
+                      : 'Squad data tidak dapat dimuat dari API'}
+                  </p>
                 </div>
               ) : (
-                <div className="overflow-x-auto max-h-[520px] overflow-y-auto custom-scrollbar">
-                  <table className="w-full text-xs">
-                    <thead className="sticky top-0 z-10">
-                      <tr className="bg-white/[0.06] border-b border-white/[0.08]">
-                        <th className="text-left py-2.5 px-4 text-slate-500 font-medium w-10">#</th>
-                        <th className="text-left py-2.5 px-4 text-slate-500 font-medium">Nama</th>
-                        <th className="text-left py-2.5 px-4 text-slate-500 font-medium w-20">Posisi</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sortedSquad.map((player, i) => {
-                        const posColor = POS_COLORS[player.position] || POS_COLORS.MID;
-                        return (
-                          <tr
-                            key={player.id || i}
-                            className="border-b border-white/[0.04] hover:bg-white/[0.04] transition-colors"
+                <div className="max-h-[580px] overflow-y-auto custom-scrollbar">
+                  {positionGroups.map((group) => {
+                    const posColor = POS_COLORS[group.key] || POS_COLORS.MID;
+                    return (
+                      <div key={group.key}>
+                        {/* Position section header */}
+                        <div className="sticky z-10 px-5 py-2 bg-white/[0.03] border-b border-white/[0.06] border-t border-t-white/[0.04]">
+                          <div className="flex items-center gap-2">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${posColor.bg} ${posColor.text} border ${posColor.border}`}>
+                              {group.key}
+                            </span>
+                            <span className="text-[11px] text-slate-500">{group.label} ({group.players.length})</span>
+                          </div>
+                        </div>
+                        {/* Player rows */}
+                        {group.players.map((player) => (
+                          <div
+                            key={player.id}
+                            className="flex items-center gap-3 px-5 py-2.5 border-b border-white/[0.03] hover:bg-white/[0.04] transition-colors group"
                           >
-                            <td className="py-2.5 px-4 text-slate-500 font-mono">
+                            {/* Number */}
+                            <span className="text-xs text-slate-500 font-mono w-7 text-center shrink-0">
                               {player.number || '-'}
-                            </td>
-                            <td className="py-2.5 px-4">
-                              <div className="flex items-center gap-2.5">
-                                {safeSrc(player.photo) ? (
-                                  <img
-                                    src={safeSrc(player.photo)!}
-                                    alt={player.name}
-                                    className="w-7 h-7 rounded-full object-cover bg-white/[0.06] border border-white/[0.08]"
-                                  />
-                                ) : (
-                                  <div className="w-7 h-7 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-[10px] font-bold text-slate-500">
-                                    {player.name.charAt(0)}
-                                  </div>
-                                )}
-                                <Link
-                                  href={`/players/${player.id}`}
-                                  className="text-slate-200 hover:text-cyan-400 transition-colors font-medium"
-                                >
-                                  {player.name}
-                                </Link>
-                              </div>
-                            </td>
-                            <td className="py-2.5 px-4">
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${posColor.bg} ${posColor.text} border ${posColor.border}`}>
-                                {player.position}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                            </span>
+                            {/* Photo */}
+                            <PlayerPhoto src={player.photo} name={player.name} />
+                            {/* Name (clickable) */}
+                            <Link
+                              href={`/players/${player.id}`}
+                              className="text-sm text-slate-200 hover:text-cyan-400 transition-colors font-medium truncate flex-1"
+                            >
+                              {player.name}
+                            </Link>
+                            {/* Position badge */}
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${posColor.bg} ${posColor.text} border ${posColor.border} shrink-0`}>
+                              {player.position}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
