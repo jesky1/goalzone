@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
+import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
 
 export const revalidate = 3600
-
-const API_KEY = process.env.FOOTBALL_API_KEY || process.env.NEXT_PUBLIC_FOOTBALL_API_KEY
-const API_BASE = 'https://v3.football.api-sports.io'
 
 interface RefereeProfile {
   name: string
@@ -249,10 +247,9 @@ export async function GET(
   }
 
   // Try API-Football referees endpoint
-  if (API_KEY) {
+  if (isFootballApiConfigured) {
     try {
-      const response = await fetch(`${API_BASE}/referees?search=${encodeURIComponent(decodedName)}`, {
-        headers: { 'x-apisports-key': API_KEY },
+      const response = await footballFetch(`/referees?search=${encodeURIComponent(decodedName)}`, {
         next: { revalidate: 3600 },
       })
 

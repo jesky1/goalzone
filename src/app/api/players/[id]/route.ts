@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
+import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
 
 export const revalidate = 3600 // Cache player data for 1 hour
-
-const API_KEY = process.env.FOOTBALL_API_KEY || process.env.NEXT_PUBLIC_FOOTBALL_API_KEY
-const API_BASE = 'https://v3.football.api-sports.io'
 
 export async function GET(
   _request: Request,
@@ -16,13 +14,12 @@ export async function GET(
     return NextResponse.json({ error: 'Invalid player ID' }, { status: 400 })
   }
 
-  if (!API_KEY) {
+  if (!isFootballApiConfigured) {
     return NextResponse.json(getMockPlayer(playerId))
   }
 
   try {
-    const response = await fetch(`${API_BASE}/players?id=${playerId}&season=2024`, {
-      headers: { 'x-apisports-key': API_KEY },
+    const response = await footballFetch(`/players?id=${playerId}&season=2024`, {
       next: { revalidate: 3600 },
     })
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import ZAI from 'z-ai-web-dev-sdk'
 import { createServerSupabaseClient } from '@/lib/supabase/client'
+import { footballFetch, isFootballApiConfigured, footballApiBase } from '@/lib/football-api'
 import sharp from 'sharp'
 
 // ============================================================
@@ -95,7 +96,6 @@ interface PipelineResult {
 // ─── Config ──────────────────────────────────────────────────
 
 const FOOTBALL_API_KEY = process.env.FOOTBALL_API_KEY || process.env.NEXT_PUBLIC_FOOTBALL_API_KEY || ''
-const FOOTBALL_API_BASE = 'https://v3.football.api-sports.io'
 
 const LEAGUE_IDS = [
   39,   // Premier League
@@ -119,9 +119,7 @@ const REVALIDATION_SECRET = process.env.REVALIDATION_SECRET || ''
 // ─── 1. DATA ACQUISITION (API-Football) ──────────────────────
 
 async function footballApi(endpoint: string): Promise<any> {
-  const url = `${FOOTBALL_API_BASE}${endpoint}`
-  const response = await fetch(url, {
-    headers: { 'x-apisports-key': FOOTBALL_API_KEY },
+  const response = await footballFetch(endpoint, {
     next: { revalidate: 0 },
   })
   if (!response.ok) {
@@ -131,7 +129,7 @@ async function footballApi(endpoint: string): Promise<any> {
 }
 
 async function fetchFinishedMatches(lookbackHours = 24): Promise<MatchData[]> {
-  if (!FOOTBALL_API_KEY) {
+  if (!isFootballApiConfigured) {
     console.warn('[News Engine] FOOTBALL_API_KEY not set — skipping data acquisition')
     return []
   }
@@ -788,7 +786,7 @@ export async function GET(request: NextRequest) {
         'Monetization ([AD_SLOT] injection)',
       ],
       config: {
-        footballApi: !!FOOTBALL_API_KEY,
+        footballApi: isFootballApiConfigured,
         supabase: !!(process.env.NEXT_PUBLIC_SUPABASE_URL),
         revalidation: !!REVALIDATION_SECRET,
         defaultAuthor: DEFAULT_AUTHOR_ID ? 'set' : 'auto-create',

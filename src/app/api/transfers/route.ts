@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
+import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
 
 export const revalidate = 1800 // Cache 30 minutes to save API calls
-
-const API_KEY = process.env.FOOTBALL_API_KEY || process.env.NEXT_PUBLIC_FOOTBALL_API_KEY
-const API_BASE = 'https://v3.football.api-sports.io'
 
 // Top clubs to fetch transfers for
 const TOP_TEAM_IDS = [42, 50, 541, 529, 505, 489]
@@ -298,8 +296,7 @@ function getMockTransfers(): TransferEntry[] {
 // --- API Fetching & Processing ---
 
 async function fetchTeamTransfers(teamId: number): Promise<ApiPlayerTransfer[]> {
-  const response = await fetch(`${API_BASE}/transfers?team=${teamId}`, {
-    headers: { 'x-apisports-key': API_KEY! },
+  const response = await footballFetch(`/transfers?team=${teamId}`, {
     next: { revalidate: 1800 },
   })
 
@@ -386,7 +383,7 @@ function deduplicateTransfers(transfers: TransferEntry[]): TransferEntry[] {
 
 export async function GET() {
   // No API key — return mock data
-  if (!API_KEY) {
+  if (!isFootballApiConfigured) {
     const mockTransfers = getMockTransfers()
     return NextResponse.json({
       transfers: mockTransfers,

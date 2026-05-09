@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
+import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
 
 export const revalidate = 60
-
-const API_KEY = process.env.FOOTBALL_API_KEY || process.env.NEXT_PUBLIC_FOOTBALL_API_KEY
-const API_BASE = 'https://v3.football.api-sports.io'
 
 interface Player {
   id: number
@@ -45,13 +43,12 @@ export async function GET(
   const { id } = await params
   const fixtureId = id
 
-  if (!API_KEY) {
+  if (!isFootballApiConfigured) {
     return NextResponse.json(getMockFixtureDetail(fixtureId))
   }
 
   try {
-    const response = await fetch(`${API_BASE}/fixtures?id=${fixtureId}`, {
-      headers: { 'x-apisports-key': API_KEY },
+    const response = await footballFetch(`/fixtures?id=${fixtureId}`, {
       next: { revalidate: 60 },
     })
 

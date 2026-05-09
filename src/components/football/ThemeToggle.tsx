@@ -21,7 +21,7 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="relative w-9 h-9 rounded-xl bg-white/5 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center">
+      <div className="relative w-9 h-9 rounded-xl bg-white/5 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center pointer-events-auto z-50">
         <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-600" />
       </div>
     );
@@ -29,14 +29,18 @@ export default function ThemeToggle() {
 
   const isDark = resolvedTheme === 'dark';
 
-  const toggleTheme = () => {
+  const toggleTheme = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
     setTheme(isDark ? 'light' : 'dark');
   };
 
   return (
     <motion.button
       onClick={toggleTheme}
-      className="relative w-9 h-9 rounded-xl border border-gray-200 dark:border-white/10 bg-white/80 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 flex items-center justify-center transition-colors duration-300 group overflow-hidden"
+      onMouseDown={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      className="relative w-9 h-9 rounded-xl border border-gray-200 dark:border-white/10 bg-white/80 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 flex items-center justify-center transition-colors duration-300 group overflow-hidden pointer-events-auto z-50 cursor-pointer"
       whileTap={{ scale: 0.9 }}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={isDark ? 'Mode Terang' : 'Mode Gelap'}

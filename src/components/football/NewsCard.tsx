@@ -50,13 +50,13 @@ export default function NewsCard({
       >
         <div className="flex flex-col md:flex-row h-full">
           {/* Image */}
-          <div className="relative w-full md:w-1/2 h-64 md:h-auto min-h-[250px] shrink-0">
+          <div className="relative w-full md:w-1/2 aspect-video md:aspect-auto md:h-auto min-h-[250px] shrink-0">
             {article.imageUrl && (
               <Image
                 src={article.imageUrl}
                 alt={article.title}
                 fill
-                className="object-cover"
+                className="object-contain"
               />
             )}
             {!article.imageUrl && (
@@ -113,13 +113,13 @@ export default function NewsCard({
       className="glass-card glass-hover cursor-pointer overflow-hidden flex flex-col"
     >
       {/* Image */}
-      <div className="relative w-full h-48 shrink-0">
+      <div className="relative w-full aspect-video shrink-0">
         {article.imageUrl && (
           <Image
             src={article.imageUrl}
             alt={article.title}
             fill
-            className="object-cover"
+            className="object-contain"
           />
         )}
         {!article.imageUrl && (

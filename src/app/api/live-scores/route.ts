@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
+import { footballFetch, isFootballApiConfigured, footballApiBase } from '@/lib/football-api'
 
 export const revalidate = 60 // Cache 60 detik
-
-const API_KEY = process.env.FOOTBALL_API_KEY || process.env.NEXT_PUBLIC_FOOTBALL_API_KEY
-const API_BASE = 'https://v3.football.api-sports.io'
 
 interface LiveMatchEvent {
   type: 'goal' | 'card'
@@ -51,7 +49,7 @@ function extractEvents(events: any[], teamId: number): LiveMatchEvent[] {
 
 export async function GET() {
   // Jika tidak ada API key, fallback ke mock data
-  if (!API_KEY) {
+  if (!isFootballApiConfigured) {
     const date = new Date().toISOString().split('T')[0]
     return NextResponse.json({
       matches: getMockMatches(),
@@ -63,12 +61,9 @@ export async function GET() {
   try {
     const today = new Date().toISOString().split('T')[0]
 
-    const response = await fetch(
-      `${API_BASE}/fixtures?date=${today}&timezone=Asia/Jakarta`,
-      {
-        headers: { 'x-apisports-key': API_KEY },
-        next: { revalidate: 60 },
-      }
+    const response = await footballFetch(
+      `/fixtures?date=${today}&timezone=Asia/Jakarta`,
+      { next: { revalidate: 60 } }
     )
 
     if (!response.ok) {

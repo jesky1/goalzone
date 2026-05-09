@@ -332,12 +332,10 @@
   animation: gradient-shift 8s ease infinite;
 }
 
-/* Cyber Grid Background (Theme-Aware) */
+/* Cyber Grid Background (Theme-Aware) — subtle radial glow, no grid lines */
 .cyber-grid {
-  background-image: 
-    linear-gradient(var(--cyber-grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--cyber-grid-line) 1px, transparent 1px);
-  background-size: 60px 60px;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, var(--cyber-grid-line) 0%, transparent 70%);
 }
 
 /* Custom Scrollbar (Theme-Aware) */

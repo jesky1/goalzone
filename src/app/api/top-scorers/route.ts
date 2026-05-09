@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
+import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
 
 export const revalidate = 300 // Cache 5 minutes
-
-const API_KEY = process.env.FOOTBALL_API_KEY || process.env.NEXT_PUBLIC_FOOTBALL_API_KEY
-const API_BASE = 'https://v3.football.api-sports.io'
 
 interface TopScorer {
   rank: number
@@ -55,12 +53,9 @@ function getMockTopScorers(): TopScorer[] {
 }
 
 async function fetchTopScorers(leagueInfo: LeagueInfo): Promise<{ topScorers: TopScorer[]; seasonLabel: string } | null> {
-  const response = await fetch(
-    `${API_BASE}/players/topscorers?league=${leagueInfo.id}&season=${leagueInfo.season}`,
-    {
-      headers: { 'x-apisports-key': API_KEY! },
-      next: { revalidate: 300 },
-    }
+  const response = await footballFetch(
+    `/players/topscorers?league=${leagueInfo.id}&season=${leagueInfo.season}`,
+    { next: { revalidate: 300 } }
   )
 
   if (!response.ok) {
@@ -104,7 +99,7 @@ export async function GET(request: Request) {
   })
 
   // If no API key, fallback to mock
-  if (!API_KEY) {
+  if (!isFootballApiConfigured) {
     return NextResponse.json(
       buildResponse('Premier League', getMockTopScorers(), 'mock', {
         season: '2026/27',

@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
+import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
 
 export const revalidate = 300 // Cache 5 minutes
-
-const API_KEY = process.env.FOOTBALL_API_KEY || process.env.NEXT_PUBLIC_FOOTBALL_API_KEY
-const API_BASE = 'https://v3.football.api-sports.io'
 
 interface StandingEntry {
   position: number
@@ -59,7 +57,7 @@ function getMockStandings(): StandingEntry[] {
     { position: 12, team: 'Tottenham', teamLogo: 'https://media.api-sports.io/football/teams/47.png', played: 28, won: 10, drawn: 4, lost: 14, goalsFor: 52, goalsAgainst: 48, goalDiff: 4, points: 34, form: ['L', 'L', 'W', 'D', 'L'] },
     { position: 13, team: 'West Ham United', teamLogo: 'https://media.api-sports.io/football/teams/48.png', played: 28, won: 9, drawn: 6, lost: 13, goalsFor: 34, goalsAgainst: 45, goalDiff: -11, points: 33, form: ['L', 'D', 'L', 'W', 'D'] },
     { position: 14, team: 'Crystal Palace', teamLogo: 'https://media.api-sports.io/football/teams/52.png', played: 28, won: 8, drawn: 8, lost: 12, goalsFor: 30, goalsAgainst: 38, goalDiff: -8, points: 32, form: ['W', 'D', 'L', 'L', 'D'] },
-    { position: 15, team: 'Brentford', teamLogo: 'https://media.api-sports.io/football/teams/55.png', played: 28, won: 8, drawn: 7, lost: 13, goalsFor: 38, goalsAgainst: 46, goalDiff: -8, points: 31, form: ['D', 'L', 'W', 'L', 'W'] },
+    { position: 15, team: 'Brentford', teamLogo: 'https://media.api-sports.io/football/teams/55.png'.replace('.png', '.png'), played: 28, won: 8, drawn: 7, lost: 13, goalsFor: 38, goalsAgainst: 46, goalDiff: -8, points: 31, form: ['D', 'L', 'W', 'L', 'W'] },
     { position: 16, team: 'Everton', teamLogo: 'https://media.api-sports.io/football/teams/45.png', played: 28, won: 7, drawn: 8, lost: 13, goalsFor: 26, goalsAgainst: 40, goalDiff: -14, points: 29, form: ['D', 'L', 'D', 'L', 'D'] },
     { position: 17, team: 'Wolverhampton', teamLogo: 'https://media.api-sports.io/football/teams/76.png', played: 28, won: 7, drawn: 6, lost: 15, goalsFor: 33, goalsAgainst: 50, goalDiff: -17, points: 27, form: ['L', 'L', 'W', 'D', 'L'] },
     { position: 18, team: 'Leicester City', teamLogo: 'https://media.api-sports.io/football/teams/46.png', played: 28, won: 5, drawn: 7, lost: 16, goalsFor: 25, goalsAgainst: 53, goalDiff: -28, points: 22, form: ['L', 'D', 'L', 'L', 'W'] },
@@ -69,12 +67,9 @@ function getMockStandings(): StandingEntry[] {
 }
 
 async function fetchStandings(leagueInfo: LeagueInfo): Promise<{ standings: StandingEntry[]; seasonLabel: string } | null> {
-  const response = await fetch(
-    `${API_BASE}/standings?league=${leagueInfo.id}&season=${leagueInfo.season}`,
-    {
-      headers: { 'x-apisports-key': API_KEY! },
-      next: { revalidate: 300 },
-    }
+  const response = await footballFetch(
+    `/standings?league=${leagueInfo.id}&season=${leagueInfo.season}`,
+    { next: { revalidate: 300 } }
   )
 
   if (!response.ok) {
@@ -123,7 +118,7 @@ export async function GET(request: Request) {
   })
 
   // If no API key, fallback to mock
-  if (!API_KEY) {
+  if (!isFootballApiConfigured) {
     return NextResponse.json(
       buildResponse('Premier League', '2026/27', getMockStandings(), 'mock', {
         message: 'Set FOOTBALL_API_KEY in Vercel Environment Variables for real standings',
