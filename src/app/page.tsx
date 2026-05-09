@@ -192,7 +192,7 @@ function NewsSection({ onArticleClick }: { onArticleClick?: (a: Article) => void
 
   if (loading) return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-      {[1,2,3,4,5,6].map(i => (
+      {[1, 2, 3, 4, 5, 6].map(i => (
         <div key={i} className="glass-card overflow-hidden flex flex-col">
           <Skeleton className="w-full h-48" />
           <div className="p-4 space-y-3"><Skeleton className="h-4 w-20" /><Skeleton className="h-5 w-full" /><Skeleton className="h-4 w-3/4" /></div>
@@ -570,9 +570,8 @@ function MatchDetailModal({ match, open, onClose, onRefereeClick }: { match: Mat
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`flex-1 py-3 text-xs font-semibold transition-colors relative ${
-                    activeTab === tab ? 'text-neon' : 'text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300'
-                  }`}
+                  className={`flex-1 py-3 text-xs font-semibold transition-colors relative ${activeTab === tab ? 'text-neon' : 'text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300'
+                    }`}
                 >
                   {tab === 'pitch' ? 'Taktik' : tab === 'lineups' ? 'Lineup' : tab === 'stats' ? 'Statistik' : 'Events'}
                   {activeTab === tab && (
@@ -801,7 +800,7 @@ export default function Home() {
   const handleCloseRefereeModal = () => { setRefereeModalOpen(false); setTimeout(() => setRefereeData(null), 300); };
 
   return (
-    <div className="min-h-screen flex flex-col bg-deep-900 cyber-grid">
+    <div className="min-h-screen">
       <Navbar />
       <LiveScoreTicker />
 
@@ -822,7 +821,7 @@ export default function Home() {
           </motion.div>
           {matchesLoading ? (
             <div className="glass-card p-4 space-y-4">
-              {[1,2,3].map(i => <div key={i} className="flex items-center gap-2 py-2"><Skeleton className="h-4 w-10 bg-gray-100 dark:bg-white/5" /><Skeleton className="h-4 w-12 bg-gray-100 dark:bg-white/5" /><Skeleton className="h-4 w-32 bg-gray-100 dark:bg-white/5" /><Skeleton className="h-4 w-32 bg-gray-100 dark:bg-white/5" /></div>)}
+              {[1, 2, 3].map(i => <div key={i} className="flex items-center gap-2 py-2"><Skeleton className="h-4 w-10 bg-gray-100 dark:bg-white/5" /><Skeleton className="h-4 w-12 bg-gray-100 dark:bg-white/5" /><Skeleton className="h-4 w-32 bg-gray-100 dark:bg-white/5" /><Skeleton className="h-4 w-32 bg-gray-100 dark:bg-white/5" /></div>)}
             </div>
           ) : (() => {
             // Group matches by league
