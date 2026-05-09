@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  avatarUrl String?
+  role      String   @default("user") // user, admin, editor
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  articles  Article[]
+  comments  Comment[]
+  bookmarks BookmarkedMatch[]
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  articles  Article[]
+}
+
+model Article {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  content     String
+  summary     String?
+  imageUrl    String?
+  categoryId  String
+  authorId    String
+  viewCount   Int      @default(0)
+  isFeatured  Boolean  @default(false)
+  readTime    Int      @default(5) // estimated minutes
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category    Category @relation(fields: [categoryId], references: [id])
+  author      Profile  @relation(fields: [authorId], references: [id])
+  comments    Comment[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  articleId String
+  userId    String
+  text      String
+  createdAt DateTime @default(now())
+
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      Profile  @relation(fields: [userId], references: [id])
+}
+
+model BookmarkedMatch {
+  id      String @id @default(cuid())
+  userId  String
+  matchId String // external match ID from API-Football
+  homeTeam  String?
+  awayTeam  String?
+  matchDate String?
+  league    String?
+  notified  Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  user Profile @relation(fields: [userId], references: [id])
+
+  @@unique([userId, matchId])
+}
+
+model Match {
+  id          String   @id @default(cuid())
+  externalId  String?  @unique // ID from API-Football
+  league      String
+  leagueLogo  String?  @default("")
+  leagueId    Int?     // API-Football league ID
+  homeTeam    String
+  awayTeam    String
+  homeLogo    String?  @default("")
+  awayLogo    String?  @default("")
+  homeScore   Int      @default(0)
+  awayScore   Int      @default(0)
+  status      String   @default("NS") // LIVE, HT, FT, NS
+  minute      Int?
+  matchDate   DateTime
+  venue       String?
+  homeEvents  String   @default("[]") // JSON string
+  awayEvents  String   @default("[]") // JSON string
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
