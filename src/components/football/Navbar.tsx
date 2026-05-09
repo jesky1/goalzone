@@ -138,10 +138,12 @@ export default function Navbar() {
                 className="h-8 w-32 pl-8 pr-2 rounded-lg text-xs bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-cyan-500/40 transition-all duration-300"
               />
             </div>
-            <ThemeToggle />
+            <div className="relative z-50 pointer-events-auto">
+              <ThemeToggle />
+            </div>
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
-                <button className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                <button className="relative z-50 pointer-events-auto p-2 rounded-lg hover:bg-white/5 transition-colors">
                   <Menu className="w-5 h-5 text-foreground" />
                 </button>
               </SheetTrigger>
