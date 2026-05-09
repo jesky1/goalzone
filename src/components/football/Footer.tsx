@@ -5,13 +5,14 @@ import { motion } from 'framer-motion';
 import { Zap, Twitter, Youtube, Instagram } from 'lucide-react';
 
 const leagues = [
-  { label: 'Premier League', href: '#' },
-  { label: 'La Liga', href: '#' },
-  { label: 'Serie A', href: '#' },
-  { label: 'Bundesliga', href: '#' },
-  { label: 'Ligue 1', href: '#' },
+  { label: 'Premier League', href: '/leagues/premier-league' },
+  { label: 'La Liga', href: '/leagues/la-liga' },
+  { label: 'Serie A', href: '/leagues/serie-a' },
+  { label: 'Bundesliga', href: '/leagues/bundesliga' },
+  { label: 'Ligue 1', href: '/leagues/ligue-1' },
+  { label: 'Champions League', href: '/leagues/champions-league' },
+  { label: 'Europa League', href: '/leagues/europa-league' },
   { label: 'Eredivisie', href: '#' },
-  { label: 'Liga Portugal', href: '#' },
   { label: 'Primeira Liga', href: '#' },
   { label: 'Belgian Pro League', href: '#' },
   { label: 'Scottish Premiership', href: '#' },
@@ -92,13 +93,13 @@ export default function Footer() {
               <div className="glass-card p-4">
                 <div className="grid grid-cols-3 gap-x-3 gap-y-1">
                   {leagues.map((league) => (
-                    <a
+                    <Link
                       key={league.label}
                       href={league.href}
                       className="text-sm text-muted-foreground hover:text-neon transition-colors duration-200 py-1 truncate"
                     >
                       {league.label}
-                    </a>
+                    </Link>
                   ))}
                 </div>
               </div>

@@ -26,13 +26,14 @@ const navLinks = [
 ];
 
 const leagues = [
-  { label: 'Premier League', href: '#' },
-  { label: 'La Liga', href: '#' },
-  { label: 'Serie A', href: '#' },
-  { label: 'Bundesliga', href: '#' },
-  { label: 'Ligue 1', href: '#' },
+  { label: 'Premier League', href: '/leagues/premier-league' },
+  { label: 'La Liga', href: '/leagues/la-liga' },
+  { label: 'Serie A', href: '/leagues/serie-a' },
+  { label: 'Bundesliga', href: '/leagues/bundesliga' },
+  { label: 'Ligue 1', href: '/leagues/ligue-1' },
+  { label: 'Champions League', href: '/leagues/champions-league' },
+  { label: 'Europa League', href: '/leagues/europa-league' },
   { label: 'Eredivisie', href: '#' },
-  { label: 'Liga Portugal', href: '#' },
   { label: 'Primeira Liga', href: '#' },
   { label: 'Belgian Pro League', href: '#' },
   { label: 'Scottish Premiership', href: '#' },
@@ -96,13 +97,13 @@ export default function Navbar() {
                 </h4>
                 <div className="grid grid-cols-3 gap-1">
                   {leagues.map((league) => (
-                    <a
+                    <Link
                       key={league.label}
                       href={league.href}
                       className="px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-neon hover:bg-white/5 transition-all duration-200 truncate"
                     >
                       {league.label}
-                    </a>
+                    </Link>
                   ))}
                 </div>
               </PopoverContent>
@@ -189,12 +190,12 @@ export default function Navbar() {
                     <div className="grid grid-cols-2 gap-1 max-h-64 overflow-y-auto custom-scrollbar">
                       {leagues.map((league) => (
                         <SheetClose asChild key={league.label}>
-                          <a
+                          <Link
                             href={league.href}
                             className="block px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-neon hover:bg-white/5 transition-all duration-200 truncate"
                           >
                             {league.label}
-                          </a>
+                          </Link>
                         </SheetClose>
                       ))}
                     </div>

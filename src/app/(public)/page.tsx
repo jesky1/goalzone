@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Component, ReactNode } from 'react';
+import { useState, useEffect, useCallback, Component, ReactNode, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import StandingsWidget from '@/components/football/StandingsWidget';
@@ -102,8 +102,8 @@ function SimpleNewsCard({ article, onClick }: { article: Article; onClick?: (a: 
     <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
       whileHover={{ scale: 1.02 }} onClick={() => onClick?.(article)}
       className="glass-card glass-hover cursor-pointer overflow-hidden flex flex-col">
-      <div className="relative w-full h-48 shrink-0 overflow-hidden">
-        <img src={article.imageUrl || '/images/articles/default.jpg'} alt={article.title} className="w-full h-full object-cover" loading="lazy" />
+      <div className="relative w-full aspect-video shrink-0 overflow-hidden bg-gray-100 dark:bg-deep-700">
+        <img src={article.imageUrl || '/images/articles/default.jpg'} alt={article.title} className="w-full h-full object-contain" loading="lazy" />
         <div className="absolute top-3 left-3">
           <Badge className="bg-deep-900/80 backdrop-blur-sm border border-neon/20 text-neon text-xs font-bold">{article.category.name}</Badge>
         </div>
@@ -290,9 +290,9 @@ function ArticleModalView({ article, open, onClose }: { article: Article | null;
 }
 
 // ============================================
-// MAIN PAGE
+// MAIN PAGE (inner — uses useSearchParams, must be in Suspense)
 // ============================================
-export default function Home() {
+function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -415,5 +415,16 @@ export default function Home() {
       <ArticleModalView article={selectedArticle} open={modalOpen} onClose={handleCloseModal} />
       <MatchDetailModal match={selectedMatch} open={matchModalOpen} onClose={handleCloseMatchModal} />
     </>
+  );
+}
+
+// ============================================
+// MAIN PAGE (wraps HomeContent in Suspense for useSearchParams)
+// ============================================
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-neon animate-pulse">Memuat...</div></div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
