@@ -60,7 +60,7 @@ function HeroSection({ articles, onArticleClick }: { articles: Article[]; onArti
   const article = articles[current];
 
   return (
-    <section id="home" className="relative w-full h-[400px] sm:h-[480px] md:h-[540px] overflow-hidden">
+    <section id="home" className="relative w-full h-[460px] sm:h-[540px] md:h-[600px] overflow-hidden -mt-16 pt-16">
       <AnimatePresence mode="wait">
         <motion.div key={article.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0">
           {/* Hero Image as <img> element for better accessibility & SEO */}
@@ -71,10 +71,10 @@ function HeroSection({ articles, onArticleClick }: { articles: Article[]; onArti
             loading="eager"
           />
           {/* Gradient overlay for readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 dark:from-deep-900/90 via-slate-900/50 dark:via-deep-900/50 to-slate-900/20 dark:to-deep-900/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 dark:from-deep-900/90 via-slate-900/50 dark:via-deep-900/50 to-slate-900/30 dark:to-deep-900/30" />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-900/70 dark:from-deep-900/70 to-transparent" />
-          {/* Content overlay */}
-          <div className="relative h-full flex flex-col justify-end p-6 sm:p-8 md:p-12 max-w-7xl mx-auto">
+          {/* Content overlay - padding top to clear navbar */}
+          <div className="relative h-full flex flex-col justify-end pt-16 p-6 sm:p-8 md:p-12 max-w-7xl mx-auto">
             <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
               <Badge className="bg-cyan-50 dark:bg-neon/10 text-cyan-700 dark:text-neon border border-cyan-200 dark:border-neon/20 text-xs font-bold mb-4">{article.category.name}</Badge>
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-3 max-w-3xl cursor-pointer hover:text-cyan-300 dark:hover:text-neon transition-colors" onClick={() => onArticleClick?.(article)}>
