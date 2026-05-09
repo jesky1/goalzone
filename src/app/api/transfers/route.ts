@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
+import { footballFetch, isFootballApiConfigured } from '@/lib/football'
 
 export const revalidate = 1800 // Cache 30 minutes to save API calls
 

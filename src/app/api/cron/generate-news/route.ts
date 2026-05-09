@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import ZAI from 'z-ai-web-dev-sdk'
 import { createServerSupabaseClient } from '@/lib/supabase/client'
-import { footballFetch, isFootballApiConfigured, footballApiBase } from '@/lib/football-api'
+import { footballFetch, isFootballApiConfigured, footballApiBase } from '@/lib/football'
 import sharp from 'sharp'
 
 // ============================================================

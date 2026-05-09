@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
+import { footballFetch, isFootballApiConfigured } from '@/lib/football'
 
 // ============================================================
 // GOALZONE - Sync Matches API Route

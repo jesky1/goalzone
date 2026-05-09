@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { footballFetch, isFootballApiConfigured, footballApiBase } from '@/lib/football-api'
+import { footballFetch, isFootballApiConfigured } from '@/lib/football'
 
 export const revalidate = 60 // Cache 60 detik
 
@@ -48,14 +48,13 @@ function extractEvents(events: any[], teamId: number): LiveMatchEvent[] {
 }
 
 export async function GET() {
-  // Jika tidak ada API key, fallback ke mock data
+  // Jika API key belum dikonfigurasi, kembalikan error
   if (!isFootballApiConfigured) {
-    const date = new Date().toISOString().split('T')[0]
     return NextResponse.json({
-      matches: getMockMatches(),
-      source: 'mock',
-      message: 'Set FOOTBALL_API_KEY in Vercel Environment Variables for real live scores',
-    })
+      matches: [],
+      source: 'none',
+      error: 'FOOTBALL_API_KEY belum dikonfigurasi. Tambahkan FOOTBALL_API_KEY di .env atau Vercel Environment Variables.',
+    }, { status: 503 })
   }
 
   try {
@@ -104,42 +103,10 @@ export async function GET() {
     return NextResponse.json({ matches, source: 'api-football' })
   } catch (error) {
     console.error('Error fetching live scores from API-Football:', error)
-    // Fallback ke mock data kalau API error
     return NextResponse.json({
-      matches: getMockMatches(),
-      source: 'mock',
-      error: 'API fetch failed, showing sample data',
-    })
+      matches: [],
+      source: 'none',
+      error: 'Gagal mengambil data live scores. Coba lagi nanti.',
+    }, { status: 500 })
   }
-}
-
-function getMockMatches(): LiveMatch[] {
-  return [
-    {
-      id: 'mock-1', league: 'Premier League', leagueLogo: 'https://media.api-sports.io/football/leagues/39.png',
-      homeTeam: 'Arsenal', awayTeam: 'Manchester City',
-      homeLogo: 'https://media.api-sports.io/football/teams/42.png',
-      awayLogo: 'https://media.api-sports.io/football/teams/50.png',
-      homeScore: 2, awayScore: 1, status: 'LIVE', minute: 67,
-      homeEvents: [{ type: 'goal', minute: 12, player: 'Saka' }, { type: 'goal', minute: 45, player: 'Havertz' }],
-      awayEvents: [{ type: 'goal', minute: 38, player: 'Haaland' }],
-    },
-    {
-      id: 'mock-2', league: 'La Liga', leagueLogo: 'https://media.api-sports.io/football/leagues/140.png',
-      homeTeam: 'Real Madrid', awayTeam: 'Barcelona',
-      homeLogo: 'https://media.api-sports.io/football/teams/541.png',
-      awayLogo: 'https://media.api-sports.io/football/teams/529.png',
-      homeScore: 3, awayScore: 2, status: 'HT', minute: 45,
-      homeEvents: [{ type: 'goal', minute: 15, player: 'Vinícius Jr.' }, { type: 'goal', minute: 55, player: 'Bellingham' }],
-      awayEvents: [{ type: 'goal', minute: 30, player: 'Lewandowski' }],
-    },
-    {
-      id: 'mock-3', league: 'Champions League', leagueLogo: 'https://media.api-sports.io/football/leagues/2.png',
-      homeTeam: 'Liverpool', awayTeam: 'Real Madrid',
-      homeLogo: 'https://media.api-sports.io/football/teams/40.png',
-      awayLogo: 'https://media.api-sports.io/football/teams/541.png',
-      homeScore: 0, awayScore: 0, status: 'NS', minute: null,
-      homeEvents: [], awayEvents: [],
-    },
-  ]
 }
