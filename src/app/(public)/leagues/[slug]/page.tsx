@@ -27,6 +27,18 @@ const LEAGUES: Record<string, { id: number; name: string; season: number; logo: 
   'ligue-1': { id: 61, name: 'Ligue 1', season: 2026, logo: 'https://media.api-sports.io/football/leagues/61.png' },
   'champions-league': { id: 2, name: 'Champions League', season: 2026, logo: 'https://media.api-sports.io/football/leagues/2.png' },
   'europa-league': { id: 3, name: 'Europa League', season: 2026, logo: 'https://media.api-sports.io/football/leagues/3.png' },
+  'eredivisie': { id: 88, name: 'Eredivisie', season: 2026, logo: 'https://media.api-sports.io/football/leagues/88.png' },
+  'primeira-liga': { id: 94, name: 'Primeira Liga', season: 2026, logo: 'https://media.api-sports.io/football/leagues/94.png' },
+  'belgian-pro-league': { id: 144, name: 'Belgian Pro League', season: 2026, logo: 'https://media.api-sports.io/football/leagues/144.png' },
+  'scottish-premiership': { id: 179, name: 'Scottish Premiership', season: 2026, logo: 'https://media.api-sports.io/football/leagues/179.png' },
+  'turkish-super-lig': { id: 203, name: 'Süper Lig', season: 2026, logo: 'https://media.api-sports.io/football/leagues/203.png' },
+  'mls': { id: 253, name: 'Major League Soccer', season: 2025, logo: 'https://media.api-sports.io/football/leagues/253.png' },
+  'liga-mx': { id: 262, name: 'Liga MX', season: 2025, logo: 'https://media.api-sports.io/football/leagues/262.png' },
+  'brasileirao': { id: 71, name: 'Brasileirão Série A', season: 2025, logo: 'https://media.api-sports.io/football/leagues/71.png' },
+  'argentine-primera': { id: 128, name: 'Argentine Primera División', season: 2025, logo: 'https://media.api-sports.io/football/leagues/128.png' },
+  'saudi-pro-league': { id: 307, name: 'Saudi Pro League', season: 2025, logo: 'https://media.api-sports.io/football/leagues/307.png' },
+  'k-league': { id: 292, name: 'K League 1', season: 2025, logo: 'https://media.api-sports.io/football/leagues/292.png' },
+  'j-league': { id: 98, name: 'J1 League', season: 2025, logo: 'https://media.api-sports.io/football/leagues/98.png' },
 };
 
 // ============================================================

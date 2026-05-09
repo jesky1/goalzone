@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Component, ReactNode, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+
 import StandingsWidget from '@/components/football/StandingsWidget';
 import TopScorersWidget from '@/components/football/TopScorersWidget';
 import FanTokenWidget from '@/components/football/FanTokenWidget';
@@ -60,28 +61,34 @@ function HeroSection({ articles, onArticleClick }: { articles: Article[]; onArti
 
   return (
     <section id="home" className="relative w-full h-[400px] sm:h-[480px] md:h-[540px] overflow-hidden">
-      <motion.div key={article.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7 }} className="absolute inset-0">
-        {article.imageUrl && (
-          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${article.imageUrl})` }} />
-        )}
-        {!article.imageUrl && (
-          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(/images/articles/default.jpg)` }} />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 dark:from-deep-900 via-slate-900/60 dark:via-deep-900/60 to-slate-900/20 dark:to-deep-900/20" />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 dark:from-deep-900/80 to-transparent" />
-        <div className="relative h-full flex flex-col justify-end p-6 sm:p-8 md:p-12 max-w-7xl mx-auto">
-          <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
-            <Badge className="bg-cyan-50 dark:bg-neon/10 text-cyan-700 dark:text-neon border border-cyan-200 dark:border-neon/20 text-xs font-bold mb-4">{article.category.name}</Badge>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-3 max-w-3xl cursor-pointer hover:text-cyan-300 dark:hover:text-neon transition-colors" onClick={() => onArticleClick?.(article)}>
-              {article.title}
-            </h1>
-            {article.summary && <p className="text-sm sm:text-base text-gray-300 dark:text-gray-300 max-w-2xl mb-4 line-clamp-2">{article.summary}</p>}
-            <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-400">
-              <Clock className="w-3.5 h-3.5" /><span>{article.readTime} menit baca</span>
-            </div>
-          </motion.div>
-        </div>
-      </motion.div>
+      <AnimatePresence mode="wait">
+        <motion.div key={article.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0">
+          {/* Hero Image as <img> element for better accessibility & SEO */}
+          <img
+            src={article.imageUrl || '/images/articles/default.jpg'}
+            alt={article.title}
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="eager"
+          />
+          {/* Gradient overlay for readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 dark:from-deep-900/90 via-slate-900/50 dark:via-deep-900/50 to-slate-900/20 dark:to-deep-900/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/70 dark:from-deep-900/70 to-transparent" />
+          {/* Content overlay */}
+          <div className="relative h-full flex flex-col justify-end p-6 sm:p-8 md:p-12 max-w-7xl mx-auto">
+            <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
+              <Badge className="bg-cyan-50 dark:bg-neon/10 text-cyan-700 dark:text-neon border border-cyan-200 dark:border-neon/20 text-xs font-bold mb-4">{article.category.name}</Badge>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-3 max-w-3xl cursor-pointer hover:text-cyan-300 dark:hover:text-neon transition-colors" onClick={() => onArticleClick?.(article)}>
+                {article.title}
+              </h1>
+              {article.summary && <p className="text-sm sm:text-base text-gray-300 max-w-2xl mb-4 line-clamp-2">{article.summary}</p>}
+              <div className="flex items-center gap-2 text-xs text-gray-400">
+                <Clock className="w-3.5 h-3.5" /><span>{article.readTime} menit baca</span>
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+      {/* Slide navigation dots */}
       {articles.length > 1 && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
           {articles.map((_, i) => (
@@ -221,12 +228,12 @@ function ArticleModalView({ article, open, onClose }: { article: Article | null;
       >
         {display && (
           <>
-            <div className="relative w-full h-64 sm:h-80">
-              {display.imageUrl ? (
-                <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${display.imageUrl})` }} />
-              ) : (
-                <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(/images/articles/default.jpg)` }} />
-              )}
+            <div className="relative w-full h-64 sm:h-80 overflow-hidden">
+              <img
+                src={display.imageUrl || '/images/articles/default.jpg'}
+                alt={display.title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-black/80 via-white/50 dark:via-transparent to-white/60 dark:to-transparent" />
             </div>
             <div className="p-5 sm:p-6 -mt-8 relative">
