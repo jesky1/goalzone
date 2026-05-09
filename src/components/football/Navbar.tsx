@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Menu, Zap, Search, ChevronDown } from 'lucide-react';
 import ThemeToggle from '@/components/football/ThemeToggle';
@@ -50,6 +51,32 @@ const leagues = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+  const pathname = usePathname();
+
+  /**
+   * Handle navigation for section anchor links.
+   * - If we're on the home page (/), smooth scroll to the section
+   * - If we're on another page, navigate to /#section first
+   * - Uses replace to avoid cluttering browser history
+   */
+  const handleNavClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const sectionId = href.replace('#', '');
+
+    if (pathname === '/') {
+      // Already on home page — just scroll
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Update URL hash without adding history entry
+        history.replaceState(null, '', href);
+      }
+    } else {
+      // On a different page — navigate to home with hash
+      router.push(`/${href}`);
+    }
+  }, [pathname, router]);
 
   return (
     <motion.nav
@@ -73,7 +100,8 @@ export default function Navbar() {
             {navLinks.map((link) => (
               <a
                 key={link.href}
-                href={link.href}
+                href={pathname === '/' ? link.href : `/${link.href}`}
+                onClick={(e) => handleNavClick(e, link.href)}
                 className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-neon hover:bg-white/5 dark:hover:bg-white/5 transition-all duration-300"
               >
                 {link.label}
@@ -172,7 +200,11 @@ export default function Navbar() {
                       >
                         <SheetClose asChild>
                           <a
-                            href={link.href}
+                            href={pathname === '/' ? link.href : `/${link.href}`}
+                            onClick={(e) => {
+                              handleNavClick(e, link.href);
+                              setIsOpen(false);
+                            }}
                             className="block px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-neon hover:bg-white/5 transition-all duration-300"
                           >
                             {link.label}
@@ -192,6 +224,7 @@ export default function Navbar() {
                         <SheetClose asChild key={league.label}>
                           <Link
                             href={league.href}
+                            onClick={() => setIsOpen(false)}
                             className="block px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-neon hover:bg-white/5 transition-all duration-200 truncate"
                           >
                             {league.label}

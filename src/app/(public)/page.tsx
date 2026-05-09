@@ -228,11 +228,11 @@ function ArticleModalView({ article, open, onClose }: { article: Article | null;
       >
         {display && (
           <>
-            <div className="relative w-full h-64 sm:h-80 overflow-hidden">
+            <div className="relative w-full h-64 sm:h-80 overflow-hidden bg-gray-100 dark:bg-deep-700">
               <img
                 src={display.imageUrl || '/images/articles/default.jpg'}
                 alt={display.title}
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-contain"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-black/80 via-white/50 dark:via-transparent to-white/60 dark:to-transparent" />
             </div>

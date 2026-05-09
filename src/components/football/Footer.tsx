@@ -1,6 +1,8 @@
 'use client';
 
+import { useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Zap, Twitter, Youtube, Instagram } from 'lucide-react';
 
@@ -26,21 +28,12 @@ const leagues = [
   { label: 'K-League', href: '/leagues/k-league' },
 ];
 
-const quickLinks = {
-  Tim: [
-    { label: 'Manchester City', href: '#' },
-    { label: 'Real Madrid', href: '#' },
-    { label: 'Barcelona', href: '#' },
-    { label: 'Bayern Munich', href: '#' },
-    { label: 'PSG', href: '#' },
-  ],
-  Media: [
-    { label: 'Berita', href: '#home' },
-    { label: 'Live Score', href: '#live' },
-    { label: 'Klasemen', href: '#standings' },
-    { label: 'Transfer', href: '#transfer' },
-  ],
-};
+const mediaLinks = [
+  { label: 'Berita', href: '#home' },
+  { label: 'Live Score', href: '#live' },
+  { label: 'Klasemen', href: '#standings' },
+  { label: 'Transfer', href: '#transfer' },
+];
 
 const socialLinks = [
   { icon: Twitter, href: '#', label: 'Twitter' },
@@ -49,6 +42,24 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleSectionClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const sectionId = href.replace('#', '');
+
+    if (pathname === '/') {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.replaceState(null, '', href);
+      }
+    } else {
+      router.push(`/${href}`);
+    }
+  }, [pathname, router]);
+
   return (
     <motion.footer
       initial={{ opacity: 0 }}
@@ -105,24 +116,23 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Quick Links */}
-            {Object.entries(quickLinks).map(([title, links]) => (
-              <div key={title}>
-                <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4">{title}</h4>
-                <ul className="space-y-2.5">
-                  {links.map((link) => (
-                    <li key={link.label}>
-                      <a
-                        href={link.href}
-                        className="text-sm text-muted-foreground hover:text-neon transition-colors duration-200"
-                      >
-                        {link.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            {/* Media Quick Links */}
+            <div>
+              <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Media</h4>
+              <ul className="space-y-2.5">
+                {mediaLinks.map((link) => (
+                  <li key={link.label}>
+                    <a
+                      href={pathname === '/' ? link.href : `/${link.href}`}
+                      onClick={(e) => handleSectionClick(e, link.href)}
+                      className="text-sm text-muted-foreground hover:text-neon transition-colors duration-200 cursor-pointer"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           {/* Bottom */}

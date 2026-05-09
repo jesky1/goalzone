@@ -120,10 +120,7 @@
   --neon-box-shadow: 0 0 15px rgba(3, 105, 161, 0.1);
   --neon-box-shadow-strong: 0 0 20px rgba(3, 105, 161, 0.15), 0 0 40px rgba(3, 105, 161, 0.05);
   --cyber-grid-line: rgba(3, 105, 161, 0.06);
-  --body-bg-image:
-    radial-gradient(ellipse at 20% 50%, rgba(3, 105, 161, 0.02) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(3, 105, 161, 0.015) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 80%, rgba(7, 89, 133, 0.015) 0%, transparent 50%);
+  --body-bg-image: none;
   --scrollbar-track: rgba(0, 0, 0, 0.03);
   --scrollbar-thumb: rgba(3, 105, 161, 0.2);
   --scrollbar-thumb-hover: rgba(3, 105, 161, 0.4);
@@ -196,9 +193,8 @@
   --neon-box-shadow-strong: 0 0 20px rgba(0, 240, 255, 0.3), 0 0 40px rgba(0, 240, 255, 0.1), 0 0 60px rgba(0, 240, 255, 0.05);
   --cyber-grid-line: rgba(0, 240, 255, 0.03);
   --body-bg-image:
-    radial-gradient(ellipse at 20% 50%, rgba(0, 240, 255, 0.03) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(0, 240, 255, 0.02) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 80%, rgba(139, 92, 246, 0.02) 0%, transparent 50%);
+    radial-gradient(ellipse at 20% 50%, rgba(0, 240, 255, 0.015) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(0, 240, 255, 0.01) 0%, transparent 60%);
   --scrollbar-track: rgba(255, 255, 255, 0.02);
   --scrollbar-thumb: rgba(0, 240, 255, 0.2);
   --scrollbar-thumb-hover: rgba(0, 240, 255, 0.4);
@@ -333,9 +329,15 @@
 }
 
 /* Cyber Grid Background (Theme-Aware) — subtle radial glow, no grid lines */
+/* Cyber Grid Background — disabled (was causing visual noise)
+   Kept as no-op to avoid breaking class references */
 .cyber-grid {
-  background-image:
-    radial-gradient(ellipse at 50% 0%, var(--cyber-grid-line) 0%, transparent 70%);
+  /* no background — clean look */
+}
+
+/* Smooth scroll offset for fixed navbar (64px) */
+section[id] {
+  scroll-margin-top: 72px;
 }
 
 /* Custom Scrollbar (Theme-Aware) */
