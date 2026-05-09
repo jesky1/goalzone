@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from 'next-themes'
 import Script from "next/script";
 import "./globals.css";
 
@@ -119,9 +118,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          {children}
-        </ThemeProvider>
+        {children}
 
         {/* Google AdSense — loaded async via next/script after page is interactive */}
         {process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && (

@@ -41,10 +41,11 @@ export default function AdminLayout({
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive
                       ? 'bg-sky-50 text-sky-700 border border-sky-200'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                    }`}
+                  }`}
                 >
                   <link.icon className={`w-4 h-4 ${isActive ? 'text-sky-600' : 'text-slate-400'}`} />
                   {link.label}
