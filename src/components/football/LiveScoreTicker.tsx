@@ -68,7 +68,7 @@ export default function LiveScoreTicker() {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className="fixed top-16 left-0 right-0 z-40 glass overflow-hidden"
+      className="relative z-10 glass overflow-hidden"
     >
       <div className="ticker-scroll">
         <div className="flex">
