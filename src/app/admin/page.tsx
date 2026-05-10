@@ -1,4 +1,3 @@
-cat > src / app / admin / page.tsx << 'ENDOFFILE'
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
