@@ -140,7 +140,7 @@ function SimpleNewsCard({ article, onClick }: { article: Article; onClick?: (a: 
     <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
       whileHover={{ scale: 1.02 }} onClick={() => onClick?.(article)}
       className="glass-card glass-hover cursor-pointer overflow-hidden flex flex-col">
-      <div className="relative w-full h-48 shrink-0 overflow-hidden">
+      <div className="relative w-full aspect-video shrink-0 overflow-hidden rounded-t-xl">
         {article.imageUrl ? (
           <img
             src={article.imageUrl}
