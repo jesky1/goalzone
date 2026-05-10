@@ -142,7 +142,12 @@ function SimpleNewsCard({ article, onClick }: { article: Article; onClick?: (a: 
       className="glass-card glass-hover cursor-pointer overflow-hidden flex flex-col">
       <div className="relative w-full h-48 shrink-0 overflow-hidden">
         {article.imageUrl ? (
-          <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover" loading="lazy" />
+          <img
+            src={article.imageUrl}
+            alt={article.title}
+            className="w-full h-full object-cover object-top"
+            loading="lazy"
+          />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-deep-700 to-deep-900 flex items-center justify-center">
             <span className="text-4xl text-gray-300 dark:text-white/10">⚽</span>
