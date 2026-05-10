@@ -11,7 +11,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { RefreshCw } from 'lucide-react';
+<<<<<<< HEAD
 import { safeSrc } from '@/lib/safe-src';
+=======
+import EmptyState from '@/components/football/EmptyState';
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
 interface Standing {
   position: number;
@@ -106,11 +110,19 @@ export default function StandingsWidget() {
               onClick={() => { setActiveLeague(league.slug); setStandings([]); setLoading(true); }}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium whitespace-nowrap transition-all shrink-0 ${
                 activeLeague === league.slug
+<<<<<<< HEAD
                   ? 'bg-cyan-50 text-cyan-700 border border-cyan-200 dark:bg-neon/10 dark:text-neon dark:border-neon/20'
                   : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-gray-400 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-600 dark:hover:text-gray-300 border border-transparent'
               }`}
             >
               {safeSrc(league.logo) && <img src={safeSrc(league.logo)} alt="" className="w-3.5 h-3.5 rounded-sm object-contain" />}
+=======
+                  ? 'bg-neon/10 text-neon border border-neon/20'
+                  : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-500 dark:hover:text-gray-300 border border-transparent'
+              }`}
+            >
+              {league.logo && <img src={league.logo} alt="" className="w-3.5 h-3.5 rounded-sm object-contain" />}
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
               <span className="hidden sm:inline">{league.name}</span>
               <span className="sm:hidden">{league.name.split(' ')[0]}</span>
             </button>
@@ -169,8 +181,13 @@ export default function StandingsWidget() {
                   </TableCell>
                   <TableCell className="text-sm font-medium text-gray-900 dark:text-white">
                     <div className="flex items-center gap-1.5">
+<<<<<<< HEAD
                       {safeSrc(row.teamLogo) && (
                         <img src={safeSrc(row.teamLogo)} alt={row.team} className="w-4 h-4 rounded-full object-contain shrink-0" />
+=======
+                      {row.teamLogo && (
+                        <img src={row.teamLogo} alt={row.team} className="w-4 h-4 rounded-full object-contain shrink-0" />
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
                       )}
                       <span className="truncate">{row.team}</span>
                     </div>
@@ -201,6 +218,7 @@ export default function StandingsWidget() {
         </Table>
 
         {loading && (
+<<<<<<< HEAD
           <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
             Memuat klasemen...
           </div>
@@ -209,6 +227,16 @@ export default function StandingsWidget() {
           <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
             Tidak ada data tersedia
           </div>
+=======
+          <EmptyState icon="loading" />
+        )}
+        {!loading && standings.length === 0 && (
+          <EmptyState
+            icon="empty"
+            onRetry={() => loadStandings(activeLeague)}
+            retrying={refreshing}
+          />
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
         )}
       </div>
 

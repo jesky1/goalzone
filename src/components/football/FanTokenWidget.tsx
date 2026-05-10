@@ -1,9 +1,16 @@
 'use client';
 
+<<<<<<< HEAD
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Coins, RefreshCw, ExternalLink } from 'lucide-react';
 import { safeSrc } from '@/lib/safe-src';
+=======
+import { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { TrendingUp, TrendingDown, Coins, RefreshCw, ExternalLink } from 'lucide-react';
+import EmptyState from '@/components/football/EmptyState';
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
 interface FanToken {
   symbol: string;
@@ -98,6 +105,7 @@ export default function FanTokenWidget() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [dataSource, setDataSource] = useState<string>('loading');
+<<<<<<< HEAD
   const prevSigRef = useRef('');
 
   const updateIfChanged = useCallback((tokens: FanToken[], summaryData: FanTokenSummary | null, source: string) => {
@@ -110,6 +118,8 @@ export default function FanTokenWidget() {
       setLastUpdated(new Date());
     }
   }, []);
+=======
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
   const loadTokens = async () => {
     if (refreshing) return;
@@ -120,7 +130,14 @@ export default function FanTokenWidget() {
         const data = await res.json();
         const list = data.tokens || [];
         if (Array.isArray(list)) {
+<<<<<<< HEAD
           updateIfChanged(list, data.summary || null, data.source || 'unknown');
+=======
+          setTokens(list);
+          setSummary(data.summary || null);
+          setLastUpdated(new Date());
+          setDataSource(data.source || 'unknown');
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
         }
       }
     } catch {
@@ -133,7 +150,11 @@ export default function FanTokenWidget() {
 
   useEffect(() => {
     loadTokens();
+<<<<<<< HEAD
     const interval = setInterval(loadTokens, 120000);
+=======
+    const interval = setInterval(loadTokens, 30000);
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
     return () => clearInterval(interval);
   }, []);
 
@@ -230,8 +251,13 @@ export default function FanTokenWidget() {
                 className="w-9 h-9 rounded-lg flex items-center justify-center text-base shrink-0 border border-gray-200 dark:border-white/10 overflow-hidden"
                 style={{ backgroundColor: `${token.color}20` }}
               >
+<<<<<<< HEAD
                 {safeSrc(token.image) ? (
                   <img src={safeSrc(token.image)} alt={token.symbol} className="w-full h-full object-cover" />
+=======
+                {token.image ? (
+                  <img src={token.image} alt={token.symbol} className="w-full h-full object-cover" />
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
                 ) : (
                   token.logo
                 )}
@@ -291,9 +317,18 @@ export default function FanTokenWidget() {
         })}
 
         {!loading && tokens.length === 0 && (
+<<<<<<< HEAD
           <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
             Memuat data Fan Token...
           </div>
+=======
+          <EmptyState
+            icon="empty"
+            message="Data Fan Token sedang diperbarui. Coba lagi nanti."
+            onRetry={loadTokens}
+            retrying={refreshing}
+          />
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
         )}
       </div>
 

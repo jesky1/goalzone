@@ -31,7 +31,11 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
+<<<<<<< HEAD
 
+=======
+.env*
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
 # vercel
 .vercel
@@ -51,4 +55,10 @@ prompt
 
 server.log
 # Skills directory
+<<<<<<< HEAD
 /skills/
+=======
+/skills/upload/
+goalzone-final.zip
+*.zip
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0

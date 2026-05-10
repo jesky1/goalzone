@@ -4,7 +4,10 @@ import { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { ChevronDown, ChevronUp, User } from 'lucide-react'
+<<<<<<< HEAD
 import { safeSrc } from '@/lib/safe-src'
+=======
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
 // ──────────────────────────────────────────────
 // Types
@@ -239,17 +242,28 @@ function PlayerNode({ player, pos, index, teamColor, teamLogo }: PlayerNodeProps
       >
         {hasPhoto && (
           <img
+<<<<<<< HEAD
             src={safeSrc(player.photo)}
+=======
+            src={player.photo}
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
             alt={player.name}
             className="absolute inset-0 w-full h-full object-cover bg-gray-800"
             loading="lazy"
             onError={() => setImgError(true)}
           />
         )}
+<<<<<<< HEAD
         {!hasPhoto && safeSrc(teamLogo) && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-sm">
             <img
               src={safeSrc(teamLogo)}
+=======
+        {!hasPhoto && hasTeamLogo && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-sm">
+            <img
+              src={teamLogo}
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
               alt=""
               className="w-[70%] h-[70%] object-contain"
               loading="lazy"
@@ -259,7 +273,11 @@ function PlayerNode({ player, pos, index, teamColor, teamLogo }: PlayerNodeProps
             />
           </div>
         )}
+<<<<<<< HEAD
         {!hasPhoto && !safeSrc(teamLogo) && (
+=======
+        {!hasPhoto && !hasTeamLogo && (
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
           <div
             className="absolute inset-0 flex items-center justify-center"
             style={{ backgroundColor: `${teamColor}25` }}
@@ -463,8 +481,13 @@ function TeamColumn({ lineup, side, teamName, teamLogo, teamColor, score }: Team
             backgroundColor: 'rgba(255,255,255,0.05)',
           }}
         >
+<<<<<<< HEAD
           {safeSrc(effectiveLogo) ? (
             <img src={safeSrc(effectiveLogo)!} alt={teamName} className="w-full h-full object-contain" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+=======
+          {effectiveLogo ? (
+            <img src={effectiveLogo} alt={teamName} className="w-full h-full object-contain" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
           ) : (
             <span className="text-sm">⚽</span>
           )}
@@ -534,7 +557,11 @@ function TeamColumn({ lineup, side, teamName, teamLogo, teamColor, score }: Team
           />
 
           {/* Team logo watermark */}
+<<<<<<< HEAD
           {safeSrc(effectiveLogo) && (
+=======
+          {effectiveLogo && (
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
             <div
               className="absolute pointer-events-none"
               style={{
@@ -544,7 +571,11 @@ function TeamColumn({ lineup, side, teamName, teamLogo, teamColor, score }: Team
                 opacity: 0.06,
               }}
             >
+<<<<<<< HEAD
               <img src={safeSrc(effectiveLogo)!} alt="" className="w-24 h-24 sm:w-32 sm:h-32 object-contain" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+=======
+              <img src={effectiveLogo} alt="" className="w-24 h-24 sm:w-32 sm:h-32 object-contain" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
             </div>
           )}
 

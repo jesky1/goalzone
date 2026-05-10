@@ -1,8 +1,15 @@
 'use client';
 
+<<<<<<< HEAD
 import { useState, useEffect, useCallback, Component, ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+=======
+import { useState, useEffect, useCallback, Component, ReactNode, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 import StandingsWidget from '@/components/football/StandingsWidget';
 import TopScorersWidget from '@/components/football/TopScorersWidget';
 import FanTokenWidget from '@/components/football/FanTokenWidget';
@@ -59,6 +66,7 @@ function HeroSection({ articles, onArticleClick }: { articles: Article[]; onArti
   const article = articles[current];
 
   return (
+<<<<<<< HEAD
     <section id="home" className="relative w-full h-[400px] sm:h-[480px] md:h-[540px] overflow-hidden">
       <motion.div key={article.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7 }} className="absolute inset-0">
         {article.imageUrl && (
@@ -82,6 +90,37 @@ function HeroSection({ articles, onArticleClick }: { articles: Article[]; onArti
           </motion.div>
         </div>
       </motion.div>
+=======
+    <section id="home" className="relative w-full h-[460px] sm:h-[540px] md:h-[600px] overflow-hidden -mt-16 pt-16">
+      <AnimatePresence mode="wait">
+        <motion.div key={article.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0">
+          {/* Hero Image as <img> element for better accessibility & SEO */}
+          <img
+            src={article.imageUrl || '/images/articles/default.jpg'}
+            alt={article.title}
+            className="absolute inset-0 w-full h-full object-cover object-top"
+            loading="eager"
+          />
+          {/* Gradient overlay for readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 dark:from-deep-900/90 via-slate-900/50 dark:via-deep-900/50 to-slate-900/30 dark:to-deep-900/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/70 dark:from-deep-900/70 to-transparent" />
+          {/* Content overlay - padding top to clear navbar */}
+          <div className="relative h-full flex flex-col justify-end pt-16 p-6 sm:p-8 md:p-12 max-w-7xl mx-auto">
+            <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
+              <Badge className="bg-cyan-50 dark:bg-neon/10 text-cyan-700 dark:text-neon border border-cyan-200 dark:border-neon/20 text-xs font-bold mb-4">{article.category.name}</Badge>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-3 max-w-3xl cursor-pointer hover:text-cyan-300 dark:hover:text-neon transition-colors" onClick={() => onArticleClick?.(article)}>
+                {article.title}
+              </h1>
+              {article.summary && <p className="text-sm sm:text-base text-gray-300 max-w-2xl mb-4 line-clamp-2">{article.summary}</p>}
+              <div className="flex items-center gap-2 text-xs text-gray-400">
+                <Clock className="w-3.5 h-3.5" /><span>{article.readTime} menit baca</span>
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+      {/* Slide navigation dots */}
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
       {articles.length > 1 && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
           {articles.map((_, i) => (
@@ -102,8 +141,13 @@ function SimpleNewsCard({ article, onClick }: { article: Article; onClick?: (a: 
     <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
       whileHover={{ scale: 1.02 }} onClick={() => onClick?.(article)}
       className="glass-card glass-hover cursor-pointer overflow-hidden flex flex-col">
+<<<<<<< HEAD
       <div className="relative w-full h-48 shrink-0 overflow-hidden">
         <img src={article.imageUrl || '/images/articles/default.jpg'} alt={article.title} className="w-full h-full object-cover" loading="lazy" />
+=======
+      <div className="relative w-full aspect-video shrink-0 overflow-hidden bg-gray-100 dark:bg-deep-700">
+        <img src={article.imageUrl || '/images/articles/default.jpg'} alt={article.title} className="w-full h-full object-contain" loading="lazy" />
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
         <div className="absolute top-3 left-3">
           <Badge className="bg-deep-900/80 backdrop-blur-sm border border-neon/20 text-neon text-xs font-bold">{article.category.name}</Badge>
         </div>
@@ -221,12 +265,21 @@ function ArticleModalView({ article, open, onClose }: { article: Article | null;
       >
         {display && (
           <>
+<<<<<<< HEAD
             <div className="relative w-full h-64 sm:h-80">
               {display.imageUrl ? (
                 <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${display.imageUrl})` }} />
               ) : (
                 <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(/images/articles/default.jpg)` }} />
               )}
+=======
+            <div className="relative w-full h-64 sm:h-80 overflow-hidden bg-gray-100 dark:bg-deep-700">
+              <img
+                src={display.imageUrl || '/images/articles/default.jpg'}
+                alt={display.title}
+                className="absolute inset-0 w-full h-full object-contain"
+              />
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
               <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-black/80 via-white/50 dark:via-transparent to-white/60 dark:to-transparent" />
             </div>
             <div className="p-5 sm:p-6 -mt-8 relative">
@@ -290,9 +343,15 @@ function ArticleModalView({ article, open, onClose }: { article: Article | null;
 }
 
 // ============================================
+<<<<<<< HEAD
 // MAIN PAGE
 // ============================================
 export default function Home() {
+=======
+// MAIN PAGE (inner — uses useSearchParams, must be in Suspense)
+// ============================================
+function HomeContent() {
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -356,7 +415,11 @@ export default function Home() {
       </ErrorBoundary>
 
       {/* News + Sidebar */}
+<<<<<<< HEAD
       <section id="standings" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+=======
+      <section id="standings" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-10">
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
         {/* Ad Slot - Between Live Scores and News */}
         <AdSenseSlot slot="before-news" format="horizontal" className="mb-6" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -417,3 +480,17 @@ export default function Home() {
     </>
   );
 }
+<<<<<<< HEAD
+=======
+
+// ============================================
+// MAIN PAGE (wraps HomeContent in Suspense for useSearchParams)
+// ============================================
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-neon animate-pulse">Memuat...</div></div>}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0

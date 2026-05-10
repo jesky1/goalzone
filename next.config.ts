@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: false,
   images: {
     unoptimized: true,
+<<<<<<< HEAD
     remotePatterns: [
       {
         protocol: 'https',
@@ -18,6 +19,12 @@ const nextConfig: NextConfig = {
   },
   allowedDevOrigins: [
     '.space-z.ai',
+=======
+  },
+  allowedDevOrigins: [
+    '.space-z.ai',
+    'preview-chat-316c8979-28ce-4e36-98ce-563e2662d80c.space-z.ai',
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
   ],
   async headers() {
     return [

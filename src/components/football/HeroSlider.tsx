@@ -58,7 +58,11 @@ export default function HeroSlider() {
   return (
     <section
       id="home"
+<<<<<<< HEAD
       className="relative w-full h-[450px] sm:h-[500px] md:h-[550px] overflow-hidden"
+=======
+      className="relative w-full h-[510px] sm:h-[560px] md:h-[610px] overflow-hidden -mt-16 pt-16"
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
     >
       <AnimatePresence mode="wait">
         <motion.div
@@ -69,6 +73,7 @@ export default function HeroSlider() {
           transition={{ duration: 0.7 }}
           className="absolute inset-0"
         >
+<<<<<<< HEAD
           {/* Background Image */}
           <Image
             src={article.imageUrl || '/images/articles/default.jpg'}
@@ -76,14 +81,27 @@ export default function HeroSlider() {
             fill
             className="object-cover"
             priority
+=======
+          {/* Background Image as <img> element */}
+          <img
+            src={article.imageUrl || '/images/articles/default.jpg'}
+            alt={article.title}
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="eager"
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
           />
 
           {/* Gradient Overlay (theme-aware via CSS classes) */}
           <div className="absolute inset-0 hero-gradient-v" />
           <div className="absolute inset-0 hero-gradient-h" />
 
+<<<<<<< HEAD
           {/* Content */}
           <div className="relative h-full flex flex-col justify-end p-6 sm:p-8 md:p-12 max-w-7xl mx-auto">
+=======
+          {/* Content - pt-16 to clear navbar */}
+          <div className="relative h-full flex flex-col justify-end pt-16 p-6 sm:p-8 md:p-12 max-w-7xl mx-auto">
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
             <motion.div
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}

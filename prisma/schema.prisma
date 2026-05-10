@@ -60,6 +60,32 @@ model Comment {
   user      Profile  @relation(fields: [userId], references: [id])
 }
 
+<<<<<<< HEAD
+=======
+model Match {
+  id          String   @id @default(cuid())
+  externalId  String   @unique  // ID dari API-Football (fixture.id)
+  league      String
+  leagueLogo  String   @default("")
+  leagueId    Int      @default(0)
+  homeTeam    String
+  awayTeam    String
+  homeLogo    String   @default("")
+  awayLogo    String   @default("")
+  homeScore   Int      @default(0)
+  awayScore   Int      @default(0)
+  status      String   @default("NS")  // LIVE, HT, FT, NS
+  minute      Int?
+  matchDate   DateTime
+  venue       String?
+  homeEvents  String   @default("[]")  // JSON string
+  awayEvents  String   @default("[]")  // JSON string
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+}
+
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 model BookmarkedMatch {
   id      String @id @default(cuid())
   userId  String
@@ -75,6 +101,7 @@ model BookmarkedMatch {
 
   @@unique([userId, matchId])
 }
+<<<<<<< HEAD
 
 model Match {
   id          String   @id @default(cuid())
@@ -97,3 +124,5 @@ model Match {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+=======
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0

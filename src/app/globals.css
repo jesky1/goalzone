@@ -103,6 +103,7 @@
   --c-deep-600: #e2e8f0;
   --c-deep-500: #94a3b8;
 
+<<<<<<< HEAD
   /* Glass effect variables - Light (solid, clean, readable) */
   --glass-bg: rgba(255, 255, 255, 1);
   --glass-bg-strong: rgba(255, 255, 255, 1);
@@ -116,14 +117,33 @@
   --glass-border-card: rgba(226, 232, 240, 1);
   --glass-border-hover: rgba(3, 105, 161, 0.4);
   --glass-shadow-hover: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(226, 232, 240, 0.5);
+=======
+  /* Glass effect variables - Light (airy, not glaring) */
+  --glass-bg: rgba(255, 255, 255, 0.3);
+  --glass-bg-strong: rgba(255, 255, 255, 0.4);
+  --glass-bg-card: rgba(255, 255, 255, 0.3);
+  --glass-bg-hover: rgba(255, 255, 255, 0.5);
+  --glass-blur: 16px;
+  --glass-blur-strong: 16px;
+  --glass-blur-card: 16px;
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-border-strong: rgba(0, 0, 0, 0.1);
+  --glass-border-card: rgba(0, 0, 0, 0.08);
+  --glass-border-hover: rgba(3, 105, 161, 0.3);
+  --glass-shadow-hover: 0 0 30px rgba(3, 105, 161, 0.08), inset 0 0 30px rgba(3, 105, 161, 0.03);
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
   --neon-text-shadow: 0 0 10px rgba(3, 105, 161, 0.3), 0 0 20px rgba(3, 105, 161, 0.15);
   --neon-box-shadow: 0 0 15px rgba(3, 105, 161, 0.1);
   --neon-box-shadow-strong: 0 0 20px rgba(3, 105, 161, 0.15), 0 0 40px rgba(3, 105, 161, 0.05);
   --cyber-grid-line: rgba(3, 105, 161, 0.06);
+<<<<<<< HEAD
   --body-bg-image:
     radial-gradient(ellipse at 20% 50%, rgba(3, 105, 161, 0.02) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 20%, rgba(3, 105, 161, 0.015) 0%, transparent 50%),
     radial-gradient(ellipse at 50% 80%, rgba(7, 89, 133, 0.015) 0%, transparent 50%);
+=======
+  --body-bg-image: none;
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
   --scrollbar-track: rgba(0, 0, 0, 0.03);
   --scrollbar-thumb: rgba(3, 105, 161, 0.2);
   --scrollbar-thumb-hover: rgba(3, 105, 161, 0.4);
@@ -194,11 +214,16 @@
   --neon-text-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.3), 0 0 40px rgba(0, 240, 255, 0.1);
   --neon-box-shadow: 0 0 15px rgba(0, 240, 255, 0.15), 0 0 30px rgba(0, 240, 255, 0.05);
   --neon-box-shadow-strong: 0 0 20px rgba(0, 240, 255, 0.3), 0 0 40px rgba(0, 240, 255, 0.1), 0 0 60px rgba(0, 240, 255, 0.05);
+<<<<<<< HEAD
   --cyber-grid-line: rgba(0, 240, 255, 0.03);
   --body-bg-image:
     radial-gradient(ellipse at 20% 50%, rgba(0, 240, 255, 0.03) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 20%, rgba(0, 240, 255, 0.02) 0%, transparent 50%),
     radial-gradient(ellipse at 50% 80%, rgba(139, 92, 246, 0.02) 0%, transparent 50%);
+=======
+  --cyber-grid-line: transparent;
+  --body-bg-image: none;
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
   --scrollbar-track: rgba(255, 255, 255, 0.02);
   --scrollbar-thumb: rgba(0, 240, 255, 0.2);
   --scrollbar-thumb-hover: rgba(0, 240, 255, 0.4);
@@ -241,6 +266,7 @@
   border-radius: 1rem;
 }
 
+<<<<<<< HEAD
 /* Light mode: add shadow-sm to glass-card */
 :root:not(.dark) .glass-card {
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -256,6 +282,8 @@
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
+=======
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 .glass-hover {
   transition: all 0.3s ease;
 }
@@ -266,11 +294,14 @@
   box-shadow: var(--glass-shadow-hover);
 }
 
+<<<<<<< HEAD
 /* Light mode: no cyber-grid background */
 :root:not(.dark) .cyber-grid {
   background-image: none;
 }
 
+=======
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 /* ============================================
    Hero Gradient Overlays (Theme-Aware)
    In light mode: semi-transparent blue-tinted,
@@ -325,6 +356,7 @@
 
 .live-pulse {
   animation: live-pulse 1.5s ease-in-out infinite;
+<<<<<<< HEAD
   will-change: opacity;
 }
 
@@ -355,6 +387,8 @@
 }
 .neon-border-pulse {
   animation: neon-border-pulse 3s ease-in-out infinite;
+=======
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 }
 
 @keyframes ticker-scroll {
@@ -382,12 +416,25 @@
   animation: gradient-shift 8s ease infinite;
 }
 
+<<<<<<< HEAD
 /* Cyber Grid Background (Theme-Aware) */
 .cyber-grid {
   background-image: 
     linear-gradient(var(--cyber-grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--cyber-grid-line) 1px, transparent 1px);
   background-size: 60px 60px;
+=======
+/* Cyber Grid Background (Theme-Aware) — subtle radial glow, no grid lines */
+/* Cyber Grid Background — disabled (was causing visual noise)
+   Kept as no-op to avoid breaking class references */
+.cyber-grid {
+  /* no background — clean look */
+}
+
+/* Smooth scroll offset for fixed navbar (64px) */
+section[id] {
+  scroll-margin-top: 72px;
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 }
 
 /* Custom Scrollbar (Theme-Aware) */

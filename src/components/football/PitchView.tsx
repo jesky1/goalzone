@@ -2,7 +2,10 @@
 
 import { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+<<<<<<< HEAD
 import { safeSrc } from '@/lib/safe-src'
+=======
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
 // ──────────────────────────────────────────────
 // Types
@@ -268,7 +271,11 @@ function PlayerNode({ player, pos, index, isHome, teamLogo }: PlayerNodeProps) {
           {/* Layer 1: Player photo */}
           {hasPhoto && (
             <img
+<<<<<<< HEAD
               src={safeSrc(player.photo)}
+=======
+              src={player.photo}
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
               alt={player.name}
               className="absolute inset-0 w-full h-full object-cover bg-gray-800"
               loading="lazy"
@@ -277,10 +284,17 @@ function PlayerNode({ player, pos, index, isHome, teamLogo }: PlayerNodeProps) {
           )}
 
           {/* Layer 2: Team logo fallback (shown when no player photo) */}
+<<<<<<< HEAD
           {!hasPhoto && safeSrc(teamLogo) && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-sm">
               <img
                 src={safeSrc(teamLogo)}
+=======
+          {!hasPhoto && hasTeamLogo && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-sm">
+              <img
+                src={teamLogo}
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
                 alt={isHome ? 'Home' : 'Away'}
                 className="w-[70%] h-[70%] object-contain"
                 loading="lazy"
@@ -292,7 +306,11 @@ function PlayerNode({ player, pos, index, isHome, teamLogo }: PlayerNodeProps) {
           )}
 
           {/* Layer 3: Initials fallback (shown when neither photo nor logo) */}
+<<<<<<< HEAD
           {!hasPhoto && !safeSrc(teamLogo) && (
+=======
+          {!hasPhoto && !hasTeamLogo && (
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
             <div
               className="absolute inset-0 flex items-center justify-center"
               style={{
@@ -355,11 +373,19 @@ function PlayerNode({ player, pos, index, isHome, teamLogo }: PlayerNodeProps) {
                 className="relative w-10 h-10 rounded-full overflow-hidden shrink-0"
                 style={{ border: `2px solid ${teamColor}` }}
               >
+<<<<<<< HEAD
                 {safeSrc(player.photo) ? (
                   <img src={safeSrc(player.photo)} alt={player.name} className="w-full h-full object-cover bg-gray-800" />
                 ) : safeSrc(teamLogo) ? (
                   <div className="w-full h-full flex items-center justify-center bg-white/10">
                     <img src={safeSrc(teamLogo)} alt="" className="w-[70%] h-[70%] object-contain" />
+=======
+                {hasPhoto ? (
+                  <img src={player.photo} alt={player.name} className="w-full h-full object-cover bg-gray-800" />
+                ) : hasTeamLogo ? (
+                  <div className="w-full h-full flex items-center justify-center bg-white/10">
+                    <img src={teamLogo} alt="" className="w-[70%] h-[70%] object-contain" />
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
                   </div>
                 ) : (
                   <div
@@ -480,7 +506,11 @@ function PitchLines() {
 // ──────────────────────────────────────────────
 
 function TeamWatermark({ logo, side }: { logo: string; side: 'home' | 'away' }) {
+<<<<<<< HEAD
   if (!safeSrc(logo)) return null
+=======
+  if (!logo) return null
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
   return (
     <div
       className="absolute pointer-events-none"
@@ -492,7 +522,11 @@ function TeamWatermark({ logo, side }: { logo: string; side: 'home' | 'away' }) 
       }}
     >
       <img
+<<<<<<< HEAD
         src={safeSrc(logo)!}
+=======
+        src={logo}
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
         alt=""
         className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 object-contain"
         loading="lazy"
@@ -553,9 +587,15 @@ export default function PitchView({
           {/* Away team (top) */}
           <div className="flex items-center gap-2 sm:gap-3 flex-1">
             <div className="w-7 h-7 sm:w-9 sm:h-9 flex-shrink-0 rounded-full overflow-hidden bg-white/10">
+<<<<<<< HEAD
               {safeSrc(effectiveAwayLogo) && (
                 <img
                   src={safeSrc(effectiveAwayLogo)}
+=======
+              {effectiveAwayLogo && (
+                <img
+                  src={effectiveAwayLogo}
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
                   alt={awayTeam}
                   className="w-full h-full object-contain"
                   loading="lazy"
@@ -587,9 +627,15 @@ export default function PitchView({
               <span className="text-red-400 text-xs sm:text-sm font-mono font-semibold">{homeLineup.formation}</span>
             </div>
             <div className="w-7 h-7 sm:w-9 sm:h-9 flex-shrink-0 rounded-full overflow-hidden bg-white/10">
+<<<<<<< HEAD
               {safeSrc(effectiveHomeLogo) && (
                 <img
                   src={safeSrc(effectiveHomeLogo)}
+=======
+              {effectiveHomeLogo && (
+                <img
+                  src={effectiveHomeLogo}
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
                   alt={homeTeam}
                   className="w-full h-full object-contain"
                   loading="lazy"

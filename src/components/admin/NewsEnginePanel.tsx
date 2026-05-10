@@ -28,9 +28,13 @@ import {
   Tag,
   Copy,
   Check,
+<<<<<<< HEAD
   Save,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+=======
+} from 'lucide-react'
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -55,6 +59,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 interface GeneratedArticle {
   title: string
+<<<<<<< HEAD
   slug: string
   content: string
   summary: string
@@ -63,6 +68,12 @@ interface GeneratedArticle {
   readTime: number
   imageUrl: string | null
   imagePrompt?: string
+=======
+  content: string
+  summary: string
+  category: string
+  readTime: number
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 }
 
 interface PipelineResult {
@@ -241,9 +252,12 @@ export default function NewsEnginePanel() {
   const [aiError, setAiError] = useState<string | null>(null)
   const [aiArticle, setAiArticle] = useState<GeneratedArticle | null>(null)
   const [copiedField, setCopiedField] = useState<string | null>(null)
+<<<<<<< HEAD
   const [saving, setSaving] = useState(false)
   const [savedArticleId, setSavedArticleId] = useState<string | null>(null)
   const { toast } = useToast()
+=======
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
   // Load service status
   const loadStatus = useCallback(async () => {
@@ -290,10 +304,16 @@ export default function NewsEnginePanel() {
     setAiGenerating(true)
     setAiError(null)
     setAiArticle(null)
+<<<<<<< HEAD
     setSavedArticleId(null)
 
     try {
       const adminKey = localStorage.getItem('goalzone_admin_token') || localStorage.getItem('admin_api_key') || ''
+=======
+
+    try {
+      const adminKey = localStorage.getItem('admin_api_key') || ''
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
       const res = await fetch('/api/generate-article', {
         method: 'POST',
         headers: {
@@ -322,6 +342,7 @@ export default function NewsEnginePanel() {
     } catch { /* silent */ }
   }
 
+<<<<<<< HEAD
   // ─── Save AI Article to Database ──────────────────────────
   const handleSaveToDatabase = async () => {
     if (!aiArticle) return
@@ -372,6 +393,8 @@ export default function NewsEnginePanel() {
     }
   }
 
+=======
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
   return (
     <div className="space-y-6">
       {/* ── AI Article Generator Section ── */}
@@ -508,6 +531,7 @@ export default function NewsEnginePanel() {
                       <BookOpen className="w-3 h-3" />
                       {aiArticle.readTime} min read
                     </Badge>
+<<<<<<< HEAD
                     <Badge
                       variant="outline"
                       className={`text-[10px] flex items-center gap-1 ${aiArticle.imageUrl ? 'text-emerald-400 border-emerald-500/30' : 'text-amber-400 border-amber-500/30'}`}
@@ -572,6 +596,10 @@ export default function NewsEnginePanel() {
                     </div>
                   )}
 
+=======
+                  </div>
+
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
                   {/* Summary */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
@@ -607,6 +635,7 @@ export default function NewsEnginePanel() {
                     />
                   </div>
                 </div>
+<<<<<<< HEAD
 
                 {/* Save to Database Action Bar */}
                 <div className="p-4 border-t border-violet-500/10 bg-gradient-to-r from-violet-500/5 to-fuchsia-500/5">
@@ -654,6 +683,8 @@ export default function NewsEnginePanel() {
                     </Button>
                   </div>
                 </div>
+=======
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
               </motion.div>
             )}
           </AnimatePresence>

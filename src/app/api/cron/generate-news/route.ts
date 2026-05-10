@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import ZAI from 'z-ai-web-dev-sdk'
 import { createServerSupabaseClient } from '@/lib/supabase/client'
+<<<<<<< HEAD
 import sharp from 'sharp'
 import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
 import { calculateReadTime } from '@/lib/article-utils'
+=======
+import { footballFetch, isFootballApiConfigured, footballApiBase } from '@/lib/football'
+import sharp from 'sharp'
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
 // ============================================================
 // GOALZONE — Automated News Engine
@@ -96,6 +101,10 @@ interface PipelineResult {
 
 // ─── Config ──────────────────────────────────────────────────
 
+<<<<<<< HEAD
+=======
+const FOOTBALL_API_KEY = process.env.FOOTBALL_API_KEY || process.env.NEXT_PUBLIC_FOOTBALL_API_KEY || ''
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
 const LEAGUE_IDS = [
   39,   // Premier League
@@ -638,7 +647,11 @@ async function publishArticle(supabase: any, article: GeneratedArticle, imageUrl
         author_id: authorId,
         status: 'published',
         is_featured: false,
+<<<<<<< HEAD
         read_time: calculateReadTime(article.contentHtml),
+=======
+        read_time: Math.max(3, Math.ceil(article.contentHtml.length / 1000)),
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
         seo_title: article.title,
         seo_description: article.metaDescription,
         published_at: new Date().toISOString(),

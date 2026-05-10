@@ -7,7 +7,10 @@ const JWT_EXPIRES_IN = '24h';
 
 // ============================================================
 // POST /api/admin/login — Authenticate admin
+<<<<<<< HEAD
 // Sets HttpOnly cookie for middleware-based route protection
+=======
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 // ============================================================
 export async function POST(request: NextRequest) {
   try {
@@ -54,8 +57,12 @@ export async function POST(request: NextRequest) {
       { expiresIn: JWT_EXPIRES_IN },
     );
 
+<<<<<<< HEAD
     // Build response with HttpOnly cookie for middleware auth guard
     const response = NextResponse.json({
+=======
+    return NextResponse.json({
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
       success: true,
       message: 'Login berhasil',
       data: {
@@ -69,6 +76,7 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+<<<<<<< HEAD
 
     // Set HttpOnly cookie — readable by middleware, not by JS
     response.cookies.set('goalzone_admin_token', token, {
@@ -80,6 +88,8 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
+=======
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
   } catch (error: any) {
     console.error('[Admin Login Error]', error.message);
     return NextResponse.json({ success: false, error: 'Terjadi kesalahan server' }, { status: 500 });

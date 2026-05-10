@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server'
+<<<<<<< HEAD
 import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
 
 export const revalidate = 60 // Cache 60 detik
 
 
+=======
+import { footballFetch, isFootballApiConfigured } from '@/lib/football'
+
+export const revalidate = 60 // Cache 60 detik
+
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 interface LiveMatchEvent {
   type: 'goal' | 'card'
   minute: number
@@ -49,6 +56,7 @@ function extractEvents(events: any[], teamId: number): LiveMatchEvent[] {
 }
 
 export async function GET() {
+<<<<<<< HEAD
   // Jika tidak ada API key, fallback ke mock data
   if (!isFootballApiConfigured) {
     const date = new Date().toISOString().split('T')[0]
@@ -57,6 +65,15 @@ export async function GET() {
       source: 'mock',
       message: 'Set FOOTBALL_API_KEY in Vercel Environment Variables for real live scores',
     })
+=======
+  // Jika API key belum dikonfigurasi, kembalikan error
+  if (!isFootballApiConfigured) {
+    return NextResponse.json({
+      matches: [],
+      source: 'none',
+      error: 'FOOTBALL_API_KEY belum dikonfigurasi. Tambahkan FOOTBALL_API_KEY di .env atau Vercel Environment Variables.',
+    }, { status: 503 })
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
   }
 
   try {
@@ -64,12 +81,27 @@ export async function GET() {
 
     const response = await footballFetch(
       `/fixtures?date=${today}&timezone=Asia/Jakarta`,
+<<<<<<< HEAD
       {
         next: { revalidate: 60 },
       }
     )
 
     if (!response.ok) {
+=======
+      { next: { revalidate: 60 } }
+    )
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        return NextResponse.json({
+          matches: [],
+          source: 'api-football',
+          error: 'Limit API habis. Data sedang diperbarui, coba lagi nanti.',
+          rateLimited: true,
+        });
+      }
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
       throw new Error(`API-Football error: ${response.status}`)
     }
 
@@ -107,6 +139,7 @@ export async function GET() {
     return NextResponse.json({ matches, source: 'api-football' })
   } catch (error) {
     console.error('Error fetching live scores from API-Football:', error)
+<<<<<<< HEAD
     // Fallback ke mock data kalau API error
     return NextResponse.json({
       matches: getMockMatches(),
@@ -146,3 +179,12 @@ function getMockMatches(): LiveMatch[] {
     },
   ]
 }
+=======
+    return NextResponse.json({
+      matches: [],
+      source: 'none',
+      error: 'Gagal mengambil data live scores. Coba lagi nanti.',
+    }, { status: 500 })
+  }
+}
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0

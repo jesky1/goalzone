@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+<<<<<<< HEAD
 import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
+=======
+import { footballFetch, isFootballApiConfigured } from '@/lib/football'
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
 // ============================================================
 // GOALZONE - Sync Matches API Route
 // ============================================================
+<<<<<<< HEAD
 // Endpoint terproteksi untuk sinkronisasi data pertandingan.
 //
 // Alur kerja:
@@ -22,6 +27,17 @@ import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
 
 const API_SECRET_KEY = process.env.API_SECRET_KEY
 
+=======
+// Endpoint untuk sinkronisasi data pertandingan dari Football API.
+//
+// Alur kerja:
+// 1. Panggil Football-API: /fixtures?date=today
+// 2. Loop semua data pertandingan
+// 3. Upsert ke Supabase (onConflict: external_id) → update skor
+// 4. Upsert ke Prisma/SQLite lokal (backup)
+// ============================================================
+
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 // ─── GOALZONE League IDs ──────────────────────────────────────
 const GOALZONE_LEAGUE_IDS = [
   39, 40, 140, 141, 135, 136, 78, 79, 61, 62,
@@ -52,6 +68,7 @@ function extractEvents(events: any[], teamId: number) {
     }))
 }
 
+<<<<<<< HEAD
 // ─── Validasi API Secret Key ──────────────────────────────────
 // Cek dari header "x-api-secret" atau query parameter "secret"
 function validateSecret(request: Request): boolean {
@@ -72,6 +89,8 @@ function validateSecret(request: Request): boolean {
   return false
 }
 
+=======
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 // ─── Transform fixture API-Football → row untuk upsert ────────
 function transformFixture(f: any) {
   const homeEvents = extractEvents(f.events || [], f.teams.home.id)
@@ -243,6 +262,7 @@ async function upsertToPrisma(rows: any[]): Promise<{ upserted: number; error?: 
 export async function GET(request: Request) {
   const startTime = Date.now()
 
+<<<<<<< HEAD
   // ── 1. VALIDASI API SECRET KEY ────────────────────────────
   if (!validateSecret(request)) {
     return NextResponse.json({
@@ -253,6 +273,9 @@ export async function GET(request: Request) {
   }
 
   // ── 2. CEK KONFIGURASI ────────────────────────────────────
+=======
+  // ── 1. CEK KONFIGURASI ────────────────────────────────────
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
   if (!isFootballApiConfigured) {
     return NextResponse.json({
       success: false,

@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server'
+<<<<<<< HEAD
 import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
 
 export const revalidate = 3600 // Cache player data for 1 hour
 
 
+=======
+import { footballFetch, isFootballApiConfigured } from '@/lib/football'
+
+export const revalidate = 3600 // Cache player data for 1 hour
+
+>>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
