@@ -50,18 +50,12 @@ export default function NewsCard({
       >
         <div className="flex flex-col md:flex-row h-full">
           {/* Image */}
-<<<<<<< HEAD
           <div className="relative w-full md:w-1/2 h-64 md:h-auto min-h-[250px] shrink-0">
             {article.imageUrl ? (
-=======
-          <div className="relative w-full md:w-1/2 aspect-video md:aspect-auto md:h-auto min-h-[250px] shrink-0">
-            {article.imageUrl && (
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
               <Image
                 src={article.imageUrl}
                 alt={article.title}
                 fill
-<<<<<<< HEAD
                 className="object-cover"
               />
             ) : (
@@ -72,16 +66,6 @@ export default function NewsCard({
                 className="object-cover"
               />
             )}
-=======
-                className="object-contain"
-              />
-            )}
-            {!article.imageUrl && (
-              <div className="absolute inset-0 bg-gradient-to-br from-deep-700 to-deep-900 flex items-center justify-center">
-                <span className="text-4xl text-white/10">⚽</span>
-              </div>
-            )}
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
           </div>
 
           {/* Content */}
@@ -131,18 +115,12 @@ export default function NewsCard({
       className="glass-card glass-hover cursor-pointer overflow-hidden flex flex-col"
     >
       {/* Image */}
-<<<<<<< HEAD
       <div className="relative w-full h-48 shrink-0">
         {article.imageUrl ? (
-=======
-      <div className="relative w-full aspect-video shrink-0">
-        {article.imageUrl && (
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
           <Image
             src={article.imageUrl}
             alt={article.title}
             fill
-<<<<<<< HEAD
             className="object-cover"
           />
         ) : (
@@ -153,16 +131,6 @@ export default function NewsCard({
             className="object-cover"
           />
         )}
-=======
-            className="object-contain"
-          />
-        )}
-        {!article.imageUrl && (
-          <div className="absolute inset-0 bg-gradient-to-br from-deep-700 to-deep-900 flex items-center justify-center">
-            <span className="text-4xl text-white/10">⚽</span>
-          </div>
-        )}
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
         <div className="absolute top-3 left-3">
           <span className="px-2 py-0.5 rounded-full text-xs font-bold neon-text bg-deep-900/80 backdrop-blur-sm border border-neon/20">
             {article.category.name}

@@ -47,11 +47,7 @@
   "crons": [
     {
       "path": "/api/sync-matches",
-<<<<<<< HEAD
       "schedule": "*/15 * * * *"
-=======
-      "schedule": "0 0 * * *"
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
     }
   ],
   "rewrites": [

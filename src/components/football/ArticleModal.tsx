@@ -147,18 +147,13 @@ export default function ArticleModal({
             >
               {/* Hero Image */}
               <div className="relative w-full h-64 sm:h-80">
-<<<<<<< HEAD
                 {displayArticle.imageUrl ? (
-=======
-                {displayArticle.imageUrl && (
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
                   <Image
                     src={displayArticle.imageUrl}
                     alt={displayArticle.title}
                     fill
                     className="object-cover"
                   />
-<<<<<<< HEAD
                 ) : (
                   <Image
                     src="/images/articles/default.jpg"
@@ -166,13 +161,6 @@ export default function ArticleModal({
                     fill
                     className="object-cover"
                   />
-=======
-                )}
-                {!displayArticle.imageUrl && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-deep-700 to-deep-900 flex items-center justify-center">
-                    <span className="text-6xl text-white/10">⚽</span>
-                  </div>
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-deep-800 via-transparent to-transparent" />
               </div>

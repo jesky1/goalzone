@@ -5,10 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronDown, Loader2, RefreshCw, Zap, Star } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { safeSrc } from '@/lib/safe-src';
-<<<<<<< HEAD
-=======
-import EmptyState from '@/components/football/EmptyState';
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
 // ─── Types (exported for use in page.tsx) ────────────────────
 export interface MatchEvent { type: string; minute: number; player: string; detail?: string; card?: string | null; }
@@ -519,21 +515,10 @@ export default function MatchSection({ onMatchClick, autoOpenMatchId }: {
               )
             })}
             {filtered.length === 0 && (
-<<<<<<< HEAD
               <div className="glass-card p-8 text-center neon-glow">
                 <div className="text-4xl mb-3 neon-text">⚽</div>
                 <p className="text-base font-semibold neon-text">Sedang memuat jadwal pertandingan terbaru...</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Data akan otomatis update ketika ada pertandingan</p>
-=======
-              <div className="glass-card p-6">
-                <EmptyState
-                  icon="empty"
-                  title="Data sedang diperbarui"
-                  message="Belum ada jadwal pertandingan tersedia saat ini. Klik Sync Data atau coba lagi nanti."
-                  onRetry={handleSync}
-                  retrying={syncing}
-                />
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
               </div>
             )}
           </div>

@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server'
-<<<<<<< HEAD
 import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
-=======
-import { footballFetch, isFootballApiConfigured } from '@/lib/football'
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
 export const dynamic = 'force-dynamic'
 

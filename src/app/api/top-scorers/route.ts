@@ -1,16 +1,9 @@
 import { NextResponse } from 'next/server'
-<<<<<<< HEAD
 import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
 
 export const revalidate = 300 // Cache 5 minutes
 
 
-=======
-import { footballFetch, isFootballApiConfigured } from '@/lib/football'
-
-export const revalidate = 300 // Cache 5 minutes
-
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 interface TopScorer {
   rank: number
   name: string
@@ -28,11 +21,7 @@ interface LeagueInfo {
   season: number
 }
 
-<<<<<<< HEAD
 // Supported leagues: Premier League (39), La Liga (140), Serie A (135), Bundesliga (78), Ligue 1 (61), Champions League (2), Europa League (3)
-=======
-// Supported leagues with API-Football IDs and seasons
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 const LEAGUES: Record<string, LeagueInfo> = {
   'premier-league': { id: 39, name: 'Premier League', season: 2026 },
   'la-liga': { id: 140, name: 'La Liga', season: 2026 },
@@ -41,21 +30,6 @@ const LEAGUES: Record<string, LeagueInfo> = {
   'ligue-1': { id: 61, name: 'Ligue 1', season: 2026 },
   'champions-league': { id: 2, name: 'Champions League', season: 2026 },
   'europa-league': { id: 3, name: 'Europa League', season: 2026 },
-<<<<<<< HEAD
-=======
-  'eredivisie': { id: 88, name: 'Eredivisie', season: 2026 },
-  'primeira-liga': { id: 94, name: 'Primeira Liga', season: 2026 },
-  'belgian-pro-league': { id: 144, name: 'Belgian Pro League', season: 2026 },
-  'scottish-premiership': { id: 179, name: 'Scottish Premiership', season: 2026 },
-  'turkish-super-lig': { id: 203, name: 'Süper Lig', season: 2026 },
-  'mls': { id: 253, name: 'Major League Soccer', season: 2025 },
-  'liga-mx': { id: 262, name: 'Liga MX', season: 2025 },
-  'brasileirao': { id: 71, name: 'Brasileirão Série A', season: 2025 },
-  'argentine-primera': { id: 128, name: 'Argentine Primera División', season: 2025 },
-  'saudi-pro-league': { id: 307, name: 'Saudi Pro League', season: 2025 },
-  'k-league': { id: 292, name: 'K League 1', season: 2025 },
-  'j-league': { id: 98, name: 'J1 League', season: 2025 },
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 }
 
 const availableLeagues = Object.entries(LEAGUES).map(([slug, info]) => ({
@@ -82,13 +56,9 @@ function getMockTopScorers(): TopScorer[] {
 async function fetchTopScorers(leagueInfo: LeagueInfo): Promise<{ topScorers: TopScorer[]; seasonLabel: string } | null> {
   const response = await footballFetch(
     `/players/topscorers?league=${leagueInfo.id}&season=${leagueInfo.season}`,
-<<<<<<< HEAD
     {
       next: { revalidate: 300 },
     }
-=======
-    { next: { revalidate: 300 } }
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
   )
 
   if (!response.ok) {

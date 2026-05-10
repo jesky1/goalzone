@@ -3,11 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, RefreshCw } from 'lucide-react';
-<<<<<<< HEAD
 import { safeSrc } from '@/lib/safe-src';
-=======
-import EmptyState from '@/components/football/EmptyState';
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
 interface Scorer {
   rank: number;
@@ -114,19 +110,11 @@ export default function TopScorersWidget() {
               onClick={() => { setActiveLeague(league.slug); setScorers([]); setLoading(true); }}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium whitespace-nowrap transition-all shrink-0 ${
                 activeLeague === league.slug
-<<<<<<< HEAD
                   ? 'bg-cyan-50 text-cyan-700 border border-cyan-200 dark:bg-neon/10 dark:text-neon dark:border-neon/20'
                   : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-gray-400 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-600 dark:hover:text-gray-300 border border-transparent'
               }`}
             >
               {safeSrc(league.logo) && <img src={safeSrc(league.logo)} alt="" className="w-3.5 h-3.5 rounded-sm object-contain" />}
-=======
-                  ? 'bg-neon/10 text-neon border border-neon/20'
-                  : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-500 dark:hover:text-gray-300 border border-transparent'
-              }`}
-            >
-              {league.logo && <img src={league.logo} alt="" className="w-3.5 h-3.5 rounded-sm object-contain" />}
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
               <span className="hidden sm:inline">{league.name}</span>
               <span className="sm:hidden">{league.name.split(' ')[0]}</span>
             </button>
@@ -158,13 +146,8 @@ export default function TopScorersWidget() {
 
               {/* Player Photo */}
               <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-<<<<<<< HEAD
                 {safeSrc(scorer.photo) ? (
                   <img src={safeSrc(scorer.photo)} alt={scorer.name} className="w-full h-full object-cover" />
-=======
-                {scorer.photo ? (
-                  <img src={scorer.photo} alt={scorer.name} className="w-full h-full object-cover" />
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-300 dark:text-gray-600">?</div>
                 )}
@@ -178,13 +161,8 @@ export default function TopScorersWidget() {
                   </span>
                 </div>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
-<<<<<<< HEAD
                   {safeSrc(scorer.teamLogo) && (
                     <img src={safeSrc(scorer.teamLogo)} alt="" className="w-3 h-3 rounded-full object-contain" />
-=======
-                  {scorer.teamLogo && (
-                    <img src={scorer.teamLogo} alt="" className="w-3 h-3 rounded-full object-contain" />
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
                   )}
                   <span className="truncate">{scorer.team}</span>
                 </div>
@@ -220,7 +198,6 @@ export default function TopScorersWidget() {
         })}
 
         {loading && (
-<<<<<<< HEAD
           <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
             Memuat data...
           </div>
@@ -229,16 +206,6 @@ export default function TopScorersWidget() {
           <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
             Tidak ada data tersedia
           </div>
-=======
-          <EmptyState icon="loading" />
-        )}
-        {!loading && scorers.length === 0 && (
-          <EmptyState
-            icon="empty"
-            onRetry={() => loadScorers(activeLeague)}
-            retrying={refreshing}
-          />
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
         )}
       </div>
     </motion.div>

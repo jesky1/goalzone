@@ -1,16 +1,9 @@
 import { NextResponse } from 'next/server'
-<<<<<<< HEAD
 import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
 
 export const revalidate = 300 // Cache 5 minutes
 
 
-=======
-import { footballFetch, isFootballApiConfigured } from '@/lib/football'
-
-export const revalidate = 300 // Cache 5 minutes
-
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 interface StandingEntry {
   position: number
   team: string
@@ -32,11 +25,7 @@ interface LeagueInfo {
   season: number
 }
 
-<<<<<<< HEAD
 // Supported leagues: Premier League (39), La Liga (140), Serie A (135), Bundesliga (78), Ligue 1 (61), Champions League (2), Europa League (3)
-=======
-// Supported leagues with API-Football IDs and seasons
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 const LEAGUES: Record<string, LeagueInfo> = {
   'premier-league': { id: 39, name: 'Premier League', season: 2026 },
   'la-liga': { id: 140, name: 'La Liga', season: 2026 },
@@ -45,21 +34,6 @@ const LEAGUES: Record<string, LeagueInfo> = {
   'ligue-1': { id: 61, name: 'Ligue 1', season: 2026 },
   'champions-league': { id: 2, name: 'Champions League', season: 2026 },
   'europa-league': { id: 3, name: 'Europa League', season: 2026 },
-<<<<<<< HEAD
-=======
-  'eredivisie': { id: 88, name: 'Eredivisie', season: 2026 },
-  'primeira-liga': { id: 94, name: 'Primeira Liga', season: 2026 },
-  'belgian-pro-league': { id: 144, name: 'Belgian Pro League', season: 2026 },
-  'scottish-premiership': { id: 179, name: 'Scottish Premiership', season: 2026 },
-  'turkish-super-lig': { id: 203, name: 'Süper Lig', season: 2026 },
-  'mls': { id: 253, name: 'Major League Soccer', season: 2025 },
-  'liga-mx': { id: 262, name: 'Liga MX', season: 2025 },
-  'brasileirao': { id: 71, name: 'Brasileirão Série A', season: 2025 },
-  'argentine-primera': { id: 128, name: 'Argentine Primera División', season: 2025 },
-  'saudi-pro-league': { id: 307, name: 'Saudi Pro League', season: 2025 },
-  'k-league': { id: 292, name: 'K League 1', season: 2025 },
-  'j-league': { id: 98, name: 'J1 League', season: 2025 },
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 }
 
 const availableLeagues = Object.entries(LEAGUES).map(([slug, info]) => ({
@@ -84,11 +58,7 @@ function getMockStandings(): StandingEntry[] {
     { position: 12, team: 'Tottenham', teamLogo: 'https://media.api-sports.io/football/teams/47.png', played: 28, won: 10, drawn: 4, lost: 14, goalsFor: 52, goalsAgainst: 48, goalDiff: 4, points: 34, form: ['L', 'L', 'W', 'D', 'L'] },
     { position: 13, team: 'West Ham United', teamLogo: 'https://media.api-sports.io/football/teams/48.png', played: 28, won: 9, drawn: 6, lost: 13, goalsFor: 34, goalsAgainst: 45, goalDiff: -11, points: 33, form: ['L', 'D', 'L', 'W', 'D'] },
     { position: 14, team: 'Crystal Palace', teamLogo: 'https://media.api-sports.io/football/teams/52.png', played: 28, won: 8, drawn: 8, lost: 12, goalsFor: 30, goalsAgainst: 38, goalDiff: -8, points: 32, form: ['W', 'D', 'L', 'L', 'D'] },
-<<<<<<< HEAD
     { position: 15, team: 'Brentford', teamLogo: 'https://media.api-sports.io/football/teams/55.png', played: 28, won: 8, drawn: 7, lost: 13, goalsFor: 38, goalsAgainst: 46, goalDiff: -8, points: 31, form: ['D', 'L', 'W', 'L', 'W'] },
-=======
-    { position: 15, team: 'Brentford', teamLogo: 'https://media.api-sports.io/football/teams/55.png'.replace('.png', '.png'), played: 28, won: 8, drawn: 7, lost: 13, goalsFor: 38, goalsAgainst: 46, goalDiff: -8, points: 31, form: ['D', 'L', 'W', 'L', 'W'] },
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
     { position: 16, team: 'Everton', teamLogo: 'https://media.api-sports.io/football/teams/45.png', played: 28, won: 7, drawn: 8, lost: 13, goalsFor: 26, goalsAgainst: 40, goalDiff: -14, points: 29, form: ['D', 'L', 'D', 'L', 'D'] },
     { position: 17, team: 'Wolverhampton', teamLogo: 'https://media.api-sports.io/football/teams/76.png', played: 28, won: 7, drawn: 6, lost: 15, goalsFor: 33, goalsAgainst: 50, goalDiff: -17, points: 27, form: ['L', 'L', 'W', 'D', 'L'] },
     { position: 18, team: 'Leicester City', teamLogo: 'https://media.api-sports.io/football/teams/46.png', played: 28, won: 5, drawn: 7, lost: 16, goalsFor: 25, goalsAgainst: 53, goalDiff: -28, points: 22, form: ['L', 'D', 'L', 'L', 'W'] },
@@ -100,13 +70,9 @@ function getMockStandings(): StandingEntry[] {
 async function fetchStandings(leagueInfo: LeagueInfo): Promise<{ standings: StandingEntry[]; seasonLabel: string } | null> {
   const response = await footballFetch(
     `/standings?league=${leagueInfo.id}&season=${leagueInfo.season}`,
-<<<<<<< HEAD
     {
       next: { revalidate: 300 },
     }
-=======
-    { next: { revalidate: 300 } }
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
   )
 
   if (!response.ok) {

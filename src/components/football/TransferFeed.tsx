@@ -3,11 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRightLeft, RefreshCw, ExternalLink } from 'lucide-react';
-<<<<<<< HEAD
 import { safeSrc } from '@/lib/safe-src';
-=======
-import EmptyState from '@/components/football/EmptyState';
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
 interface TransferTeam {
   name: string;
@@ -153,13 +149,8 @@ export default function TransferFeed() {
           >
             {/* Player Photo */}
             <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-<<<<<<< HEAD
               {safeSrc(transfer.playerPhoto) ? (
                 <img src={safeSrc(transfer.playerPhoto)} alt={transfer.playerName} className="w-full h-full object-cover" />
-=======
-              {transfer.playerPhoto ? (
-                <img src={transfer.playerPhoto} alt={transfer.playerName} className="w-full h-full object-cover" />
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-sm text-gray-300 dark:text-gray-600">
                   {transfer.playerName.charAt(0)}
@@ -180,13 +171,8 @@ export default function TransferFeed() {
               <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5">
                 {/* From team */}
                 <div className="flex items-center gap-1 min-w-0">
-<<<<<<< HEAD
                   {safeSrc(transfer.from.logo) && (
                     <img src={safeSrc(transfer.from.logo)} alt="" className="w-3 h-3 rounded-full object-contain shrink-0" />
-=======
-                  {transfer.from.logo && (
-                    <img src={transfer.from.logo} alt="" className="w-3 h-3 rounded-full object-contain shrink-0" />
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
                   )}
                   <span className="truncate">{transfer.from.name}</span>
                 </div>
@@ -194,13 +180,8 @@ export default function TransferFeed() {
                 <ArrowRightLeft className="w-3 h-3 text-neon/60 shrink-0 rotate-90 sm:rotate-0" />
                 {/* To team */}
                 <div className="flex items-center gap-1 min-w-0">
-<<<<<<< HEAD
                   {safeSrc(transfer.to.logo) && (
                     <img src={safeSrc(transfer.to.logo)} alt="" className="w-3 h-3 rounded-full object-contain shrink-0" />
-=======
-                  {transfer.to.logo && (
-                    <img src={transfer.to.logo} alt="" className="w-3 h-3 rounded-full object-contain shrink-0" />
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
                   )}
                   <span className="truncate font-medium text-gray-700 dark:text-white/80">{transfer.to.name}</span>
                 </div>
@@ -224,18 +205,9 @@ export default function TransferFeed() {
         ))}
 
         {!loading && transfers.length === 0 && (
-<<<<<<< HEAD
           <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
             Memuat data transfer...
           </div>
-=======
-          <EmptyState
-            icon="empty"
-            message="Belum ada data transfer tersedia saat ini."
-            onRetry={loadTransfers}
-            retrying={refreshing}
-          />
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
         )}
       </div>
 

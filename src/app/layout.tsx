@@ -1,15 +1,7 @@
-<<<<<<< HEAD
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-=======
-import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from "next-themes";
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,20 +16,6 @@ const geistMono = Geist_Mono({
 // ─── Site URL (single source of truth) ───────────────────────
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://goalzone.vercel.app'
 
-<<<<<<< HEAD
-=======
-// ─── Viewport (separate export required in Next.js 14+) ─────
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 5,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f8fafc' },
-    { media: '(prefers-color-scheme: dark)', color: '#0a0a12' },
-  ],
-};
-
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 // ─── SEO Metadata ────────────────────────────────────────────
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -103,11 +81,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-<<<<<<< HEAD
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || process.env.GOOGLE_SITE_VERIFICATION || '',
-=======
-    google: process.env.GOOGLE_SITE_VERIFICATION || '',
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
   },
 };
 
@@ -140,7 +114,6 @@ export default function RootLayout({
             />
           </>
         )}
-<<<<<<< HEAD
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -156,29 +129,6 @@ export default function RootLayout({
             crossOrigin="anonymous"
           />
         )}
-=======
-        {/* Google AdSense */}
-        {process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && (
-          <script
-            async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID}`}
-            crossOrigin="anonymous"
-          />
-        )}
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-deep-900 text-foreground`}
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster />
-        </ThemeProvider>
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
       </body>
     </html>
   );

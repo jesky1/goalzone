@@ -16,11 +16,7 @@ export default function PublicLayout({
       enableSystem
       disableTransitionOnChange
     >
-<<<<<<< HEAD
       <div className="min-h-screen flex flex-col bg-deep-900 text-foreground cyber-grid">
-=======
-      <div className="min-h-screen flex flex-col bg-deep-900 text-foreground">
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
         <NavbarDynamic />
         <LiveScoreTicker />
         <main className="flex-1">

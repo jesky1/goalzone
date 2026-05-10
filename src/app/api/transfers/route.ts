@@ -1,16 +1,9 @@
 import { NextResponse } from 'next/server'
-<<<<<<< HEAD
 import { footballFetch, isFootballApiConfigured } from '@/lib/football-api'
 
 export const revalidate = 1800 // Cache 30 minutes to save API calls
 
 
-=======
-import { footballFetch, isFootballApiConfigured } from '@/lib/football'
-
-export const revalidate = 1800 // Cache 30 minutes to save API calls
-
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 // Top clubs to fetch transfers for
 const TOP_TEAM_IDS = [42, 50, 541, 529, 505, 489]
 // Arsenal (42), Manchester City (50), Real Madrid (541), Barcelona (529), Inter Milan (505), AC Milan (489)

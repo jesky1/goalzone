@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import ZAI from 'z-ai-web-dev-sdk'
-<<<<<<< HEAD
 import sharp from 'sharp'
 import { verifyAdmin } from '@/lib/admin-auth'
 import { createServerSupabaseClient } from '@/lib/supabase/client'
 import { generateSlug, calculateReadTime, truncateMeta } from '@/lib/article-utils'
-=======
-import { verifyAdmin } from '@/lib/admin-auth'
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
 // ============================================================
 // GOALZONE — Admin AI Article Generator
@@ -15,15 +11,10 @@ import { verifyAdmin } from '@/lib/admin-auth'
 // POST /api/generate-article
 //
 // Generates a football news article using the LLM based on a
-<<<<<<< HEAD
 // given topic. Also generates a cover image using AI, applies
 // watermark, and uploads to Supabase Storage.
 // Returns title, slug, content (HTML), summary, metaDescription,
 // suggested category, estimated read time, and imageUrl.
-=======
-// given topic. Returns title, content (HTML), summary, suggested
-// category, and estimated read time.
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 //
 // Auth: Bearer {ADMIN_API_KEY}
 // ============================================================
@@ -70,7 +61,6 @@ const GENERATE_ARTICLE_SYSTEM_PROMPT = `Kamu adalah Jurnalis Sepak Bola Profesio
    - Ringkasan 1-2 kalimat untuk card preview
    - Maksimal 160 karakter
 
-<<<<<<< HEAD
 5. META DESCRIPTION (metaDescription):
    - Deskripsi SEO untuk Google Search & Google News
    - Harus mengandung keyword utama dan menarik klik
@@ -86,14 +76,6 @@ const GENERATE_ARTICLE_SYSTEM_PROMPT = `Kamu adalah Jurnalis Sepak Bola Profesio
    - Gambar harus bertema sepak bola, cinematic, ultra-realistic 8K
    - JANGAN sertakan teks, logo, atau nama pemain di gambar
    - Maksimal 200 karakter
-=======
-5. KATEGORI (category):
-   - Pilih satu dari: Premier League, La Liga, Serie A, Bundesliga, Ligue 1, Champions League, Europa League, Transfer, Timnas, Analisis
-   - Pilih berdasarkan topik yang diberikan
-
-6. READ TIME:
-   - Estimasi waktu baca dalam menit (angka bulat)
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
 ═══════════════════════════════════════════════════════════
                     FORMAT OUTPUT WAJIB
@@ -104,21 +86,15 @@ Output HANYA JSON valid, tanpa teks tambahan:
   "title": "Judul artikel yang menarik dan SEO-friendly",
   "content": "<p>Paragraf pertama...</p><p>Paragraf kedua...</p><p>Paragraf ketiga...</p><p>Paragraf keempat...</p>",
   "summary": "Ringkasan 1-2 kalimat untuk preview",
-<<<<<<< HEAD
   "metaDescription": "Deskripsi SEO 140-150 karakter yang mengandung keyword utama dan menarik klik untuk Google News",
   "category": "Transfer",
   "imagePrompt": "Dramatic football stadium at night with floodlights, cinematic sports photography, ultra-realistic 8K, dramatic lighting"
-=======
-  "category": "Transfer",
-  "readTime": 5
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 }
 
 ATURAN FINAL:
 - Output HANYA JSON — tidak boleh ada teks sebelum/sesudah JSON
 - content: HTML VALID dengan tag <p>, bukan markdown
 - category: harus salah satu dari daftar yang disediakan
-<<<<<<< HEAD
 - metaDescription: WAJIB 140-150 karakter, SEO-optimized untuk Google News
 - imagePrompt: prompt Bahasa Inggris untuk AI image generation`
 
@@ -223,9 +199,6 @@ async function ensureUniqueSlug(baseSlug: string): Promise<string> {
     slug = `${baseSlug}-${counter}`
   }
 }
-=======
-- readTime: angka bulat (menit)`
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
 // ─── POST Handler ────────────────────────────────────────────
 
@@ -305,7 +278,6 @@ export async function POST(request: NextRequest) {
     const content = typeof parsed.content === 'string' ? parsed.content : '<p>Artikel tidak dapat dihasilkan. Silakan coba lagi.</p>'
     const summary = typeof parsed.summary === 'string' ? parsed.summary.substring(0, 200) : topic
     const suggestedCategory = VALID_CATEGORIES.includes(parsed.category) ? parsed.category : (category || 'Analisis')
-<<<<<<< HEAD
     const imagePrompt = typeof parsed.imagePrompt === 'string' ? parsed.imagePrompt : `Dramatic football scene, ${topic.trim()}, cinematic sports photography, ultra-realistic 8K, dramatic lighting. No text, no logos.`
 
     // 7. Auto-Slug: generated from title with dedup check
@@ -327,15 +299,11 @@ export async function POST(request: NextRequest) {
     } catch (imgErr: any) {
       console.warn('[Generate Article] Cover image generation skipped:', imgErr.message)
     }
-=======
-    const readTime = typeof parsed.readTime === 'number' && parsed.readTime > 0 ? Math.round(parsed.readTime) : Math.max(3, Math.ceil(content.length / 500))
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
 
     return NextResponse.json({
       success: true,
       article: {
         title,
-<<<<<<< HEAD
         slug,
         content,
         summary,
@@ -344,12 +312,6 @@ export async function POST(request: NextRequest) {
         readTime,
         imageUrl,
         imagePrompt,
-=======
-        content,
-        summary,
-        category: suggestedCategory,
-        readTime,
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
       },
     })
   } catch (err: any) {

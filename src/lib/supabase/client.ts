@@ -18,12 +18,8 @@ export function getSupabaseClient(): SupabaseClient {
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error(
       'Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. ' +
-<<<<<<< HEAD
       'Please set these in .env.local or Vercel Environment Variables. ' +
       'Get the anon key from Supabase Dashboard → Settings → API → Project API keys.'
-=======
-      'Please set these in .env.local or Vercel Environment Variables.'
->>>>>>> 09cf314a6a095d1a224a5ceb999d3ff2244405e0
     )
   }
 
