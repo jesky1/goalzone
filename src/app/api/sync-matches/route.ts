@@ -5,22 +5,14 @@ import { footballFetch, isFootballApiConfigured } from '@/lib/football'
 // ============================================================
 // GOALZONE - Sync Matches API Route
 // ============================================================
-// Endpoint terproteksi untuk sinkronisasi data pertandingan.
+// Endpoint untuk sinkronisasi data pertandingan dari Football API.
 //
 // Alur kerja:
-// 1. Validasi API_SECRET_KEY (header x-api-secret / query ?secret=)
-// 2. Panggil Football-API: /fixtures?date=today
-// 3. Loop semua data pertandingan
-// 4. Upsert ke Supabase (onConflict: external_id) → update skor
-// 5. Upsert ke Prisma/SQLite lokal (backup)
-//
-// Proteksi:
-// - WAJIB kirim API_SECRET_KEY via header "x-api-secret"
-//   atau query parameter "?secret=..."
-// - Tanpa key yang benar → 401 Unauthorized
+// 1. Panggil Football-API: /fixtures?date=today
+// 2. Loop semua data pertandingan
+// 3. Upsert ke Supabase (onConflict: external_id) → update skor
+// 4. Upsert ke Prisma/SQLite lokal (backup)
 // ============================================================
-
-const API_SECRET_KEY = process.env.API_SECRET_KEY
 
 // ─── GOALZONE League IDs ──────────────────────────────────────
 const GOALZONE_LEAGUE_IDS = [
@@ -50,26 +42,6 @@ function extractEvents(events: any[], teamId: number) {
       player: e.player.name,
       detail: e.detail || undefined,
     }))
-}
-
-// ─── Validasi API Secret Key ──────────────────────────────────
-// Cek dari header "x-api-secret" atau query parameter "secret"
-function validateSecret(request: Request): boolean {
-  if (!API_SECRET_KEY) {
-    console.warn('[sync-matches] ⚠️ API_SECRET_KEY tidak diset di .env — proteksi tidak aktif!')
-    return true // Jika tidak ada key di env, allow (mode development)
-  }
-
-  // 1. Cek header "x-api-secret"
-  const headerSecret = request.headers.get('x-api-secret')
-  if (headerSecret && headerSecret === API_SECRET_KEY) return true
-
-  // 2. Cek query parameter "?secret=..."
-  const { searchParams } = new URL(request.url)
-  const querySecret = searchParams.get('secret')
-  if (querySecret && querySecret === API_SECRET_KEY) return true
-
-  return false
 }
 
 // ─── Transform fixture API-Football → row untuk upsert ────────
@@ -243,16 +215,7 @@ async function upsertToPrisma(rows: any[]): Promise<{ upserted: number; error?: 
 export async function GET(request: Request) {
   const startTime = Date.now()
 
-  // ── 1. VALIDASI API SECRET KEY ────────────────────────────
-  if (!validateSecret(request)) {
-    return NextResponse.json({
-      success: false,
-      error: 'Unauthorized. Kirim API_SECRET_KEY via header "x-api-secret" atau query "?secret=..."',
-      hint: 'Contoh: curl -H "x-api-secret: YOUR_KEY" /api/sync-matches',
-    }, { status: 401 })
-  }
-
-  // ── 2. CEK KONFIGURASI ────────────────────────────────────
+  // ── 1. CEK KONFIGURASI ────────────────────────────────────
   if (!isFootballApiConfigured) {
     return NextResponse.json({
       success: false,
