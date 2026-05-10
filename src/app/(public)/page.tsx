@@ -67,7 +67,7 @@ function HeroSection({ articles, onArticleClick }: { articles: Article[]; onArti
           <img
             src={article.imageUrl || '/images/articles/default.jpg'}
             alt={article.title}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover object-top"
             loading="eager"
           />
           {/* Gradient overlay for readability */}
@@ -363,7 +363,7 @@ function HomeContent() {
       </ErrorBoundary>
 
       {/* News + Sidebar */}
-      <section id="standings" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+      <section id="standings" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-10">
         {/* Ad Slot - Between Live Scores and News */}
         <AdSenseSlot slot="before-news" format="horizontal" className="mb-6" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">

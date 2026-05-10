@@ -191,10 +191,8 @@
   --neon-text-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.3), 0 0 40px rgba(0, 240, 255, 0.1);
   --neon-box-shadow: 0 0 15px rgba(0, 240, 255, 0.15), 0 0 30px rgba(0, 240, 255, 0.05);
   --neon-box-shadow-strong: 0 0 20px rgba(0, 240, 255, 0.3), 0 0 40px rgba(0, 240, 255, 0.1), 0 0 60px rgba(0, 240, 255, 0.05);
-  --cyber-grid-line: rgba(0, 240, 255, 0.03);
-  --body-bg-image:
-    radial-gradient(ellipse at 20% 50%, rgba(0, 240, 255, 0.015) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 20%, rgba(0, 240, 255, 0.01) 0%, transparent 60%);
+  --cyber-grid-line: transparent;
+  --body-bg-image: none;
   --scrollbar-track: rgba(255, 255, 255, 0.02);
   --scrollbar-thumb: rgba(0, 240, 255, 0.2);
   --scrollbar-thumb-hover: rgba(0, 240, 255, 0.4);
