@@ -60,7 +60,7 @@ function HeroSection({ articles, onArticleClick }: { articles: Article[]; onArti
   const article = articles[current];
 
   return (
-    <section id="home" className="relative w-full h-[460px] sm:h-[540px] md:h-[600px] overflow-hidden -mt-16 pt-16">
+    <section id="home" className="relative w-full h-[460px] sm:h-[540px] md:h-[600px] overflow-hidden -mt-[108px] pt-[108px]">
       <AnimatePresence mode="wait">
         <motion.div key={article.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0">
           {/* Hero Image as <img> element for better accessibility & SEO */}
@@ -89,16 +89,18 @@ function HeroSection({ articles, onArticleClick }: { articles: Article[]; onArti
         </motion.div>
       </AnimatePresence>
       {/* Slide navigation dots */}
-      {articles.length > 1 && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
-          {articles.map((_, i) => (
-            <button key={i} onClick={() => setCurrent(i)}
-              className={`h-2.5 rounded-full transition-all duration-300 ${i === current ? 'bg-neon w-8' : 'bg-gray-300 dark:bg-white/20 w-2.5 hover:bg-gray-400 dark:hover:bg-white/40'}`}
-              aria-label={`Slide ${i + 1}`} />
-          ))}
-        </div>
-      )}
-    </section>
+      {
+        articles.length > 1 && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
+            {articles.map((_, i) => (
+              <button key={i} onClick={() => setCurrent(i)}
+                className={`h-2.5 rounded-full transition-all duration-300 ${i === current ? 'bg-neon w-8' : 'bg-gray-300 dark:bg-white/20 w-2.5 hover:bg-gray-400 dark:hover:bg-white/40'}`}
+                aria-label={`Slide ${i + 1}`} />
+            ))}
+          </div>
+        )
+      }
+    </section >
   );
 }
 
@@ -155,7 +157,7 @@ function NewsSection({ onArticleClick }: { onArticleClick?: (a: Article) => void
 
   if (loading) return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-      {[1,2,3,4,5,6].map(i => (
+      {[1, 2, 3, 4, 5, 6].map(i => (
         <div key={i} className="glass-card overflow-hidden flex flex-col">
           <Skeleton className="w-full h-48" />
           <div className="p-4 space-y-3"><Skeleton className="h-4 w-20" /><Skeleton className="h-5 w-full" /><Skeleton className="h-4 w-3/4" /></div>
