@@ -45,30 +45,29 @@ export default function NewsCard({
         viewport={{ once: true }}
         transition={{ duration: 0.5, delay: index * 0.1 }}
         whileHover={{ scale: 1.01 }}
-        onClick={() => onClick?.(article)}
+        onClick={function () { if (onClick) onClick(article); }}
         className="glass-card glass-hover cursor-pointer overflow-hidden col-span-1 md:col-span-2"
       >
         <div className="flex flex-col md:flex-row h-full">
-          {/* Image */}
-          <div className="relative w-full md:w-1/2 h-64 md:h-auto min-h-[250px] shrink-0">
+          <div className="relative w-full md:w-1/2 aspect-video md:aspect-auto md:h-auto md:min-h-[250px] shrink-0">
             {article.imageUrl ? (
               <Image
                 src={article.imageUrl}
                 alt={article.title}
                 fill
-                className="object-cover"
+                className="object-cover object-top"
+                style={{ objectPosition: 'top' }}
               />
             ) : (
               <Image
                 src="/images/articles/default.jpg"
                 alt={article.title}
                 fill
-                className="object-cover"
+                className="object-cover object-top"
+                style={{ objectPosition: 'top' }}
               />
             )}
           </div>
-
-          {/* Content */}
           <div className="flex flex-col justify-center p-5 md:p-6 flex-1">
             <span className="inline-block self-start px-2.5 py-0.5 rounded-full text-xs font-bold neon-text bg-neon/10 border border-neon/20 mb-3">
               {article.category.name}
@@ -82,21 +81,10 @@ export default function NewsCard({
               </p>
             )}
             <div className="flex items-center gap-4 text-xs text-gray-500 mt-auto">
-              <span className="font-medium text-gray-300">
-                {article.author.username}
-              </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                {timeAgo}
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {article.readTime} min
-              </span>
-              <span className="flex items-center gap-1">
-                <Eye className="w-3 h-3" />
-                {article.viewCount}
-              </span>
+              <span className="font-medium text-gray-300">{article.author.username}</span>
+              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{timeAgo}</span>
+              <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{article.readTime} min</span>
+              <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{article.viewCount}</span>
             </div>
           </div>
         </div>
@@ -111,24 +99,25 @@ export default function NewsCard({
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
       whileHover={{ scale: 1.02 }}
-      onClick={() => onClick?.(article)}
+      onClick={function () { if (onClick) onClick(article); }}
       className="glass-card glass-hover cursor-pointer overflow-hidden flex flex-col"
     >
-      {/* Image */}
-      <div className="relative w-full h-48 shrink-0">
+      <div className="relative w-full aspect-video shrink-0">
         {article.imageUrl ? (
           <Image
             src={article.imageUrl}
             alt={article.title}
             fill
-            className="object-cover"
+            className="object-cover object-top"
+            style={{ objectPosition: 'top' }}
           />
         ) : (
           <Image
             src="/images/articles/default.jpg"
             alt={article.title}
             fill
-            className="object-cover"
+            className="object-cover object-top"
+            style={{ objectPosition: 'top' }}
           />
         )}
         <div className="absolute top-3 left-3">
@@ -137,34 +126,19 @@ export default function NewsCard({
           </span>
         </div>
       </div>
-
-      {/* Content */}
       <div className="flex flex-col flex-1 p-4">
         <h3 className="text-base font-bold text-white mb-2 line-clamp-2 leading-snug">
           {article.title}
         </h3>
         {article.summary && (
-          <p className="text-sm text-gray-400 mb-3 line-clamp-2 flex-1">
-            {article.summary}
-          </p>
+          <p className="text-sm text-gray-400 mb-3 line-clamp-2 flex-1">{article.summary}</p>
         )}
         <div className="flex items-center justify-between text-xs text-gray-500 mt-auto pt-3 border-t border-white/5">
-          <span className="font-medium text-gray-300">
-            {article.author.username}
-          </span>
+          <span className="font-medium text-gray-300">{article.author.username}</span>
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
-              {timeAgo}
-            </span>
-            <span className="flex items-center gap-1">
-              <Eye className="w-3 h-3" />
-              {article.viewCount}
-            </span>
-            <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {article.readTime}m
-            </span>
+            <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{timeAgo}</span>
+            <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{article.viewCount}</span>
+            <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{article.readTime}m</span>
           </div>
         </div>
       </div>

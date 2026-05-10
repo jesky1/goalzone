@@ -1,12 +1,11 @@
 "use client"
-import { useTheme } from "next-themes"
 
-export function ThemeToggle() {
-    const { theme, setTheme } = useTheme()
+import * as React from "react"
+import { ThemeProvider as NextThemesProvider } from "next-themes"
 
-    return (
-        <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-            {theme === "dark" ? "🌙" : "☀️"}
-        </button>
-    )
+export function ThemeProvider({
+    children,
+    ...props
+}: React.ComponentProps<typeof NextThemesProvider>) {
+    return <NextThemesProvider {...props}>{children}</NextThemesProvider>
 }

@@ -145,7 +145,6 @@ function SimpleNewsCard({ article, onClick }: { article: Article; onClick?: (a: 
           <img
             src={article.imageUrl}
             alt={article.title}
-            // Kita pakai h-full dan object-top supaya kepala aman
             className="w-full h-full object-cover object-[center_top]"
             loading="lazy"
           />

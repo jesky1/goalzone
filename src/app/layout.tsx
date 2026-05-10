@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,10 +14,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// ─── Site URL (single source of truth) ───────────────────────
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://goalzone.vercel.app'
 
-// ─── SEO Metadata ────────────────────────────────────────────
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
@@ -30,7 +29,7 @@ export const metadata: Metadata = {
     "transfer", "klasemen", "hasil pertandingan", "analisis taktik",
     "berita sepak bola terkini", "goalzone",
   ],
-  authors: [{ name: "GOALZONE Team", url: `${SITE_URL}` }],
+  authors: [{ name: "GOALZONE Team", url: SITE_URL }],
   creator: "GOALZONE",
   publisher: "GOALZONE",
   formatDetection: {
@@ -80,9 +79,6 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || process.env.GOOGLE_SITE_VERIFICATION || '',
-  },
 };
 
 export default function RootLayout({
@@ -93,38 +89,34 @@ export default function RootLayout({
   return (
     <html lang="id" suppressHydrationWarning>
       <head>
-        {/* Google Analytics */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
             <script
               async
-              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+              src={"https://www.googletagmanager.com/gtag/js?id=" + process.env.NEXT_PUBLIC_GA_ID}
             />
             <script
               dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}', {
-                    page_path: window.location.pathname,
-                  });
-                `,
+                __html: "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','" + process.env.NEXT_PUBLIC_GA_ID + "');",
               }}
             />
           </>
         )}
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className={geistSans.variable + " " + geistMono.variable + " antialiased"}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
 
-        {/* Google AdSense — loaded async via next/script after page is interactive */}
         {process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && (
           <Script
             async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID}`}
+            src={"https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID}
             strategy="afterInteractive"
             crossOrigin="anonymous"
           />

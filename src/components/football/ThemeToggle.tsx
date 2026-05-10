@@ -1,69 +1,39 @@
-'use client';
+"use client"
 
-import { useTheme } from 'next-themes';
-import { useSyncExternalStore } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon } from 'lucide-react';
-
-const emptySubscribe = () => () => {};
-
-function useMounted() {
-  return useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false,
-  );
-}
+import * as React from "react"
+import { useTheme } from "next-themes"
+import { Moon, Sun } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export default function ThemeToggle() {
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const mounted = useMounted();
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   if (!mounted) {
     return (
-      <div className="relative w-9 h-9 rounded-xl bg-white/5 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center">
-        <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-600" />
-      </div>
-    );
+      <Button variant="ghost" size="icon" className="h-9 w-9">
+        <Sun className="h-4 w-4" />
+      </Button>
+    )
   }
 
-  const isDark = resolvedTheme === 'dark';
-
-  const toggleTheme = () => {
-    setTheme(isDark ? 'light' : 'dark');
-  };
-
   return (
-    <motion.button
-      onClick={toggleTheme}
-      className="relative w-9 h-9 rounded-xl border border-gray-200 dark:border-white/10 bg-white/80 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 flex items-center justify-center transition-colors duration-300 group overflow-hidden"
-      whileTap={{ scale: 0.9 }}
-      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      title={isDark ? 'Mode Terang' : 'Mode Gelap'}
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-9 w-9"
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
     >
-      <AnimatePresence mode="wait" initial={false}>
-        {isDark ? (
-          <motion.div
-            key="sun"
-            initial={{ y: -20, opacity: 0, rotate: -90, scale: 0.5 }}
-            animate={{ y: 0, opacity: 1, rotate: 0, scale: 1 }}
-            exit={{ y: 20, opacity: 0, rotate: 90, scale: 0.5 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-          >
-            <Sun className="w-4 h-4 text-amber-500 group-hover:text-amber-400 transition-colors" />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="moon"
-            initial={{ y: -20, opacity: 0, rotate: 90, scale: 0.5 }}
-            animate={{ y: 0, opacity: 1, rotate: 0, scale: 1 }}
-            exit={{ y: 20, opacity: 0, rotate: -90, scale: 0.5 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-          >
-            <Moon className="w-4 h-4 text-sky-700 group-hover:text-sky-600 transition-colors" />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.button>
-  );
+      {theme === "dark" ? (
+        <Sun className="h-4 w-4 text-yellow-400" />
+      ) : (
+        <Moon className="h-4 h-4 text-gray-700" />
+      )}
+      <span className="sr-only">Toggle theme</span>
+    </Button>
+  )
 }

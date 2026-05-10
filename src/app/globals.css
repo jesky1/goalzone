@@ -172,7 +172,7 @@
   --c-neon: #00f0ff;
   --c-neon-dim: #0891b2;
   --c-neon-glow: #00f0ff40;
-  --c-deep-900: #0a0a12;
+  --c-deep-900: #000000;
   --c-deep-800: #0f0f1a;
   --c-deep-700: #161625;
   --c-deep-600: #1e1e30;
@@ -195,10 +195,7 @@
   --neon-box-shadow: 0 0 15px rgba(0, 240, 255, 0.15), 0 0 30px rgba(0, 240, 255, 0.05);
   --neon-box-shadow-strong: 0 0 20px rgba(0, 240, 255, 0.3), 0 0 40px rgba(0, 240, 255, 0.1), 0 0 60px rgba(0, 240, 255, 0.05);
   --cyber-grid-line: rgba(0, 240, 255, 0.03);
-  --body-bg-image:
-    radial-gradient(ellipse at 20% 50%, rgba(0, 240, 255, 0.03) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(0, 240, 255, 0.02) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 80%, rgba(139, 92, 246, 0.02) 0%, transparent 50%);
+  --body-bg-image: none;
   --scrollbar-track: rgba(255, 255, 255, 0.02);
   --scrollbar-thumb: rgba(0, 240, 255, 0.2);
   --scrollbar-thumb-hover: rgba(0, 240, 255, 0.4);
@@ -210,6 +207,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-deep-900 text-foreground font-sans;
     background-image: var(--body-bg-image);
@@ -278,20 +276,16 @@
    In dark mode: dark overlay for contrast.
    ============================================ */
 .hero-gradient-v {
-  background: linear-gradient(
-    to top,
-    var(--tw-hero-gradient-from),
-    var(--tw-hero-gradient-via) 60%,
-    var(--tw-hero-gradient-to)
-  );
+  background: linear-gradient(to top,
+      var(--tw-hero-gradient-from),
+      var(--tw-hero-gradient-via) 60%,
+      var(--tw-hero-gradient-to));
 }
 
 .hero-gradient-h {
-  background: linear-gradient(
-    to right,
-    var(--tw-hero-gradient-from),
-    transparent
-  );
+  background: linear-gradient(to right,
+      var(--tw-hero-gradient-from),
+      transparent);
 }
 
 /* ============================================
@@ -304,7 +298,7 @@
 
 .neon-border {
   border-color: rgba(var(--c-neon), 0.3);
-  box-shadow: 0 0 10px var(--c-neon-glow), inset 0 0 10px rgba(0,0,0,0.02);
+  box-shadow: 0 0 10px var(--c-neon-glow), inset 0 0 10px rgba(0, 0, 0, 0.02);
 }
 
 .neon-glow {
@@ -319,8 +313,13 @@
    Live Pulse Animation
    ============================================ */
 @keyframes live-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%, 100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
 }
 
 .live-pulse {
@@ -333,11 +332,13 @@
     box-shadow: 0 0 4px rgba(239, 68, 68, 0.6), 0 0 8px rgba(239, 68, 68, 0.3);
     opacity: 1;
   }
+
   50% {
     box-shadow: 0 0 8px rgba(239, 68, 68, 0.9), 0 0 16px rgba(239, 68, 68, 0.4);
     opacity: 0.7;
   }
 }
+
 .live-dot-pulse {
   animation: live-pulse-glow 1.5s ease-in-out infinite;
   will-change: opacity, box-shadow;
@@ -348,18 +349,25 @@
     border-color: rgba(0, 240, 255, 0.15);
     box-shadow: 0 0 25px rgba(0, 240, 255, 0.12), 0 0 50px rgba(0, 240, 255, 0.06), inset 0 1px 0 rgba(0, 240, 255, 0.1);
   }
+
   50% {
     border-color: rgba(0, 240, 255, 0.3);
     box-shadow: 0 0 30px rgba(0, 240, 255, 0.2), 0 0 60px rgba(0, 240, 255, 0.1), inset 0 1px 0 rgba(0, 240, 255, 0.2);
   }
 }
+
 .neon-border-pulse {
   animation: neon-border-pulse 3s ease-in-out infinite;
 }
 
 @keyframes ticker-scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .ticker-scroll {
@@ -372,9 +380,17 @@
 
 /* Gradient Animations */
 @keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .gradient-animate {
@@ -384,10 +400,7 @@
 
 /* Cyber Grid Background (Theme-Aware) */
 .cyber-grid {
-  background-image: 
-    linear-gradient(var(--cyber-grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--cyber-grid-line) 1px, transparent 1px);
-  background-size: 60px 60px;
+  background-image: none;
 }
 
 /* Custom Scrollbar (Theme-Aware) */
@@ -417,13 +430,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.03) 2px,
-    rgba(0, 0, 0, 0.03) 4px
-  );
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.03) 2px,
+      rgba(0, 0, 0, 0.03) 4px);
   pointer-events: none;
   border-radius: inherit;
 }
@@ -434,6 +445,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -446,8 +458,13 @@
 
 /* Loading shimmer */
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .shimmer {
