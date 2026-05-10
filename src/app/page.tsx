@@ -140,17 +140,18 @@ function SimpleNewsCard({ article, onClick }: { article: Article; onClick?: (a: 
     <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
       whileHover={{ scale: 1.02 }} onClick={() => onClick?.(article)}
       className="glass-card glass-hover cursor-pointer overflow-hidden flex flex-col">
-      <div className="relative w-full aspect-video shrink-0 overflow-hidden rounded-t-xl">
+      <div className="relative w-full aspect-video shrink-0 overflow-hidden rounded-t-xl bg-black">
         {article.imageUrl ? (
           <img
             src={article.imageUrl}
             alt={article.title}
-            className="w-full h-full object-cover object-top"
+            // Kita pakai h-full dan object-top supaya kepala aman
+            className="w-full h-full object-cover object-[center_top]"
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-deep-700 to-deep-900 flex items-center justify-center">
-            <span className="text-4xl text-gray-300 dark:text-white/10">⚽</span>
+          <div className="w-full h-full bg-neutral-900 flex items-center justify-center">
+            <span className="text-4xl opacity-20">⚽</span>
           </div>
         )}
         <div className="absolute top-3 left-3">
