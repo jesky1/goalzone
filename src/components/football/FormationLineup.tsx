@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { safeSrc } from '@/lib/safe-src'
-import { Trophy, MapPin, User } from 'lucide-react'
+import { Trophy, MapPin, User, RefreshCw } from 'lucide-react'
+import EmptyState from '@/components/football/EmptyState'
 
 // ──────────────────────────────────────────────
 // Types
@@ -457,10 +458,28 @@ function PitchLines() {
 export default function FormationLineup() {
   const [data, setData] = useState<LastLineupData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+
+  const loadData = async () => {
+    if (refreshing) return
+    setRefreshing(true)
+    try {
+      const res = await fetch('/api/last-lineup')
+      if (res.ok) {
+        const json = await res.json()
+        setData(json)
+      }
+    } catch {
+      /* silent */
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }
 
   useEffect(() => {
     let cancelled = false
-    const loadData = async () => {
+    const load = async () => {
       try {
         const res = await fetch('/api/last-lineup')
         if (res.ok && !cancelled) {
@@ -473,7 +492,7 @@ export default function FormationLineup() {
         if (!cancelled) setLoading(false)
       }
     }
-    loadData()
+    load()
     return () => {
       cancelled = true
     }
@@ -503,12 +522,60 @@ export default function FormationLineup() {
     )
   }
 
-  if (!data) return null
+  if (!data) return (
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="mb-6"
+      >
+        <div className="flex items-center gap-3 mb-1">
+          <div className="w-2 h-2 rounded-full bg-neon" />
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            Formasi <span className="neon-text">Terakhir</span>
+          </h2>
+        </div>
+      </motion.div>
+      <div className="glass-card p-4">
+        <EmptyState
+          icon="empty"
+          message="Data formasi sedang diperbarui. Coba lagi nanti."
+          onRetry={loadData}
+          retrying={refreshing}
+        />
+      </div>
+    </section>
+  )
 
   const { fixture, homeLineup, awayLineup } = data
 
   if (!homeLineup?.startXI?.length || !awayLineup?.startXI?.length)
-    return null
+    return (
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-6"
+        >
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-2 h-2 rounded-full bg-neon" />
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+              Formasi <span className="neon-text">Terakhir</span>
+            </h2>
+          </div>
+        </motion.div>
+        <div className="glass-card p-4">
+          <EmptyState
+            icon="empty"
+            message="Lineup pertandingan belum tersedia."
+            onRetry={loadData}
+            retrying={refreshing}
+          />
+        </div>
+      </section>
+    )
 
   const effectiveHomeLogo =
     homeLineup?.team?.logo || fixture.homeLogo || ''

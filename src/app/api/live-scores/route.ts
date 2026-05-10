@@ -66,6 +66,14 @@ export async function GET() {
     )
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return NextResponse.json({
+          matches: [],
+          source: 'api-football',
+          error: 'Limit API habis. Data sedang diperbarui, coba lagi nanti.',
+          rateLimited: true,
+        });
+      }
       throw new Error(`API-Football error: ${response.status}`)
     }
 

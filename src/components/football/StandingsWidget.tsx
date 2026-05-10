@@ -11,6 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { RefreshCw } from 'lucide-react';
+import EmptyState from '@/components/football/EmptyState';
 
 interface Standing {
   position: number;
@@ -200,14 +201,14 @@ export default function StandingsWidget() {
         </Table>
 
         {loading && (
-          <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-            Memuat klasemen...
-          </div>
+          <EmptyState icon="loading" />
         )}
         {!loading && standings.length === 0 && (
-          <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-            Tidak ada data tersedia
-          </div>
+          <EmptyState
+            icon="empty"
+            onRetry={() => loadStandings(activeLeague)}
+            retrying={refreshing}
+          />
         )}
       </div>
 

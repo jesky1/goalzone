@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Coins, RefreshCw, ExternalLink } from 'lucide-react';
+import EmptyState from '@/components/football/EmptyState';
 
 interface FanToken {
   symbol: string;
@@ -281,9 +282,12 @@ export default function FanTokenWidget() {
         })}
 
         {!loading && tokens.length === 0 && (
-          <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
-            Memuat data Fan Token...
-          </div>
+          <EmptyState
+            icon="empty"
+            message="Data Fan Token sedang diperbarui. Coba lagi nanti."
+            onRetry={loadTokens}
+            retrying={refreshing}
+          />
         )}
       </div>
 

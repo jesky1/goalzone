@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, RefreshCw } from 'lucide-react';
+import EmptyState from '@/components/football/EmptyState';
 
 interface Scorer {
   rank: number;
@@ -197,14 +198,14 @@ export default function TopScorersWidget() {
         })}
 
         {loading && (
-          <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-            Memuat data...
-          </div>
+          <EmptyState icon="loading" />
         )}
         {!loading && scorers.length === 0 && (
-          <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-            Tidak ada data tersedia
-          </div>
+          <EmptyState
+            icon="empty"
+            onRetry={() => loadScorers(activeLeague)}
+            retrying={refreshing}
+          />
         )}
       </div>
     </motion.div>

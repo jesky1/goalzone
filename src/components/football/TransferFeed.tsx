@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRightLeft, RefreshCw, ExternalLink } from 'lucide-react';
+import EmptyState from '@/components/football/EmptyState';
 
 interface TransferTeam {
   name: string;
@@ -204,9 +205,12 @@ export default function TransferFeed() {
         ))}
 
         {!loading && transfers.length === 0 && (
-          <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-            Memuat data transfer...
-          </div>
+          <EmptyState
+            icon="empty"
+            message="Belum ada data transfer tersedia saat ini."
+            onRetry={loadTransfers}
+            retrying={refreshing}
+          />
         )}
       </div>
 

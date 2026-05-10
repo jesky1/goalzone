@@ -101,6 +101,16 @@ export async function GET(request: Request) {
     });
 
     if (!response.ok) {
+      // Handle rate limit (429) gracefully
+      if (response.status === 429) {
+        console.warn('[Matches API] Rate limit hit (429)');
+        return NextResponse.json({
+          matches: [],
+          source: 'api-football',
+          error: 'Limit API habis. Data sedang diperbarui, coba lagi nanti.',
+          rateLimited: true,
+        });
+      }
       throw new Error(`Football API error: ${response.status}`);
     }
 
